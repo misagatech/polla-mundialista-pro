@@ -3,85 +3,22 @@
 <head>
   <meta charset="UTF-8">
   <title>Polla Mundialista</title>
-
-  <style>
-    body {
-      font-family: Arial, sans-serif;
-      background: #0A1E3F;
-      color: white;
-      text-align: center;
-      padding: 20px;
-    }
-
-    .match {
-      background: #081A33;
-      margin: 10px auto;
-      padding: 15px;
-      border-radius: 10px;
-      width: 300px;
-      box-shadow: 0 0 10px rgba(0,0,0,0.5);
-    }
-
-    img {
-      width: 40px;
-      vertical-align: middle;
-    }
-  </style>
+  <link rel="stylesheet" href="css/styles.css">
 </head>
 
 <body>
 
-  <h1>⚽ Polla Mundialista</h1>
+  <header>
+    <h1>⚽ Polla Mundialista 2026</h1>
+    <p>Predice. Compite. Gana.</p>
+  </header>
 
-  <div id="matches"></div>
+  <main>
+    <div id="matches"></div>
+  </main>
 
-  <script type="module">
-    import { initializeApp } from "https://www.gstatic.com/firebasejs/12.12.0/firebase-app.js";
-    import { getFirestore, collection, getDocs } from "https://www.gstatic.com/firebasejs/12.12.0/firebase-firestore.js";
-
-    const firebaseConfig = {
-      apiKey: "AIzaSyB_MLFy3prhsg3N2T-FTObrFoaQS_K8yuI",
-      authDomain: "polla-mundialista-pro.firebaseapp.com",
-      projectId: "polla-mundialista-pro",
-      storageBucket: "polla-mundialista-pro.firebasestorage.app",
-      messagingSenderId: "568974218746",
-      appId: "1:568974218746:web:4542ace54c5c7d407c4043"
-    };
-
-    const app = initializeApp(firebaseConfig);
-    const db = getFirestore(app);
-
-    const container = document.getElementById("matches");
-
-    async function cargarPartidos() {
-      const querySnapshot = await getDocs(collection(db, "matches"));
-
-      querySnapshot.forEach((doc) => {
-        const data = doc.data();
-
-        // códigos de país (si no existen, fallback)
-        const codigo1 = data.codigo1 || "mx";
-        const codigo2 = data.codigo2 || "za";
-
-        const div = document.createElement("div");
-        div.className = "match";
-
-        div.innerHTML = `
-          <p>
-            <img src="https://flagcdn.com/w40/${codigo1}.png">
-            ${data.equipo1}
-            vs
-            ${data.equipo2}
-            <img src="https://flagcdn.com/w40/${codigo2}.png">
-          </p>
-        `;
-
-        container.appendChild(div);
-      });
-    }
-
-    cargarPartidos();
-  </script>
+  <script type="module" src="js/firebase.js"></script>
+  <script type="module" src="js/app.js"></script>
 
 </body>
 </html>
