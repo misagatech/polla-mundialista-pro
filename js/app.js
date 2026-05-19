@@ -13,15 +13,253 @@ import { todosLosPartidos } from "./partidos.js";
 const authScreen = document.getElementById("authScreen");
 const appScreen = document.getElementById("appScreen");
 const adminPanel = document.getElementById("adminPanel");
-const rankingList = document.getElementById("rankingList");
-const matchesContainer = document.getElementById("matchesContainer");
+const gruposContainer = document.getElementById("gruposContainer");
+const gruposCarousel = document.getElementById("gruposCarousel");
 const userEmailSpan = document.getElementById("userEmail");
+const miPosicionSpan = document.getElementById("miPosicion");
+const misPuntosSpan = document.getElementById("misPuntos");
+const proxLocalSpan = document.getElementById("proxLocal");
+const proxVisitSpan = document.getElementById("proxVisit");
+const proxFechaSpan = document.getElementById("proxFecha");
+const verGrupoBtn = document.getElementById("verGrupoBtn");
+const scrollLeftBtn = document.getElementById("scrollGruposLeft");
+const scrollRightBtn = document.getElementById("scrollGruposRight");
 
 let currentUser = null;
 let currentUserRol = null;
 let matchesUnsubscribe = null;
+let currentUserPuntos = 0;
+let currentUserPosicion = 0;
+let gruposData = {}; // { grupo: [partidos] }
+let grupoActual = "A";
 
-// ========== AUTENTICACIÓN ==========
+// Mapeo de equipos a grupos (12 grupos)
+const equipoGrupo = {
+  "México":"A","Sudáfrica":"A","Corea del Sur":"A","República Checa":"A",
+  "Canadá":"B","Bosnia y Herzegovina":"B","Qatar":"B","Suiza":"B",
+  "Brasil":"C","Marruecos":"C","Haití":"C","Escocia":"C",
+  "Estados Unidos":"D","Paraguay":"D","Australia":"D","Turquía":"D",
+  "Alemania":"E","Curazao":"E","Costa de Marfil":"E","Ecuador":"E",
+  "Países Bajos":"F","Japón":"F","Suecia":"F","Túnez":"F",
+  "Bélgica":"G","Egipto":"G","Irán":"G","Nueva Zelanda":"G",
+  "España":"H","Cabo Verde":"H","Arabia Saudita":"H","Uruguay":"H",
+  "Francia":"I","Senegal":"I","Noruega":"I","Irak":"I",
+  "Argentina":"J","Argelia":"J","Austria":"J","Jordania":"J",
+  "Portugal":"K","RD Congo":"K","Uzbekistán":"K","Colombia":"K",
+  "Inglaterra":"L","Croacia":"L","Panamá":"L","Ghana":"L"
+};
+
+// Códigos de país para banderas
+function obtenerCodigoPais(nombre) {
+  const paises = {
+    "México":"mx","Sudáfrica":"za","Corea del Sur":"kr","República Checa":"cz",
+    "Canadá":"ca","Bosnia y Herzegovina":"ba","Qatar":"qa","Suiza":"ch",
+    "Brasil":"br","Marruecos":"ma","Haití":"ht","Escocia":"sct",
+    "Estados Unidos":"us","Paraguay":"py","Australia":"au","Turquía":"tr",
+    "Alemania":"de","Curazao":"cw","Costa de Marfil":"ci","Ecuador":"ec",
+    "Países Bajos":"nl","Japón":"jp","Suecia":"se","Túnez":"tn",
+    "España":"es","Cabo Verde":"cv","Arabia Saudita":"sa","Uruguay":"uy",
+    "Bélgica":"be","Egipto":"eg","Irán":"ir","Nueva Zelanda":"nz",
+    "Francia":"fr","Senegal":"sn","Noruega":"no","Irak":"iq",
+    "Argentina":"ar","Argelia":"dz","Austria":"at","Jordania":"jo",
+    "Portugal":"pt","RD Congo":"cd","Uzbekistán":"uz","Colombia":"co",
+    "Inglaterra":"gb-eng","Croacia":"hr","Panamá":"pa","Ghana":"gh"
+  };
+  return paises[nombre] || "unknown";
+}
+
+// Determina si es fase de grupos (equipos reales)
+function esFaseGrupos(match) {
+  return equipoGrupo[match.equipo_local] && equipoGrupo[match.equipo_visitante];
+}
+
+// Agrupa partidos por grupo
+function agruparPartidos(partidos) {
+  const grupos = {};
+  for (const match of partidos) {
+    if (!esFaseGrupos(match)) continue;
+    const grupo = equipoGrupo[match.equipo_local];
+    if (!grupos[grupo]) grupos[grupo] = [];
+    grupos[grupo].push(match);
+  }
+  // Ordenar partidos por fecha
+  for (const g in grupos) {
+    grupos[g].sort((a,b) => a.hora_partido.toDate() - b.hora_partido.toDate());
+  }
+  return grupos;
+}
+
+// Renderizar los botones de grupos (scroll horizontal)
+function renderGruposTabs() {
+  const grupos = Object.keys(gruposData).sort();
+  let tabsHtml = '';
+  grupos.forEach(g => {
+    tabsHtml += `<div class="grupo-tab ${g === grupoActual ? 'active' : ''}" data-grupo="${g}">GRUPO ${g}</div>`;
+  });
+  gruposCarousel.innerHTML = tabsHtml;
+  // Agregar eventos
+  document.querySelectorAll('.grupo-tab').forEach(tab => {
+    tab.addEventListener('click', () => {
+      grupoActual = tab.dataset.grupo;
+      renderGruposTabs();
+      mostrarGrupo(grupoActual);
+    });
+  });
+}
+
+// Mostrar un grupo específico (acordeón abierto, otros cerrados)
+function mostrarGrupo(grupo) {
+  if (!gruposData[grupo]) return;
+  let html = `
+    <div class="grupo-card">
+      <div class="grupo-header" onclick="toggleGrupo('${grupo}')">
+        <h3 class="text-xl font-bold text-yellow-300">GRUPO ${grupo}</h3>
+        <i class="fas fa-chevron-down text-yellow-400 transition-transform" id="icon-${grupo}"></i>
+      </div>
+      <div class="grupo-body open" id="body-${grupo}">
+        <div class="p-2">
+          <div class="match-row font-semibold text-gray-300 text-xs uppercase">
+            <div>Local</div><div></div><div>Visitante</div><div>Mi pronóstico</div><div>Acción</div>
+          </div>
+  `;
+  for (const match of gruposData[grupo]) {
+    const matchId = match.id;
+    const predLocal = match.userPred ? match.userPred.pred_local : '';
+    const predVisit = match.userPred ? match.userPred.pred_visitante : '';
+    const isBlocked = match.bloqueado;
+    html += `
+      <div class="match-row" data-match-id="${matchId}">
+        <div class="team"><img class="flag-icon" src="https://flagcdn.com/24x18/${obtenerCodigoPais(match.equipo_local)}.png"> ${match.equipo_local}</div>
+        <div>VS</div>
+        <div class="team">${match.equipo_visitante} <img class="flag-icon" src="https://flagcdn.com/24x18/${obtenerCodigoPais(match.equipo_visitante)}.png"></div>
+        <div class="flex gap-2 justify-center">
+          <input type="number" id="local_${matchId}" value="${predLocal}" placeholder="0" class="prediction-input" ${isBlocked ? 'disabled' : ''}>
+          <span>-</span>
+          <input type="number" id="visit_${matchId}" value="${predVisit}" placeholder="0" class="prediction-input" ${isBlocked ? 'disabled' : ''}>
+        </div>
+        <div>
+          <button class="btn-guardar" onclick="window.savePrediction('${matchId}')" ${isBlocked ? 'disabled' : ''}>Guardar</button>
+        </div>
+      </div>
+      <div class="text-xs text-gray-400 px-2 pb-2">📅 ${match.hora_partido.toDate().toLocaleString('es-CO', { timeZone: 'America/Bogota' })} (Hora Colombia)</div>
+    `;
+  }
+  html += `</div></div></div>`;
+  gruposContainer.innerHTML = html;
+  // Asegurar que el icono del grupo abierto apunte hacia arriba
+  const icon = document.getElementById(`icon-${grupo}`);
+  if (icon) icon.style.transform = 'rotate(180deg)';
+}
+
+window.toggleGrupo = (grupo) => {
+  const body = document.getElementById(`body-${grupo}`);
+  const icon = document.getElementById(`icon-${grupo}`);
+  if (body.classList.contains('open')) {
+    body.classList.remove('open');
+    icon.style.transform = 'rotate(0deg)';
+  } else {
+    body.classList.add('open');
+    icon.style.transform = 'rotate(180deg)';
+  }
+};
+
+// Cargar partidos y predicciones, agrupar y actualizar UI
+async function loadMatchesAndPredictions() {
+  const q = query(collection(db, "matches"), orderBy("hora_partido"));
+  matchesUnsubscribe = onSnapshot(q, async (snapshot) => {
+    let matches = [];
+    for (const matchDoc of snapshot.docs) {
+      const match = { id: matchDoc.id, ...matchDoc.data() };
+      const predQuery = query(collection(db, "predictions"), 
+        where("user_id", "==", currentUser.uid), 
+        where("match_id", "==", match.id));
+      const predSnap = await getDocs(predQuery);
+      match.userPred = predSnap.empty ? null : predSnap.docs[0].data();
+      const now = new Date();
+      match.bloqueado = now >= match.hora_partido.toDate();
+      matches.push(match);
+    }
+    const partidosGrupos = matches.filter(esFaseGrupos);
+    gruposData = agruparPartidos(partidosGrupos);
+    renderGruposTabs();
+    mostrarGrupo(grupoActual);
+    
+    // Actualizar sidebar: próximo partido (el más cercano en el futuro)
+    const ahora = new Date();
+    const proximos = partidosGrupos.filter(m => m.hora_partido.toDate() > ahora).sort((a,b)=> a.hora_partido.toDate()-b.hora_partido.toDate());
+    if (proximos.length) {
+      const p = proximos[0];
+      proxLocalSpan.innerText = p.equipo_local;
+      proxVisitSpan.innerText = p.equipo_visitante;
+      proxFechaSpan.innerText = p.hora_partido.toDate().toLocaleString('es-CO', { timeZone: 'America/Bogota' });
+      verGrupoBtn.onclick = () => {
+        const grupo = equipoGrupo[p.equipo_local];
+        grupoActual = grupo;
+        renderGruposTabs();
+        mostrarGrupo(grupo);
+        document.getElementById(`body-${grupo}`)?.scrollIntoView({ behavior: 'smooth' });
+      };
+    } else {
+      proxLocalSpan.innerText = "---"; proxVisitSpan.innerText = "---"; proxFechaSpan.innerText = "No hay más partidos";
+    }
+  });
+}
+
+window.savePrediction = async (matchId) => {
+  const local = parseInt(document.getElementById(`local_${matchId}`).value) || 0;
+  const visit = parseInt(document.getElementById(`visit_${matchId}`).value) || 0;
+  const matchRef = doc(db, "matches", matchId);
+  const matchSnap = await getDoc(matchRef);
+  if (new Date() >= matchSnap.data().hora_partido.toDate()) {
+    alert("No puedes guardar, el partido ya comenzó.");
+    return;
+  }
+  const existingQuery = query(collection(db, "predictions"), 
+    where("user_id", "==", currentUser.uid), 
+    where("match_id", "==", matchId));
+  const existing = await getDocs(existingQuery);
+  if (existing.empty) {
+    await addDoc(collection(db, "predictions"), {
+      user_id: currentUser.uid,
+      match_id: matchId,
+      pred_local: local,
+      pred_visitante: visit,
+      puntos: 0,
+      bloqueado: false
+    });
+  } else {
+    await updateDoc(doc(db, "predictions", existing.docs[0].id), {
+      pred_local: local,
+      pred_visitante: visit
+    });
+  }
+  alert("✅ Predicción guardada");
+};
+
+// Ranking en tiempo real
+function loadRanking() {
+  const rankingRef = collection(db, "ranking");
+  onSnapshot(query(rankingRef, orderBy("puntos", "desc")), (snapshot) => {
+    let pos = 1;
+    let encontrado = false;
+    snapshot.forEach(doc => {
+      if (doc.data().user_id === currentUser.uid) {
+        currentUserPosicion = pos;
+        currentUserPuntos = doc.data().puntos;
+        miPosicionSpan.innerText = pos + '°';
+        misPuntosSpan.innerText = doc.data().puntos;
+        encontrado = true;
+      }
+      pos++;
+    });
+    if (!encontrado) {
+      miPosicionSpan.innerText = '-';
+      misPuntosSpan.innerText = '0';
+    }
+  });
+}
+
+// ========== AUTENTICACIÓN (igual que antes) ==========
 onAuthStateChanged(auth, async (user) => {
   if (user) {
     currentUser = user;
@@ -43,11 +281,10 @@ onAuthStateChanged(auth, async (user) => {
     userEmailSpan.innerText = user.email;
     authScreen.classList.add("hidden");
     appScreen.classList.remove("hidden");
-    
     if (currentUserRol === "admin") {
       adminPanel.classList.remove("hidden");
       loadAdminMatches();
-      setupUploadButton();  // Configura el botón de carga
+      setupUploadButton();
     } else {
       adminPanel.classList.add("hidden");
     }
@@ -60,7 +297,7 @@ onAuthStateChanged(auth, async (user) => {
   }
 });
 
-// Login
+// Login, registro, logout
 document.getElementById("btnLogin").onclick = async () => {
   const email = document.getElementById("loginEmail").value;
   const pwd = document.getElementById("loginPassword").value;
@@ -70,8 +307,6 @@ document.getElementById("btnLogin").onclick = async () => {
     alert("Error: " + error.message);
   }
 };
-
-// Registro
 document.getElementById("btnRegister").onclick = async () => {
   const name = document.getElementById("registerName").value;
   const email = document.getElementById("registerEmail").value;
@@ -90,121 +325,11 @@ document.getElementById("btnRegister").onclick = async () => {
     alert("Error: " + error.message);
   }
 };
-
-// Logout
 document.getElementById("btnLogout").onclick = async () => {
   await signOut(auth);
 };
 
-// ========== CARGAR PARTIDOS Y PREDICCIONES ==========
-async function loadMatchesAndPredictions() {
-  const q = query(collection(db, "matches"), orderBy("hora_partido"));
-  matchesUnsubscribe = onSnapshot(q, async (snapshot) => {
-    let html = "";
-    for (const matchDoc of snapshot.docs) {
-      const match = { id: matchDoc.id, ...matchDoc.data() };
-      const predQuery = query(collection(db, "predictions"), 
-        where("user_id", "==", currentUser.uid), 
-        where("match_id", "==", match.id));
-      const predSnap = await getDocs(predQuery);
-      let userPred = predSnap.empty ? null : predSnap.docs[0].data();
-
-      const now = new Date();
-      const matchTime = match.hora_partido.toDate();
-      const isBlocked = now >= matchTime;
-
-      // Función para obtener código de país (puedes ampliarla)
-      const getCode = (nombre) => {
-        const paises = {
-          "México": "mx", "Sudáfrica": "za", "Corea del Sur": "kr", "República Checa": "cz",
-          "Canadá": "ca", "Bosnia y Herzegovina": "ba", "Qatar": "qa", "Suiza": "ch",
-          "Brasil": "br", "Marruecos": "ma", "Haití": "ht", "Escocia": "sct",
-          "Estados Unidos": "us", "Paraguay": "py", "Australia": "au", "Turquía": "tr",
-          "Alemania": "de", "Curazao": "cw", "Costa de Marfil": "ci", "Ecuador": "ec",
-          "Países Bajos": "nl", "Japón": "jp", "Suecia": "se", "Túnez": "tn",
-          "España": "es", "Cabo Verde": "cv", "Arabia Saudita": "sa", "Uruguay": "uy",
-          "Bélgica": "be", "Egipto": "eg", "Irán": "ir", "Nueva Zelanda": "nz",
-          "Francia": "fr", "Senegal": "sn", "Noruega": "no", "Irak": "iq",
-          "Argentina": "ar", "Argelia": "dz", "Austria": "at", "Jordania": "jo",
-          "Portugal": "pt", "RD Congo": "cd", "Uzbekistán": "uz", "Colombia": "co",
-          "Inglaterra": "gb-eng", "Croacia": "hr", "Panamá": "pa", "Ghana": "gh"
-        };
-        return paises[nombre] || "unknown";
-      };
-
-      html += `
-        <div class="match-card">
-          <div class="match-teams">
-            <div class="team"><img class="flag" src="https://flagcdn.com/32x24/${getCode(match.equipo_local)}.png"> ${match.equipo_local}</div>
-            <span class="text-xl font-bold">VS</span>
-            <div class="team">${match.equipo_visitante} <img class="flag" src="https://flagcdn.com/32x24/${getCode(match.equipo_visitante)}.png"></div>
-            <span class="estado-badge ${match.estado === 'pendiente' ? 'estado-pendiente' : (match.estado === 'en_juego' ? 'estado-juego' : 'estado-finalizado')}">${match.estado === 'pendiente' ? 'Pendiente' : (match.estado === 'en_juego' ? 'En juego' : 'Finalizado')}</span>
-          </div>
-          <div class="match-score-input">
-            <input type="number" id="local_${match.id}" value="${userPred ? userPred.pred_local : ''}" placeholder="0" min="0" ${isBlocked ? 'disabled' : ''}>
-            <span>-</span>
-            <input type="number" id="visit_${match.id}" value="${userPred ? userPred.pred_visitante : ''}" placeholder="0" min="0" ${isBlocked ? 'disabled' : ''}>
-            <button onclick="window.savePrediction('${match.id}')" ${isBlocked ? 'disabled' : ''}>Guardar</button>
-          </div>
-          ${isBlocked ? '<p class="text-red-400 text-xs mt-1">🔒 Partido bloqueado (ya comenzó)</p>' : ''}
-          <div class="text-xs text-gray-400 mt-2">📅 ${match.hora_partido.toDate().toLocaleString('es-CO', { timeZone: 'America/Bogota' })} (Hora Colombia)</div>
-        </div>
-      `;
-    }
-    matchesContainer.innerHTML = html;
-  });
-}
-
-window.savePrediction = async (matchId) => {
-  const local = parseInt(document.getElementById(`local_${matchId}`).value) || 0;
-  const visit = parseInt(document.getElementById(`visit_${matchId}`).value) || 0;
-  
-  const matchRef = doc(db, "matches", matchId);
-  const matchSnap = await getDoc(matchRef);
-  const match = matchSnap.data();
-  if (new Date() >= match.hora_partido.toDate()) {
-    alert("No puedes guardar, el partido ya comenzó.");
-    return;
-  }
-
-  const existingQuery = query(collection(db, "predictions"), 
-    where("user_id", "==", currentUser.uid), 
-    where("match_id", "==", matchId));
-  const existing = await getDocs(existingQuery);
-  
-  if (existing.empty) {
-    await addDoc(collection(db, "predictions"), {
-      user_id: currentUser.uid,
-      match_id: matchId,
-      pred_local: local,
-      pred_visitante: visit,
-      puntos: 0,
-      bloqueado: false
-    });
-  } else {
-    await updateDoc(doc(db, "predictions", existing.docs[0].id), {
-      pred_local: local,
-      pred_visitante: visit
-    });
-  }
-  alert("✅ Predicción guardada");
-};
-
-// ========== RANKING EN TIEMPO REAL ==========
-function loadRanking() {
-  const rankingRef = collection(db, "ranking");
-  onSnapshot(query(rankingRef, orderBy("puntos", "desc")), (snapshot) => {
-    let html = "";
-    let pos = 1;
-    snapshot.forEach(doc => {
-      const data = doc.data();
-      html += `<div class="ranking-item"><span class="ranking-pos">${pos++}</span> <span>${data.nombre}</span> <span class="font-bold">${data.puntos} pts</span></div>`;
-    });
-    rankingList.innerHTML = html;
-  });
-}
-
-// ========== PANEL ADMIN (cargar resultados) ==========
+// ========== ADMIN ==========
 async function loadAdminMatches() {
   const q = query(collection(db, "matches"), where("estado", "in", ["pendiente", "en_juego"]));
   const snapshot = await getDocs(q);
@@ -231,18 +356,15 @@ window.submitResult = async (matchId) => {
   const local = parseInt(document.getElementById(`res_local_${matchId}`).value);
   const visit = parseInt(document.getElementById(`res_vis_${matchId}`).value);
   if (isNaN(local) || isNaN(visit)) return alert("Ingresa números válidos");
-
   const matchRef = doc(db, "matches", matchId);
   await updateDoc(matchRef, {
     resultado_local: local,
     resultado_visitante: visit,
     estado: "finalizado"
   });
-
   const predictionsSnap = await getDocs(query(collection(db, "predictions"), where("match_id", "==", matchId)));
   const batch = writeBatch(db);
   const usersPuntos = {};
-
   for (const predDoc of predictionsSnap.docs) {
     const pred = predDoc.data();
     const puntos = calcularPuntos({ local: pred.pred_local, visitante: pred.pred_visitante }, { local, visit });
@@ -250,7 +372,6 @@ window.submitResult = async (matchId) => {
     usersPuntos[pred.user_id] = (usersPuntos[pred.user_id] || 0) + puntos;
   }
   await batch.commit();
-
   for (const [uid, suma] of Object.entries(usersPuntos)) {
     const userQuery = await getDocs(query(collection(db, "users"), where("uid", "==", uid)));
     if (!userQuery.empty) {
@@ -294,15 +415,11 @@ async function rebuildRanking() {
   await batch.commit();
 }
 
-// ========== FUNCIÓN PARA CARGAR TODOS LOS PARTIDOS DESDE partidos.js ==========
 async function cargarTodosLosPartidos() {
-  // Primero, opcional: borrar partidos existentes (si quieres limpiar)
   const existingMatches = await getDocs(collection(db, "matches"));
   const batchDelete = writeBatch(db);
   existingMatches.forEach(doc => batchDelete.delete(doc.ref));
   await batchDelete.commit();
-
-  // Insertar los 104 partidos
   for (const p of todosLosPartidos) {
     await addDoc(collection(db, "matches"), {
       equipo_local: p.local,
@@ -313,10 +430,9 @@ async function cargarTodosLosPartidos() {
       resultado_visitante: null
     });
   }
-  console.log("✅ Todos los partidos cargados");
+  console.log("✅ 104 partidos cargados");
 }
 
-// Configurar el botón "Cargar Mundial 2026"
 function setupUploadButton() {
   const btn = document.getElementById("btnCargarPartidos");
   if (!btn) return;
@@ -325,10 +441,20 @@ function setupUploadButton() {
       alert("No eres administrador");
       return;
     }
-    const confirmar = confirm("¿Cargar los 104 partidos del Mundial 2026? Esto eliminará los partidos existentes.");
-    if (!confirmar) return;
-    await cargarTodosLosPartidos();
-    alert("Partidos cargados correctamente. Recarga la página para verlos.");
-    location.reload();
+    if (confirm("¿Cargar los 104 partidos? Se eliminarán los existentes.")) {
+      await cargarTodosLosPartidos();
+      alert("Partidos cargados. Recarga la página.");
+      location.reload();
+    }
   };
+}
+
+// Scroll horizontal de grupos
+if (scrollLeftBtn) {
+  scrollLeftBtn.addEventListener('click', () => {
+    gruposCarousel.scrollBy({ left: -200, behavior: 'smooth' });
+  });
+  scrollRightBtn.addEventListener('click', () => {
+    gruposCarousel.scrollBy({ left: 200, behavior: 'smooth' });
+  });
 }
