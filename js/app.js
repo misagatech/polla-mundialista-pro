@@ -7,6 +7,7 @@ import {
   onAuthStateChanged, signInWithEmailAndPassword, 
   createUserWithEmailAndPassword, signOut 
 } from "https://www.gstatic.com/firebasejs/12.12.0/firebase-auth.js";
+import { todosLosPartidos } from "./partidos.js";
 
 // Elementos DOM
 const authScreen = document.getElementById("authScreen");
@@ -24,14 +25,12 @@ let matchesUnsubscribe = null;
 onAuthStateChanged(auth, async (user) => {
   if (user) {
     currentUser = user;
-    // Obtener rol del usuario desde Firestore
     const usersRef = collection(db, "users");
     const q = query(usersRef, where("email", "==", user.email));
     const snap = await getDocs(q);
     if (!snap.empty) {
       currentUserRol = snap.docs[0].data().rol;
     } else {
-      // Si es la primera vez que inicia sesión (después de registro)
       await addDoc(usersRef, {
         uid: user.uid,
         nombre: user.displayName || user.email.split('@')[0],
@@ -48,7 +47,7 @@ onAuthStateChanged(auth, async (user) => {
     if (currentUserRol === "admin") {
       adminPanel.classList.remove("hidden");
       loadAdminMatches();
-      setupUploadButton();
+      setupUploadButton();  // Configura el botón de carga
     } else {
       adminPanel.classList.add("hidden");
     }
@@ -104,7 +103,6 @@ async function loadMatchesAndPredictions() {
     let html = "";
     for (const matchDoc of snapshot.docs) {
       const match = { id: matchDoc.id, ...matchDoc.data() };
-      // Obtener predicción del usuario actual
       const predQuery = query(collection(db, "predictions"), 
         where("user_id", "==", currentUser.uid), 
         where("match_id", "==", match.id));
@@ -115,7 +113,7 @@ async function loadMatchesAndPredictions() {
       const matchTime = match.hora_partido.toDate();
       const isBlocked = now >= matchTime;
 
-      // Bandera país: intentar obtener código de país (si no, mostrar "🏁")
+      // Función para obtener código de país (puedes ampliarla)
       const getCode = (nombre) => {
         const paises = {
           "México": "mx", "Sudáfrica": "za", "Corea del Sur": "kr", "República Checa": "cz",
@@ -129,8 +127,7 @@ async function loadMatchesAndPredictions() {
           "Francia": "fr", "Senegal": "sn", "Noruega": "no", "Irak": "iq",
           "Argentina": "ar", "Argelia": "dz", "Austria": "at", "Jordania": "jo",
           "Portugal": "pt", "RD Congo": "cd", "Uzbekistán": "uz", "Colombia": "co",
-          "Inglaterra": "gb-eng", "Croacia": "hr", "Panamá": "pa", "Ghana": "gh",
-          "Catar": "qa"
+          "Inglaterra": "gb-eng", "Croacia": "hr", "Panamá": "pa", "Ghana": "gh"
         };
         return paises[nombre] || "unknown";
       };
@@ -158,7 +155,6 @@ async function loadMatchesAndPredictions() {
   });
 }
 
-// Guardar predicción
 window.savePrediction = async (matchId) => {
   const local = parseInt(document.getElementById(`local_${matchId}`).value) || 0;
   const visit = parseInt(document.getElementById(`visit_${matchId}`).value) || 0;
@@ -208,7 +204,7 @@ function loadRanking() {
   });
 }
 
-// ========== PANEL ADMIN ==========
+// ========== PANEL ADMIN (cargar resultados) ==========
 async function loadAdminMatches() {
   const q = query(collection(db, "matches"), where("estado", "in", ["pendiente", "en_juego"]));
   const snapshot = await getDocs(q);
@@ -243,7 +239,6 @@ window.submitResult = async (matchId) => {
     estado: "finalizado"
   });
 
-  // Obtener predicciones de este partido
   const predictionsSnap = await getDocs(query(collection(db, "predictions"), where("match_id", "==", matchId)));
   const batch = writeBatch(db);
   const usersPuntos = {};
@@ -256,7 +251,6 @@ window.submitResult = async (matchId) => {
   }
   await batch.commit();
 
-  // Actualizar puntos totales de los usuarios afectados
   for (const [uid, suma] of Object.entries(usersPuntos)) {
     const userQuery = await getDocs(query(collection(db, "users"), where("uid", "==", uid)));
     if (!userQuery.empty) {
@@ -300,45 +294,41 @@ async function rebuildRanking() {
   await batch.commit();
 }
 
-// ========== BOTÓN PARA CARGAR LOS 104 PARTIDOS (hora Colombia) ==========
-function setupUploadButton() {
-  const btn = document.getElementById("btnCargarPartidos");
-  if (!btn) return;
-  btn.onclick = async () => {
-    if (currentUserRol !== "admin") return;
-    const confirmar = confirm("¿Cargar los 104 partidos del Mundial 2026? (Eliminará los existentes)");
-    if (!confirmar) return;
-
-    // Primero borrar colección matches (opcional)
-    const matchesSnap = await getDocs(collection(db, "matches"));
-    const batch = writeBatch(db);
-    matchesSnap.forEach(doc => batch.delete(doc.ref));
-    await batch.commit();
-
-    // Array de partidos con hora Colombia (UTC-5) convertida a UTC para Firestore
-    // Voy a incluir un array generado a partir de tus datos. 
-    // Por razones de longitud, pondré un ejemplo reducido, pero te entregaré el JSON completo.
-    // Para no alargar, aquí voy a insertar un script que llame a una función que cargará los partidos desde un archivo externo.
-    // Pero como es más práctico, te daré el código completo para pegar en este mismo archivo.
-    await cargarTodosLosPartidos();
-    alert("¡Partidos cargados exitosamente!");
-    location.reload(); // recargar para verlos
-  };
-}
-
-// Esta función contiene el array completo de 104 partidos (generado con las fechas en hora Colombia)
-// La he preparado aparte para que sea legible. La pondré a continuación.
+// ========== FUNCIÓN PARA CARGAR TODOS LOS PARTIDOS DESDE partidos.js ==========
 async function cargarTodosLosPartidos() {
-  const matchesData = [ /* AQUÍ VA EL ARRAY DE 104 PARTIDOS */ ];
-  for (const m of matchesData) {
+  // Primero, opcional: borrar partidos existentes (si quieres limpiar)
+  const existingMatches = await getDocs(collection(db, "matches"));
+  const batchDelete = writeBatch(db);
+  existingMatches.forEach(doc => batchDelete.delete(doc.ref));
+  await batchDelete.commit();
+
+  // Insertar los 104 partidos
+  for (const p of todosLosPartidos) {
     await addDoc(collection(db, "matches"), {
-      equipo_local: m.local,
-      equipo_visitante: m.visitante,
-      hora_partido: new Date(m.fechaUTC), // ya en UTC
+      equipo_local: p.local,
+      equipo_visitante: p.visitante,
+      hora_partido: new Date(p.fechaUTC),
       estado: "pendiente",
       resultado_local: null,
       resultado_visitante: null
     });
-    console.log(`Cargado: ${m.local} vs ${m.visitante}`);
   }
+  console.log("✅ Todos los partidos cargados");
+}
+
+// Configurar el botón "Cargar Mundial 2026"
+function setupUploadButton() {
+  const btn = document.getElementById("btnCargarPartidos");
+  if (!btn) return;
+  btn.onclick = async () => {
+    if (currentUserRol !== "admin") {
+      alert("No eres administrador");
+      return;
+    }
+    const confirmar = confirm("¿Cargar los 104 partidos del Mundial 2026? Esto eliminará los partidos existentes.");
+    if (!confirmar) return;
+    await cargarTodosLosPartidos();
+    alert("Partidos cargados correctamente. Recarga la página para verlos.");
+    location.reload();
+  };
 }
