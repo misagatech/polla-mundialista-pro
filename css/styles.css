@@ -1,33 +1,121 @@
+/* Estilos base */
+* {
+  margin: 0;
+  padding: 0;
+  box-sizing: border-box;
+}
+
 body {
-  font-family: Arial;
-  background: linear-gradient(135deg, #0A1E3F, #081A33);
+  font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+}
+
+/* Tarjetas de partidos */
+.match-card {
+  background: rgba(255, 255, 255, 0.1);
+  backdrop-filter: blur(4px);
+  border-radius: 1rem;
+  padding: 1rem;
+  transition: transform 0.2s;
+  border-left: 4px solid #fbbf24;
+}
+.match-card:hover {
+  transform: scale(1.01);
+  background: rgba(255, 255, 255, 0.15);
+}
+
+.match-teams {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  gap: 0.5rem;
+  flex-wrap: wrap;
+}
+.team {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  font-weight: bold;
+}
+.flag {
+  width: 32px;
+  height: auto;
+  border-radius: 4px;
+}
+.match-score-input {
+  display: flex;
+  gap: 0.5rem;
+  align-items: center;
+  justify-content: center;
+  margin: 0.5rem 0;
+}
+.match-score-input input {
+  width: 60px;
+  padding: 0.5rem;
+  text-align: center;
+  font-size: 1.2rem;
+  background: #0f2a50;
+  border: 1px solid #fbbf24;
   color: white;
-  text-align: center;
+  border-radius: 8px;
 }
-
-header {
-  margin: 20px;
+.match-score-input span {
+  font-size: 1.5rem;
+  font-weight: bold;
 }
-
-.match {
-  background: #0F2A50;
-  margin: 15px auto;
-  padding: 15px;
-  border-radius: 12px;
-  width: 320px;
-}
-
-input {
-  width: 40px;
-  text-align: center;
-  margin: 5px;
-}
-
 button {
-  margin-top: 10px;
-  padding: 5px 10px;
-  background: gold;
+  background: #fbbf24;
+  color: black;
+  font-weight: bold;
   border: none;
-  border-radius: 5px;
+  padding: 0.5rem 1rem;
+  border-radius: 8px;
   cursor: pointer;
+  transition: 0.2s;
+}
+button:hover {
+  background: #f59e0b;
+}
+button:disabled {
+  opacity: 0.5;
+  cursor: not-allowed;
+}
+.estado-badge {
+  display: inline-block;
+  padding: 0.25rem 0.75rem;
+  border-radius: 999px;
+  font-size: 0.75rem;
+  font-weight: bold;
+}
+.estado-pendiente { background: #10b981; }
+.estado-juego { background: #f59e0b; }
+.estado-finalizado { background: #ef4444; }
+
+/* Ranking */
+.ranking-item {
+  display: flex;
+  justify-content: space-between;
+  padding: 0.5rem;
+  border-bottom: 1px solid rgba(255,255,255,0.2);
+}
+.ranking-pos {
+  font-weight: bold;
+  color: #fbbf24;
+}
+
+/* Admin panel */
+.admin-match {
+  background: rgba(0,0,0,0.5);
+  padding: 0.75rem;
+  border-radius: 0.75rem;
+  display: flex;
+  flex-wrap: wrap;
+  justify-content: space-between;
+  align-items: center;
+  gap: 0.5rem;
+}
+.admin-match input {
+  width: 70px;
+  background: #1e3a5f;
+  color: white;
+  border: 1px solid #fbbf24;
 }
