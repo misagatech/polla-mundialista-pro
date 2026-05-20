@@ -821,99 +821,158 @@ body{
   cursor:pointer;
 }
 /* =========================================
-ADMIN PREMIUM
+ADMIN PANEL PREMIUM
 ========================================= */
 
-#adminMatchesList{
-  display:grid;
-  grid-template-columns:repeat(2,1fr);
-  gap:18px;
+.admin-title{
+  font-size: 28px;
+  font-weight: 800;
+  color: #facc15;
+  margin-bottom: 25px;
 }
 
-.admin-match-card{
-  background:rgba(15,23,42,.85);
-  border:1px solid rgba(255,255,255,.08);
-  border-radius:22px;
-  padding:16px;
-  display:flex;
-  align-items:center;
-  justify-content:space-between;
-  gap:14px;
-  backdrop-filter:blur(10px);
-  transition:.3s;
+.admin-group{
+  margin-bottom: 35px;
 }
 
-.admin-match-card:hover{
-  transform:translateY(-3px);
-  border-color:#3b82f6;
-  box-shadow:0 0 25px rgba(59,130,246,.25);
+.admin-group-title{
+  font-size: 18px;
+  font-weight: 700;
+  color: #fde047;
+  margin-bottom: 15px;
+}
+
+/* GRID 4 COLUMNAS */
+
+.admin-grid{
+  display: grid;
+  grid-template-columns: repeat(4, 1fr);
+  gap: 14px;
+}
+
+/* CARD */
+
+.admin-card{
+  background: rgba(15,23,42,0.95);
+  border: 1px solid rgba(255,255,255,0.08);
+  border-radius: 16px;
+  padding: 12px;
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+  transition: 0.3s;
+}
+
+.admin-card:hover{
+  transform: translateY(-2px);
+  border-color: #facc15;
+}
+
+/* TEAMS */
+
+.admin-teams{
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
 }
 
 .admin-team{
-  display:flex;
-  align-items:center;
-  gap:10px;
-  min-width:140px;
-}
-
-.admin-team span{
-  color:white;
-  font-size:14px;
-  font-weight:600;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 5px;
+  color: white;
+  font-size: 13px;
+  font-weight: 700;
 }
 
 .flag-admin{
-  width:34px;
-  height:24px;
-  object-fit:cover;
-  border-radius:4px;
+  width: 34px;
+  height: 24px;
+  object-fit: cover;
+  border-radius: 4px;
 }
 
+.admin-vs{
+  color: #facc15;
+  font-size: 12px;
+  font-weight: 700;
+}
+
+/* SCORE */
+
 .admin-score{
-  display:flex;
-  align-items:center;
-  gap:8px;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  gap: 8px;
 }
 
 .admin-input{
-  width:55px;
-  height:45px;
-  border:none;
-  outline:none;
-  border-radius:12px;
-  background:#132544;
-  color:white;
-  font-size:18px;
-  font-weight:700;
-  text-align:center;
+  width: 45px;
+  height: 40px;
+  text-align: center;
+  border-radius: 10px;
+  border: none;
+  background: #1e293b;
+  color: white;
+  font-size: 16px;
+  font-weight: bold;
 }
 
-.admin-save-btn{
-  background:linear-gradient(135deg,#22c55e,#16a34a);
-  border:none;
-  padding:12px 18px;
-  border-radius:14px;
-  color:white;
-  font-weight:700;
-  cursor:pointer;
-  transition:.3s;
+/* BOTÓN */
+
+.admin-btn{
+  width: 100%;
+  background: linear-gradient(90deg,#eab308,#facc15);
+  color: black;
+  border: none;
+  border-radius: 10px;
+  padding: 9px;
+  font-weight: 700;
+  cursor: pointer;
+  transition: 0.3s;
 }
 
-.admin-save-btn:hover{
-  transform:scale(1.05);
+.admin-btn:hover{
+  transform: scale(1.03);
+}
+
+/* =========================================
+BOTONES DE GRUPOS PEQUEÑOS
+========================================= */
+
+.grupo-tab{
+  padding: 8px 14px !important;
+  font-size: 13px !important;
+  border-radius: 10px;
+}
+/* TABLET */
+
+@media(max-width: 1100px){
+
+  .admin-grid{
+    grid-template-columns: repeat(3, 1fr);
+  }
+
 }
 
 /* MOBILE */
 
-@media(max-width:900px){
+@media(max-width: 700px){
 
-  #adminMatchesList{
-    grid-template-columns:1fr;
+  .admin-grid{
+    grid-template-columns: repeat(2, 1fr);
   }
 
-  .admin-match-card{
-    flex-direction:column;
-    align-items:center;
+}
+
+/* MOBILE PEQUEÑO */
+
+@media(max-width: 480px){
+
+  .admin-grid{
+    grid-template-columns: 1fr;
   }
 
 }

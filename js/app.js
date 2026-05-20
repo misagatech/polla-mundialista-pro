@@ -207,7 +207,73 @@ function obtenerCodigoPais(nombre) {
   return paises[nombre] || "un";
 
 }
+// ======================================================
+// CÓDIGOS FIFA
+// ======================================================
 
+const fifaCodes = {
+
+  "México": "MEX",
+  "Sudáfrica": "RSA",
+  "Corea del Sur": "KOR",
+  "República Checa": "CZE",
+
+  "Canadá": "CAN",
+  "Bosnia y Herzegovina": "BIH",
+  "Qatar": "QAT",
+  "Suiza": "SUI",
+
+  "Brasil": "BRA",
+  "Marruecos": "MAR",
+  "Haití": "HAI",
+  "Escocia": "SCO",
+
+  "Estados Unidos": "USA",
+  "Paraguay": "PAR",
+  "Australia": "AUS",
+  "Turquía": "TUR",
+
+  "Alemania": "GER",
+  "Curazao": "CUW",
+  "Costa de Marfil": "CIV",
+  "Ecuador": "ECU",
+
+  "Países Bajos": "NED",
+  "Japón": "JPN",
+  "Suecia": "SWE",
+  "Túnez": "TUN",
+
+  "Bélgica": "BEL",
+  "Egipto": "EGY",
+  "Irán": "IRN",
+  "Nueva Zelanda": "NZL",
+
+  "España": "ESP",
+  "Cabo Verde": "CPV",
+  "Arabia Saudita": "KSA",
+  "Uruguay": "URU",
+
+  "Francia": "FRA",
+  "Senegal": "SEN",
+  "Noruega": "NOR",
+  "Irak": "IRQ",
+
+  "Argentina": "ARG",
+  "Argelia": "ALG",
+  "Austria": "AUT",
+  "Jordania": "JOR",
+
+  "Portugal": "POR",
+  "RD Congo": "COD",
+  "Uzbekistán": "UZB",
+  "Colombia": "COL",
+
+  "Inglaterra": "ENG",
+  "Croacia": "CRO",
+  "Panamá": "PAN",
+  "Ghana": "GHA"
+
+};
 
 // ======================================================
 // FASES
@@ -746,74 +812,125 @@ async function loadAdminMatches() {
 
   const snapshot = await getDocs(q);
 
-  let html = `
-  <h3 class="font-bold mb-4 text-yellow-300">
-    📋 Cargar Resultados
-  </h3>
-
-  <div class="admin-grid">
-`;
+  const partidosPorGrupo = {};
 
   snapshot.forEach(docSnap => {
 
-  const match = docSnap.data();
+    const match = {
+      id: docSnap.id,
+      ...docSnap.data()
+    };
 
-html += `
-  <div class="admin-match-card">
+    const grupo = match.grupo || "OTROS";
 
-    <div class="admin-teams">
+    if (!partidosPorGrupo[grupo]) {
+      partidosPorGrupo[grupo] = [];
+    }
 
-      <div class="admin-team">
-        <img
-          class="flag-icon"
-          src="https://flagcdn.com/w40/${obtenerCodigoPais(match.equipo_local)}.png"
-        >
-        <span>${match.equipo_local}</span>
-      </div>
+    partidosPorGrupo[grupo].push(match);
 
-      <div class="admin-vs">VS</div>
+  });
 
-      <div class="admin-team">
-        <img
-          class="flag-icon"
-          src="https://flagcdn.com/w40/${obtenerCodigoPais(match.equipo_visitante)}.png"
-        >
-        <span>${match.equipo_visitante}</span>
-      </div>
-
+  let html = `
+    <div class="admin-title">
+      ⚽ Panel de Administración
     </div>
+  `;
 
-    <div class="admin-score">
+  Object.keys(partidosPorGrupo)
+    .sort()
+    .forEach(grupo => {
 
-      <input
-        type="number"
-        id="res_local_${docSnap.id}"
-        placeholder="0"
-        class="admin-input"
-      >
+      html += `
+        <div class="admin-group">
 
-      <span>-</span>
+          <div class="admin-group-title">
+            GRUPO ${grupo}
+          </div>
 
-      <input
-        type="number"
-        id="res_vis_${docSnap.id}"
-        placeholder="0"
-        class="admin-input"
-      >
+          <div class="admin-grid">
+      `;
 
-    </div>
+      partidosPorGrupo[grupo].forEach(match => {
 
-    <button
-      onclick="window.submitResult('${docSnap.id}')"
-      class="admin-save-btn"
-    >
-      Guardar
-    </button>
+        html += `
 
-  </div>
-`;
+          <div class="admin-card">
 
-});
+            <div class="admin-teams">
+
+              <div class="admin-team">
+
+                <img
+                  class="flag-admin"
+                  src="https://flagcdn.com/w40/${obtenerCodigoPais(match.equipo_local)}.png"
+                >
+
+                <span>
+                  ${fifaCodes[match.equipo_local] || match.equipo_local}
+                </span>
+
+              </div>
+
+              <div class="admin-vs">
+                VS
+              </div>
+
+              <div class="admin-team">
+
+                <img
+                  class="flag-admin"
+                  src="https://flagcdn.com/w40/${obtenerCodigoPais(match.equipo_visitante)}.png"
+                >
+
+                <span>
+                  ${fifaCodes[match.equipo_visitante] || match.equipo_visitante}
+                </span>
+
+              </div>
+
+            </div>
+
+            <div class="admin-score">
+
+              <input
+                type="number"
+                id="res_local_${match.id}"
+                placeholder="0"
+                class="admin-input"
+              >
+
+              <span>-</span>
+
+              <input
+                type="number"
+                id="res_vis_${match.id}"
+                placeholder="0"
+                class="admin-input"
+              >
+
+            </div>
+
+            <button
+              class="admin-btn"
+              onclick="window.submitResult('${match.id}')"
+            >
+              Guardar
+            </button>
+
+          </div>
+
+        `;
+
+      });
+
+      html += `
+          </div>
+        </div>
+      `;
+
+    });
+
   document.getElementById("adminMatchesList").innerHTML = html;
 
 }
