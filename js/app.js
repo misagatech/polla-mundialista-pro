@@ -746,50 +746,74 @@ async function loadAdminMatches() {
 
   const snapshot = await getDocs(q);
 
-  let html = "<h3>📋 Cargar Resultados</h3>";
+  let html = `
+  <h3 class="font-bold mb-4 text-yellow-300">
+    📋 Cargar Resultados
+  </h3>
+
+  <div class="admin-grid">
+`;
 
   snapshot.forEach(docSnap => {
 
-    const match = docSnap.data();
+  const match = docSnap.data();
 
-    html += `
+html += `
+  <div class="admin-match-card">
 
-      <div class="admin-match">
+    <div class="admin-teams">
 
-        <span>
-          ${match.equipo_local} vs ${match.equipo_visitante}
-        </span>
-
-        <div>
-
-          <input
-            type="number"
-            id="res_local_${docSnap.id}"
-            placeholder="0"
-          >
-
-          -
-
-          <input
-            type="number"
-            id="res_vis_${docSnap.id}"
-            placeholder="0"
-          >
-
-          <button
-            onclick="window.submitResult('${docSnap.id}')"
-          >
-            Guardar
-          </button>
-
-        </div>
-
+      <div class="admin-team">
+        <img
+          class="flag-icon"
+          src="https://flagcdn.com/w40/${obtenerCodigoPais(match.equipo_local)}.png"
+        >
+        <span>${match.equipo_local}</span>
       </div>
 
-    `;
+      <div class="admin-vs">VS</div>
 
-  });
+      <div class="admin-team">
+        <img
+          class="flag-icon"
+          src="https://flagcdn.com/w40/${obtenerCodigoPais(match.equipo_visitante)}.png"
+        >
+        <span>${match.equipo_visitante}</span>
+      </div>
 
+    </div>
+
+    <div class="admin-score">
+
+      <input
+        type="number"
+        id="res_local_${docSnap.id}"
+        placeholder="0"
+        class="admin-input"
+      >
+
+      <span>-</span>
+
+      <input
+        type="number"
+        id="res_vis_${docSnap.id}"
+        placeholder="0"
+        class="admin-input"
+      >
+
+    </div>
+
+    <button
+      onclick="window.submitResult('${docSnap.id}')"
+      class="admin-save-btn"
+    >
+      Guardar
+    </button>
+
+  </div>
+`;
+
+});
   document.getElementById("adminMatchesList").innerHTML = html;
 
 }
