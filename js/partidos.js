@@ -59,7 +59,7 @@ export const todosLosPartidos = [
   {
     fase: "grupos",
     grupo: "B",
-    local: "Catar",
+    local: "Qatar",
     visitante: "Suiza",
     fechaUTC: "2026-06-13T20:00:00Z"
   },
@@ -74,7 +74,7 @@ export const todosLosPartidos = [
     fase: "grupos",
     grupo: "B",
     local: "Canadá",
-    visitante: "Catar",
+    visitante: "Qatar",
     fechaUTC: "2026-06-18T23:00:00Z"
   },
   {
@@ -88,7 +88,7 @@ export const todosLosPartidos = [
     fase: "grupos",
     grupo: "B",
     local: "Bosnia y Herzegovina",
-    visitante: "Catar",
+    visitante: "Qatar",
     fechaUTC: "2026-06-24T20:00:00Z"
   },
 

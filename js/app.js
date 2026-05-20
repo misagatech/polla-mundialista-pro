@@ -34,6 +34,14 @@ const adminPanel = document.getElementById("adminPanel");
 
 const gruposContainer = document.getElementById("gruposContainer");
 
+const gruposCarousel = document.getElementById("gruposCarousel");
+
+const scrollGruposLeft =
+  document.getElementById("scrollGruposLeft");
+
+const scrollGruposRight =
+  document.getElementById("scrollGruposRight");
+
 const userEmailSpan = document.getElementById("userEmail");
 
 const miPosicionSpan = document.getElementById("miPosicion");
@@ -54,7 +62,7 @@ let currentUserRol = null;
 let matchesUnsubscribe = null;
 
 let gruposData = {};
-
+let grupoActivo = "A";
 
 // ======================================================
 // BANDERAS
@@ -250,118 +258,182 @@ function mostrarTodosLosGrupos() {
 
   const grupos = Object.keys(gruposData).sort();
 
-  let html = "";
+  // ======================================================
+  // CREAR BOTONES DEL CARRUSEL
+  // ======================================================
+
+  let tabsHTML = "";
 
   grupos.forEach(grupo => {
 
-    html += `
-      <div class="grupo-card">
-
-        <div class="grupo-header">
-          <h3 class="text-xl font-bold text-yellow-300">
-            GRUPO ${grupo}
-          </h3>
-        </div>
-
-        <div class="matches-grid">
+    tabsHTML += `
+      <button
+        class="grupo-tab ${grupo === grupoActivo ? "active" : ""}"
+        onclick="window.cambiarGrupo('${grupo}')"
+      >
+        Grupo ${grupo}
+      </button>
     `;
 
-    gruposData[grupo].forEach(match => {
+  });
 
-      const matchId = match.id;
+  gruposCarousel.innerHTML = tabsHTML;
 
-      const predLocal = match.userPred
-        ? match.userPred.pred_local
-        : "";
+  // ======================================================
+  // MOSTRAR SOLO GRUPO ACTIVO
+  // ======================================================
 
-      const predVisit = match.userPred
-        ? match.userPred.pred_visitante
-        : "";
+  let html = "";
 
-      const isBlocked = match.bloqueado;
+  const partidosGrupo =
+    gruposData[grupoActivo] || [];
 
-      html += `
-        <div class="match-card">
+  html += `
+    <div class="grupo-card">
 
-          <div class="match-teams">
+      <div class="grupo-header">
 
-            <div class="team-row">
-              <img
-                class="flag-icon"
-                src="https://flagcdn.com/w40/${obtenerCodigoPais(match.equipo_local)}.png"
-              >
+        <h3 class="text-xl font-bold text-yellow-300">
+          GRUPO ${grupoActivo}
+        </h3>
 
-              <span>${match.equipo_local}</span>
-            </div>
+      </div>
 
-            <div class="vs-text">VS</div>
+      <div class="matches-grid">
+  `;
 
-            <div class="team-row">
-              <img
-                class="flag-icon"
-                src="https://flagcdn.com/w40/${obtenerCodigoPais(match.equipo_visitante)}.png"
-              >
+  partidosGrupo.forEach(match => {
 
-              <span>${match.equipo_visitante}</span>
-            </div>
+    const matchId = match.id;
 
-          </div>
+    const predLocal = match.userPred
+      ? match.userPred.pred_local
+      : "";
 
-          <div class="prediction-area">
+    const predVisit = match.userPred
+      ? match.userPred.pred_visitante
+      : "";
 
-            <input
-              type="number"
-              id="local_${matchId}"
-              value="${predLocal}"
-              placeholder="0"
-              class="prediction-input"
-              ${isBlocked ? "disabled" : ""}
-            >
-
-            <span class="score-separator">-</span>
-
-            <input
-              type="number"
-              id="visit_${matchId}"
-              value="${predVisit}"
-              placeholder="0"
-              class="prediction-input"
-              ${isBlocked ? "disabled" : ""}
-            >
-
-          </div>
-
-          <button
-            class="btn-guardar"
-            onclick="window.savePrediction('${matchId}')"
-            ${isBlocked ? "disabled" : ""}
-          >
-            Guardar
-          </button>
-
-          <div class="match-date">
-            📅 ${match.hora_partido.toDate().toLocaleString("es-CO", {
-              timeZone: "America/Bogota"
-            })}
-          </div>
-
-        </div>
-      `;
-
-    });
+    const isBlocked = match.bloqueado;
 
     html += `
+      <div class="match-card">
+
+        <div class="match-teams">
+
+          <div class="team-row">
+
+            <img
+              class="flag-icon"
+              src="https://flagcdn.com/w40/${obtenerCodigoPais(match.equipo_local)}.png"
+            >
+
+            <span>${match.equipo_local}</span>
+
+          </div>
+
+          <div class="vs-text">
+            VS
+          </div>
+
+          <div class="team-row">
+
+            <img
+              class="flag-icon"
+              src="https://flagcdn.com/w40/${obtenerCodigoPais(match.equipo_visitante)}.png"
+            >
+
+            <span>${match.equipo_visitante}</span>
+
+          </div>
+
         </div>
+
+        <div class="prediction-area">
+
+          <input
+            type="number"
+            id="local_${matchId}"
+            value="${predLocal}"
+            placeholder="0"
+            class="prediction-input"
+            ${isBlocked ? "disabled" : ""}
+          >
+
+          <span class="score-separator">-</span>
+
+          <input
+            type="number"
+            id="visit_${matchId}"
+            value="${predVisit}"
+            placeholder="0"
+            class="prediction-input"
+            ${isBlocked ? "disabled" : ""}
+          >
+
+        </div>
+
+        <button
+          class="btn-guardar"
+          onclick="window.savePrediction('${matchId}')"
+          ${isBlocked ? "disabled" : ""}
+        >
+          Guardar
+        </button>
+
+        <div class="match-date">
+
+          📅 ${match.hora_partido.toDate().toLocaleString("es-CO", {
+            timeZone: "America/Bogota"
+          })}
+
+        </div>
+
       </div>
     `;
 
   });
 
+  html += `
+      </div>
+    </div>
+  `;
+
   gruposContainer.innerHTML = html;
 
 }
+// ======================================================
+// CAMBIAR GRUPO
+// ======================================================
 
+window.cambiarGrupo = (grupo) => {
 
+  grupoActivo = grupo;
+
+  mostrarTodosLosGrupos();
+
+};
+// ======================================================
+// SCROLL CARRUSEL
+// ======================================================
+
+scrollGruposLeft?.addEventListener("click", () => {
+
+  gruposCarousel.scrollBy({
+    left: -300,
+    behavior: "smooth"
+  });
+
+});
+
+scrollGruposRight?.addEventListener("click", () => {
+
+  gruposCarousel.scrollBy({
+    left: 300,
+    behavior: "smooth"
+  });
+
+});
 // ======================================================
 // CARGAR PARTIDOS
 // ======================================================
