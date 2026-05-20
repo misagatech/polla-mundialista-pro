@@ -10,7 +10,6 @@ import {
   doc,
   onSnapshot,
   orderBy,
-  getDoc,
   writeBatch
 } from "https://www.gstatic.com/firebasejs/12.12.0/firebase-firestore.js";
 
@@ -34,7 +33,6 @@ const appScreen = document.getElementById("appScreen");
 const adminPanel = document.getElementById("adminPanel");
 
 const gruposContainer = document.getElementById("gruposContainer");
-const gruposCarousel = document.getElementById("gruposCarousel");
 
 const userEmailSpan = document.getElementById("userEmail");
 
@@ -44,11 +42,6 @@ const misPuntosSpan = document.getElementById("misPuntos");
 const proxLocalSpan = document.getElementById("proxLocal");
 const proxVisitSpan = document.getElementById("proxVisit");
 const proxFechaSpan = document.getElementById("proxFecha");
-
-const verGrupoBtn = document.getElementById("verGrupoBtn");
-
-const scrollLeftBtn = document.getElementById("scrollGruposLeft");
-const scrollRightBtn = document.getElementById("scrollGruposRight");
 
 
 // ======================================================
@@ -61,77 +54,6 @@ let currentUserRol = null;
 let matchesUnsubscribe = null;
 
 let gruposData = {};
-
-let grupoActual = "A";
-
-
-// ======================================================
-// GRUPOS
-// ======================================================
-
-const equipoGrupo = {
-
-  "México": "A",
-  "Sudáfrica": "A",
-  "Corea del Sur": "A",
-  "República Checa": "A",
-
-  "Canadá": "B",
-  "Bosnia y Herzegovina": "B",
-  "Qatar": "B",
-  "Suiza": "B",
-
-  "Brasil": "C",
-  "Marruecos": "C",
-  "Haití": "C",
-  "Escocia": "C",
-
-  "Estados Unidos": "D",
-  "Paraguay": "D",
-  "Australia": "D",
-  "Turquía": "D",
-
-  "Alemania": "E",
-  "Curazao": "E",
-  "Costa de Marfil": "E",
-  "Ecuador": "E",
-
-  "Países Bajos": "F",
-  "Japón": "F",
-  "Suecia": "F",
-  "Túnez": "F",
-
-  "Bélgica": "G",
-  "Egipto": "G",
-  "Irán": "G",
-  "Nueva Zelanda": "G",
-
-  "España": "H",
-  "Cabo Verde": "H",
-  "Arabia Saudita": "H",
-  "Uruguay": "H",
-
-  "Francia": "I",
-  "Senegal": "I",
-  "Noruega": "I",
-  "Irak": "I",
-
-  "Argentina": "J",
-  "Argelia": "J",
-  "Austria": "J",
-  "Jordania": "J",
-
-  "Portugal": "K",
-  "RD Congo": "K",
-  "Uzbekistán": "K",
-  "Colombia": "K",
-
-  "Inglaterra": "L",
-  "Croacia": "L",
-  "Panamá": "L",
-  "Ghana": "L"
-
-};
 
 
 // ======================================================
@@ -172,15 +94,15 @@ function obtenerCodigoPais(nombre) {
     "Suecia": "se",
     "Túnez": "tn",
 
-    "España": "es",
-    "Cabo Verde": "cv",
-    "Arabia Saudita": "sa",
-    "Uruguay": "uy",
-
     "Bélgica": "be",
     "Egipto": "eg",
     "Irán": "ir",
     "Nueva Zelanda": "nz",
+
+    "España": "es",
+    "Cabo Verde": "cv",
+    "Arabia Saudita": "sa",
+    "Uruguay": "uy",
 
     "Francia": "fr",
     "Senegal": "sn",
@@ -207,6 +129,8 @@ function obtenerCodigoPais(nombre) {
   return paises[nombre] || "un";
 
 }
+
+
 // ======================================================
 // CÓDIGOS FIFA
 // ======================================================
@@ -275,8 +199,9 @@ const fifaCodes = {
 
 };
 
+
 // ======================================================
-// FASES
+// FASE GRUPOS
 // ======================================================
 
 function esFaseGrupos(match) {
@@ -292,7 +217,7 @@ function agruparPartidos(partidos) {
 
   const grupos = {};
 
-  for (const match of partidos) {
+  partidos.forEach(match => {
 
     const grupo = match.grupo;
 
@@ -302,7 +227,7 @@ function agruparPartidos(partidos) {
 
     grupos[grupo].push(match);
 
-  }
+  });
 
   for (const g in grupos) {
 
@@ -318,10 +243,10 @@ function agruparPartidos(partidos) {
 
 
 // ======================================================
-// TABS DE GRUPOS
+// MOSTRAR TODOS LOS GRUPOS
 // ======================================================
 
-function renderGruposTabs() {
+function mostrarTodosLosGrupos() {
 
   const grupos = Object.keys(gruposData).sort();
 
@@ -330,154 +255,112 @@ function renderGruposTabs() {
   grupos.forEach(grupo => {
 
     html += `
-      <button 
-        class="grupo-tab ${grupo === grupoActual ? "active" : ""}" 
-        data-grupo="${grupo}">
-        Grupo ${grupo}
-      </button>
+      <div class="grupo-card">
+
+        <div class="grupo-header">
+          <h3 class="text-xl font-bold text-yellow-300">
+            GRUPO ${grupo}
+          </h3>
+        </div>
+
+        <div class="matches-grid">
     `;
 
-  });
+    gruposData[grupo].forEach(match => {
 
-  gruposCarousel.innerHTML = html;
+      const matchId = match.id;
 
-  document.querySelectorAll(".grupo-tab").forEach(btn => {
+      const predLocal = match.userPred
+        ? match.userPred.pred_local
+        : "";
 
-    btn.addEventListener("click", () => {
+      const predVisit = match.userPred
+        ? match.userPred.pred_visitante
+        : "";
 
-      grupoActual = btn.dataset.grupo;
+      const isBlocked = match.bloqueado;
 
-      renderGruposTabs();
+      html += `
+        <div class="match-card">
 
-      mostrarGrupo(grupoActual);
+          <div class="match-teams">
+
+            <div class="team-row">
+              <img
+                class="flag-icon"
+                src="https://flagcdn.com/w40/${obtenerCodigoPais(match.equipo_local)}.png"
+              >
+
+              <span>${match.equipo_local}</span>
+            </div>
+
+            <div class="vs-text">VS</div>
+
+            <div class="team-row">
+              <img
+                class="flag-icon"
+                src="https://flagcdn.com/w40/${obtenerCodigoPais(match.equipo_visitante)}.png"
+              >
+
+              <span>${match.equipo_visitante}</span>
+            </div>
+
+          </div>
+
+          <div class="prediction-area">
+
+            <input
+              type="number"
+              id="local_${matchId}"
+              value="${predLocal}"
+              placeholder="0"
+              class="prediction-input"
+              ${isBlocked ? "disabled" : ""}
+            >
+
+            <span class="score-separator">-</span>
+
+            <input
+              type="number"
+              id="visit_${matchId}"
+              value="${predVisit}"
+              placeholder="0"
+              class="prediction-input"
+              ${isBlocked ? "disabled" : ""}
+            >
+
+          </div>
+
+          <button
+            class="btn-guardar"
+            onclick="window.savePrediction('${matchId}')"
+            ${isBlocked ? "disabled" : ""}
+          >
+            Guardar
+          </button>
+
+          <div class="match-date">
+            📅 ${match.hora_partido.toDate().toLocaleString("es-CO", {
+              timeZone: "America/Bogota"
+            })}
+          </div>
+
+        </div>
+      `;
 
     });
 
-  });
-
-}
-
-
-// ======================================================
-// MOSTRAR GRUPO
-// ======================================================
-
-function mostrarGrupo(grupo) {
-  if (!gruposData[grupo]) return;
-
-  let html = `
-    <div class="grupo-card">
-      <div class="grupo-header" onclick="toggleGrupo('${grupo}')">
-        <h3 class="text-xl font-bold text-yellow-300">
-          GRUPO ${grupo}
-        </h3>
-
-        <i class="fas fa-chevron-down text-yellow-400 transition-transform"
-           id="icon-${grupo}">
-        </i>
-      </div>
-
-      <div class="grupo-body open" id="body-${grupo}">
-        <div class="matches-grid">
-  `;
-
-  for (const match of gruposData[grupo]) {
-
-    const matchId = match.id;
-
-    const predLocal = match.userPred
-      ? match.userPred.pred_local
-      : '';
-
-    const predVisit = match.userPred
-      ? match.userPred.pred_visitante
-      : '';
-
-    const isBlocked = match.bloqueado;
-
     html += `
-      <div class="match-card">
-
-        <div class="match-teams">
-
-          <div class="team-row">
-            <img
-              class="flag-icon"
-              src="https://flagcdn.com/w40/${obtenerCodigoPais(match.equipo_local)}.png"
-            >
-
-            <span>${match.equipo_local}</span>
-          </div>
-
-          <div class="vs-text">VS</div>
-
-          <div class="team-row">
-            <img
-              class="flag-icon"
-              src="https://flagcdn.com/w40/${obtenerCodigoPais(match.equipo_visitante)}.png"
-            >
-
-            <span>${match.equipo_visitante}</span>
-          </div>
-
         </div>
-
-        <div class="prediction-area">
-
-          <input
-            type="number"
-            id="local_${matchId}"
-            value="${predLocal}"
-            placeholder="0"
-            class="prediction-input"
-            ${isBlocked ? 'disabled' : ''}
-          >
-
-          <span class="score-separator">-</span>
-
-          <input
-            type="number"
-            id="visit_${matchId}"
-            value="${predVisit}"
-            placeholder="0"
-            class="prediction-input"
-            ${isBlocked ? 'disabled' : ''}
-          >
-
-        </div>
-
-        <button
-          class="btn-guardar"
-          onclick="window.savePrediction('${matchId}')"
-          ${isBlocked ? 'disabled' : ''}
-        >
-          Guardar
-        </button>
-
-        <div class="match-date">
-          📅 ${match.hora_partido.toDate().toLocaleString('es-CO', {
-      timeZone: 'America/Bogota'
-    })}
-        </div>
-
       </div>
     `;
-  }
 
-  html += `
-        </div>
-      </div>
-    </div>
-  `;
+  });
 
   gruposContainer.innerHTML = html;
 
-  const icon = document.getElementById(`icon-${grupo}`);
-
-  if (icon) {
-    icon.style.transform = 'rotate(180deg)';
-  }
 }
+
 
 // ======================================================
 // CARGAR PARTIDOS
@@ -513,7 +396,8 @@ async function loadMatchesAndPredictions() {
         ? null
         : predSnap.docs[0].data();
 
-      match.bloqueado = new Date() >= match.hora_partido.toDate();
+      match.bloqueado =
+        new Date() >= match.hora_partido.toDate();
 
       matches.push(match);
 
@@ -523,9 +407,7 @@ async function loadMatchesAndPredictions() {
 
     gruposData = agruparPartidos(partidosGrupos);
 
-    renderGruposTabs();
-
-    mostrarGrupo(grupoActual);
+    mostrarTodosLosGrupos();
 
     // Próximo partido
     const ahora = new Date();
@@ -729,12 +611,19 @@ onAuthStateChanged(auth, async (user) => {
 
 document.getElementById("btnLogin").onclick = async () => {
 
-  const email = document.getElementById("loginEmail").value;
-  const pwd = document.getElementById("loginPassword").value;
+  const email =
+    document.getElementById("loginEmail").value;
+
+  const pwd =
+    document.getElementById("loginPassword").value;
 
   try {
 
-    await signInWithEmailAndPassword(auth, email, pwd);
+    await signInWithEmailAndPassword(
+      auth,
+      email,
+      pwd
+    );
 
   } catch (error) {
 
@@ -751,19 +640,23 @@ document.getElementById("btnLogin").onclick = async () => {
 
 document.getElementById("btnRegister").onclick = async () => {
 
-  const name = document.getElementById("registerName").value;
+  const name =
+    document.getElementById("registerName").value;
 
-  const email = document.getElementById("registerEmail").value;
+  const email =
+    document.getElementById("registerEmail").value;
 
-  const pwd = document.getElementById("registerPassword").value;
+  const pwd =
+    document.getElementById("registerPassword").value;
 
   try {
 
-    const cred = await createUserWithEmailAndPassword(
-      auth,
-      email,
-      pwd
-    );
+    const cred =
+      await createUserWithEmailAndPassword(
+        auth,
+        email,
+        pwd
+      );
 
     await addDoc(collection(db, "users"), {
 
@@ -831,7 +724,7 @@ async function loadAdminMatches() {
 
   });
 
-  let html = '';
+  let html = "";
 
   Object.keys(partidosPorGrupo)
     .sort()
@@ -850,7 +743,6 @@ async function loadAdminMatches() {
       partidosPorGrupo[grupo].forEach(match => {
 
         html += `
-
           <div class="admin-card">
 
             <div class="admin-teams">
@@ -915,7 +807,6 @@ async function loadAdminMatches() {
             </button>
 
           </div>
-
         `;
 
       });
@@ -1011,12 +902,13 @@ async function cargarTodosLosPartidos() {
 
 
 // ======================================================
-// BOTÓN ADMIN CARGAR
+// BOTÓN ADMIN
 // ======================================================
 
 function setupUploadButton() {
 
-  const btn = document.getElementById("btnCargarPartidos");
+  const btn =
+    document.getElementById("btnCargarPartidos");
 
   if (!btn) return;
 
@@ -1033,36 +925,5 @@ function setupUploadButton() {
     }
 
   };
-
-}
-
-
-// ======================================================
-// SCROLL GRUPOS
-// ======================================================
-
-if (scrollLeftBtn) {
-
-  scrollLeftBtn.addEventListener("click", () => {
-
-    gruposCarousel.scrollBy({
-      left: -200,
-      behavior: "smooth"
-    });
-
-  });
-
-}
-
-if (scrollRightBtn) {
-
-  scrollRightBtn.addEventListener("click", () => {
-
-    gruposCarousel.scrollBy({
-      left: 200,
-      behavior: "smooth"
-    });
-
-  });
 
 }
