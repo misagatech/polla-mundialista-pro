@@ -71,65 +71,65 @@ let grupoActual = "A";
 
 const equipoGrupo = {
 
-  "México":"A",
-  "Sudáfrica":"A",
-  "Corea del Sur":"A",
-  "República Checa":"A",
+  "México": "A",
+  "Sudáfrica": "A",
+  "Corea del Sur": "A",
+  "República Checa": "A",
 
-  "Canadá":"B",
-  "Bosnia y Herzegovina":"B",
-  "Qatar":"B",
-  "Suiza":"B",
+  "Canadá": "B",
+  "Bosnia y Herzegovina": "B",
+  "Qatar": "B",
+  "Suiza": "B",
 
-  "Brasil":"C",
-  "Marruecos":"C",
-  "Haití":"C",
-  "Escocia":"C",
+  "Brasil": "C",
+  "Marruecos": "C",
+  "Haití": "C",
+  "Escocia": "C",
 
-  "Estados Unidos":"D",
-  "Paraguay":"D",
-  "Australia":"D",
-  "Turquía":"D",
+  "Estados Unidos": "D",
+  "Paraguay": "D",
+  "Australia": "D",
+  "Turquía": "D",
 
-  "Alemania":"E",
-  "Curazao":"E",
-  "Costa de Marfil":"E",
-  "Ecuador":"E",
+  "Alemania": "E",
+  "Curazao": "E",
+  "Costa de Marfil": "E",
+  "Ecuador": "E",
 
-  "Países Bajos":"F",
-  "Japón":"F",
-  "Suecia":"F",
-  "Túnez":"F",
+  "Países Bajos": "F",
+  "Japón": "F",
+  "Suecia": "F",
+  "Túnez": "F",
 
-  "Bélgica":"G",
-  "Egipto":"G",
-  "Irán":"G",
-  "Nueva Zelanda":"G",
+  "Bélgica": "G",
+  "Egipto": "G",
+  "Irán": "G",
+  "Nueva Zelanda": "G",
 
-  "España":"H",
-  "Cabo Verde":"H",
-  "Arabia Saudita":"H",
-  "Uruguay":"H",
+  "España": "H",
+  "Cabo Verde": "H",
+  "Arabia Saudita": "H",
+  "Uruguay": "H",
 
-  "Francia":"I",
-  "Senegal":"I",
-  "Noruega":"I",
-  "Irak":"I",
+  "Francia": "I",
+  "Senegal": "I",
+  "Noruega": "I",
+  "Irak": "I",
 
-  "Argentina":"J",
-  "Argelia":"J",
-  "Austria":"J",
-  "Jordania":"J",
+  "Argentina": "J",
+  "Argelia": "J",
+  "Austria": "J",
+  "Jordania": "J",
 
-  "Portugal":"K",
-  "RD Congo":"K",
-  "Uzbekistán":"K",
-  "Colombia":"K",
+  "Portugal": "K",
+  "RD Congo": "K",
+  "Uzbekistán": "K",
+  "Colombia": "K",
 
-  "Inglaterra":"L",
-  "Croacia":"L",
-  "Panamá":"L",
-  "Ghana":"L"
+  "Inglaterra": "L",
+  "Croacia": "L",
+  "Panamá": "L",
+  "Ghana": "L"
 
 };
 
@@ -297,115 +297,121 @@ function renderGruposTabs() {
 // ======================================================
 
 function mostrarGrupo(grupo) {
-
   if (!gruposData[grupo]) return;
 
   let html = `
-  
     <div class="grupo-card">
+      <div class="grupo-header" onclick="toggleGrupo('${grupo}')">
+        <h3 class="text-xl font-bold text-yellow-300">
+          GRUPO ${grupo}
+        </h3>
 
-      <div class="grupo-header">
-        <h2>GRUPO ${grupo}</h2>
+        <i class="fas fa-chevron-down text-yellow-400 transition-transform"
+           id="icon-${grupo}">
+        </i>
       </div>
 
-      <div class="grupo-body">
-
+      <div class="grupo-body open" id="body-${grupo}">
+        <div class="matches-grid">
   `;
 
   for (const match of gruposData[grupo]) {
 
     const matchId = match.id;
 
-    const predLocal = match.userPred ? match.userPred.pred_local : "";
-    const predVisit = match.userPred ? match.userPred.pred_visitante : "";
+    const predLocal = match.userPred
+      ? match.userPred.pred_local
+      : '';
+
+    const predVisit = match.userPred
+      ? match.userPred.pred_visitante
+      : '';
 
     const isBlocked = match.bloqueado;
 
     html += `
-
       <div class="match-card">
 
         <div class="match-teams">
 
-          <div class="team">
-
-            <img 
+          <div class="team-row">
+            <img
               class="flag-icon"
               src="https://flagcdn.com/w40/${obtenerCodigoPais(match.equipo_local)}.png"
             >
 
             <span>${match.equipo_local}</span>
-
           </div>
 
-          <div class="vs">VS</div>
+          <div class="vs-text">VS</div>
 
-          <div class="team">
-
-            <img 
+          <div class="team-row">
+            <img
               class="flag-icon"
               src="https://flagcdn.com/w40/${obtenerCodigoPais(match.equipo_visitante)}.png"
             >
 
             <span>${match.equipo_visitante}</span>
-
           </div>
 
         </div>
 
-        <div class="prediction-box">
+        <div class="prediction-area">
 
           <input
             type="number"
             id="local_${matchId}"
             value="${predLocal}"
+            placeholder="0"
             class="prediction-input"
-            ${isBlocked ? "disabled" : ""}
+            ${isBlocked ? 'disabled' : ''}
           >
 
-          <span>-</span>
+          <span class="score-separator">-</span>
 
           <input
             type="number"
             id="visit_${matchId}"
             value="${predVisit}"
+            placeholder="0"
             class="prediction-input"
-            ${isBlocked ? "disabled" : ""}
+            ${isBlocked ? 'disabled' : ''}
           >
-
-          <button
-            class="btn-guardar"
-            onclick="window.savePrediction('${matchId}')"
-            ${isBlocked ? "disabled" : ""}
-          >
-            Guardar
-          </button>
 
         </div>
 
+        <button
+          class="btn-guardar"
+          onclick="window.savePrediction('${matchId}')"
+          ${isBlocked ? 'disabled' : ''}
+        >
+          Guardar
+        </button>
+
         <div class="match-date">
-
-          📅 ${match.hora_partido.toDate().toLocaleString("es-CO", {
-            timeZone: "America/Bogota"
-          })}
-
+          📅 ${match.hora_partido.toDate().toLocaleString('es-CO', {
+      timeZone: 'America/Bogota'
+    })}
         </div>
 
       </div>
-
     `;
-
   }
 
   html += `
+        </div>
       </div>
     </div>
   `;
 
   gruposContainer.innerHTML = html;
 
-}
+  const icon = document.getElementById(`icon-${grupo}`);
 
+  if (icon) {
+    icon.style.transform = 'rotate(180deg)';
+  }
+}
 
 // ======================================================
 // CARGAR PARTIDOS
@@ -460,7 +466,7 @@ async function loadMatchesAndPredictions() {
 
     const proximos = partidosGrupos
       .filter(m => m.hora_partido.toDate() > ahora)
-      .sort((a,b) => a.hora_partido.toDate() - b.hora_partido.toDate());
+      .sort((a, b) => a.hora_partido.toDate() - b.hora_partido.toDate());
 
     if (proximos.length > 0) {
 
