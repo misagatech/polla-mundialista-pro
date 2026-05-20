@@ -2,30 +2,30 @@
 RESET GENERAL
 ===================================================== */
 
-*{
-  margin:0;
-  padding:0;
-  box-sizing:border-box;
+* {
+  margin: 0;
+  padding: 0;
+  box-sizing: border-box;
 }
 
-html{
-  scroll-behavior:smooth;
+html {
+  scroll-behavior: smooth;
 }
 
-body{
-  font-family:'Poppins',sans-serif;
-  color:white;
-  min-height:100vh;
-  overflow-x:hidden;
+body {
+  font-family: 'Poppins', sans-serif;
+  color: white;
+  min-height: 100vh;
+  overflow-x: hidden;
 
   background:
-    radial-gradient(circle at top left, rgba(37,99,235,.20), transparent 25%),
-    radial-gradient(circle at bottom right, rgba(249,115,22,.12), transparent 25%),
-    linear-gradient(135deg,#07152d 0%,#081A33 100%);
+    radial-gradient(circle at top left, rgba(37, 99, 235, .20), transparent 25%),
+    radial-gradient(circle at bottom right, rgba(249, 115, 22, .12), transparent 25%),
+    linear-gradient(135deg, #07152d 0%, #081A33 100%);
 }
 
-.hidden{
-  display:none !important;
+.hidden {
+  display: none !important;
 }
 
 
@@ -33,18 +33,18 @@ body{
 SCROLLBAR
 ===================================================== */
 
-::-webkit-scrollbar{
-  width:8px;
-  height:8px;
+::-webkit-scrollbar {
+  width: 8px;
+  height: 8px;
 }
 
-::-webkit-scrollbar-track{
-  background:#081A33;
+::-webkit-scrollbar-track {
+  background: #081A33;
 }
 
-::-webkit-scrollbar-thumb{
-  background:linear-gradient(#2563eb,#22c55e);
-  border-radius:20px;
+::-webkit-scrollbar-thumb {
+  background: linear-gradient(#2563eb, #22c55e);
+  border-radius: 20px;
 }
 
 
@@ -52,122 +52,122 @@ SCROLLBAR
 AUTH SCREEN
 ===================================================== */
 
-.auth-screen{
-  min-height:100vh;
+.auth-screen {
+  min-height: 100vh;
 
-  display:flex;
-  align-items:center;
-  justify-content:center;
+  display: flex;
+  align-items: center;
+  justify-content: center;
 
-  padding:20px;
+  padding: 20px;
 }
 
-.auth-card{
-  width:100%;
-  max-width:450px;
+.auth-card {
+  width: 100%;
+  max-width: 450px;
 
-  background:rgba(255,255,255,.08);
+  background: rgba(255, 255, 255, .08);
 
-  backdrop-filter:blur(18px);
+  backdrop-filter: blur(18px);
 
-  border:1px solid rgba(255,255,255,.08);
+  border: 1px solid rgba(255, 255, 255, .08);
 
-  border-radius:30px;
+  border-radius: 30px;
 
-  padding:40px 30px;
+  padding: 40px 30px;
 
-  text-align:center;
+  text-align: center;
 
-  box-shadow:0 20px 40px rgba(0,0,0,.35);
+  box-shadow: 0 20px 40px rgba(0, 0, 0, .35);
 }
 
-.auth-logo{
-  width:120px;
+.auth-logo {
+  width: 120px;
 }
 
-.auth-title{
-  margin-top:15px;
+.auth-title {
+  margin-top: 15px;
 
-  font-size:2rem;
-  font-weight:800;
+  font-size: 2rem;
+  font-weight: 800;
 
-  color:#facc15;
+  color: #facc15;
 }
 
-.auth-subtitle{
-  margin-top:8px;
+.auth-subtitle {
+  margin-top: 8px;
 
-  color:#cbd5e1;
+  color: #cbd5e1;
 }
 
-.auth-form{
-  margin-top:30px;
+.auth-form {
+  margin-top: 30px;
 
-  display:flex;
-  flex-direction:column;
+  display: flex;
+  flex-direction: column;
 
-  gap:14px;
+  gap: 14px;
 }
 
-.auth-input{
-  width:100%;
-  height:52px;
+.auth-input {
+  width: 100%;
+  height: 52px;
 
-  border:none;
-  outline:none;
+  border: none;
+  outline: none;
 
-  border-radius:14px;
+  border-radius: 14px;
 
-  background:rgba(255,255,255,.08);
+  background: rgba(255, 255, 255, .08);
 
-  border:1px solid rgba(255,255,255,.08);
+  border: 1px solid rgba(255, 255, 255, .08);
 
-  color:white;
+  color: white;
 
-  padding:0 16px;
+  padding: 0 16px;
 }
 
-.auth-input::placeholder{
-  color:#cbd5e1;
+.auth-input::placeholder {
+  color: #cbd5e1;
 }
 
 .auth-btn-login,
-.auth-btn-register{
-  height:52px;
+.auth-btn-register {
+  height: 52px;
 
-  border:none;
+  border: none;
 
-  border-radius:14px;
+  border-radius: 14px;
 
-  cursor:pointer;
+  cursor: pointer;
 
-  font-weight:700;
+  font-weight: 700;
 
-  transition:.3s;
+  transition: .3s;
 }
 
-.auth-btn-login{
-  background:#facc15;
-  color:black;
+.auth-btn-login {
+  background: #facc15;
+  color: black;
 }
 
-.auth-btn-register{
-  background:#2563eb;
-  color:white;
+.auth-btn-register {
+  background: #2563eb;
+  color: white;
 }
 
 .auth-btn-login:hover,
-.auth-btn-register:hover{
-  transform:translateY(-2px);
+.auth-btn-register:hover {
+  transform: translateY(-2px);
 }
 
-.auth-divider{
-  width:100%;
-  height:1px;
+.auth-divider {
+  width: 100%;
+  height: 1px;
 
-  background:rgba(255,255,255,.12);
+  background: rgba(255, 255, 255, .12);
 
-  margin:8px 0;
+  margin: 8px 0;
 }
 
 
@@ -175,43 +175,43 @@ AUTH SCREEN
 HERO HEADER
 ===================================================== */
 
-.hero-header{
-  position:relative;
+.hero-header {
+  position: relative;
 
-  min-height:360px;
+  min-height: 360px;
 
-  overflow:hidden;
+  overflow: hidden;
 
-  border-bottom-left-radius:40px;
-  border-bottom-right-radius:40px;
+  border-bottom-left-radius: 40px;
+  border-bottom-right-radius: 40px;
 
   background:
-    linear-gradient(rgba(0,0,0,.60),rgba(0,0,0,.72)),
+    linear-gradient(rgba(0, 0, 0, .60), rgba(0, 0, 0, .72)),
     url('../assets/img/hero-copa.png');
 
-  background-size:cover;
-  background-position:center;
+  background-size: cover;
+  background-position: center;
 }
 
-.hero-overlay{
-  position:absolute;
-  inset:0;
+.hero-overlay {
+  position: absolute;
+  inset: 0;
 
   background:
     radial-gradient(circle at center,
-    rgba(255,255,255,.05),
-    transparent 65%);
+      rgba(255, 255, 255, .05),
+      transparent 65%);
 }
 
-.hero-content{
-  position:relative;
-  z-index:2;
+.hero-content {
+  position: relative;
+  z-index: 2;
 
-  max-width:1800px;
+  max-width: 1800px;
 
-  margin:auto;
+  margin: auto;
 
-  padding:30px 30px 50px;
+  padding: 30px 30px 50px;
 }
 
 
@@ -219,69 +219,67 @@ HERO HEADER
 TOPBAR
 ===================================================== */
 
-.topbar{
-  display:flex;
-  justify-content:space-between;
-  align-items:flex-start;
+.topbar {
+  display: flex;
+  justify-content: space-between;
+  align-items: flex-start;
 }
 
-.logo-area{
-  display:flex;
-  align-items:center;
+.logo-area {
+  display: flex;
+  align-items: center;
 }
 
-.hero-logo{
-  width:220px;
+.hero-logo {
+  width: 220px;
 
-  object-fit:contain;
+  object-fit: contain;
 
-  filter:drop-shadow(0 12px 30px rgba(0,0,0,.55));
+  filter: drop-shadow(0 12px 30px rgba(0, 0, 0, .55));
 }
 
-.user-actions{
-  display:flex;
-  align-items:center;
-  gap:12px;
+.user-actions {
+  display: flex;
+  align-items: center;
+  gap: 12px;
 }
 
-.user-badge{
-  background:rgba(255,255,255,.08);
+.user-badge {
+  background: rgba(255, 255, 255, .08);
 
-  backdrop-filter:blur(10px);
+  backdrop-filter: blur(10px);
 
-  padding:10px 18px;
+  padding: 10px 18px;
 
-  border-radius:999px;
+  border-radius: 999px;
 
-  font-size:.9rem;
+  font-size: .9rem;
 
-  border:1px solid rgba(255,255,255,.08);
+  border: 1px solid rgba(255, 255, 255, .08);
 }
 
-.logout-btn{
-  border:none;
-  cursor:pointer;
+.logout-btn {
+  border: none;
+  cursor: pointer;
 
   background:
-    linear-gradient(
-      90deg,
+    linear-gradient(90deg,
       #ef4444,
-      #dc2626
-    );
+      #dc2626);
 
-  color:white;
+  color: white;
 
-  padding:10px 18px;
+  padding: 10px 18px;
 
-  border-radius:999px;
+  border-radius: 999px;
 
-  font-weight:700;
+  font-weight: 700;
 
-  transition:.3s;
+  transition: .3s;
 }
 
-.logout-btn:hover{
-  transform:translateY(-2px);
+.logout-btn:hover {
+  transform: translateY(-2px);
 }
 
 
@@ -289,30 +287,30 @@ TOPBAR
 MAIN LAYOUT
 ===================================================== */
 
-.main-layout{
-  width:100%;
-  max-width:1900px;
+.main-layout {
+  width: 100%;
+  max-width: 1900px;
 
-  margin:auto;
+  margin: auto;
 
-  display:grid;
+  display: grid;
 
-  grid-template-columns:minmax(0,1fr) 320px;
+  grid-template-columns: minmax(0, 1fr) 320px;
 
-  gap:26px;
+  gap: 26px;
 
-  padding:40px 25px;
+  padding: 40px 25px;
 }
 
-.content-area{
-  width:100%;
-  min-width:0;
+.content-area {
+  width: 100%;
+  min-width: 0;
 }
 
-.sidebar-area{
-  display:flex;
-  flex-direction:column;
-  gap:22px;
+.sidebar-area {
+  display: flex;
+  flex-direction: column;
+  gap: 22px;
 }
 
 
@@ -320,102 +318,102 @@ MAIN LAYOUT
 SIDEBAR
 ===================================================== */
 
-.sidebar-card{
-  background:rgba(255,255,255,.08);
+.sidebar-card {
+  background: rgba(255, 255, 255, .08);
 
-  backdrop-filter:blur(16px);
+  backdrop-filter: blur(16px);
 
-  border:1px solid rgba(255,255,255,.08);
+  border: 1px solid rgba(255, 255, 255, .08);
 
-  border-radius:24px;
+  border-radius: 24px;
 
-  padding:24px;
+  padding: 24px;
 
-  box-shadow:0 15px 30px rgba(0,0,0,.28);
+  box-shadow: 0 15px 30px rgba(0, 0, 0, .28);
 }
 
-.sidebar-small-title{
-  font-size:.8rem;
+.sidebar-small-title {
+  font-size: .8rem;
 
-  letter-spacing:2px;
+  letter-spacing: 2px;
 
-  text-transform:uppercase;
+  text-transform: uppercase;
 
-  color:#cbd5e1;
+  color: #cbd5e1;
 }
 
-.sidebar-big-number{
-  font-size:4rem;
+.sidebar-big-number {
+  font-size: 4rem;
 
-  font-weight:800;
+  font-weight: 800;
 
-  color:#facc15;
+  color: #facc15;
 
-  margin-top:10px;
+  margin-top: 10px;
 }
 
-.sidebar-points{
-  font-size:1.3rem;
+.sidebar-points {
+  font-size: 1.3rem;
 
-  font-weight:700;
+  font-weight: 700;
 }
 
-.next-match{
-  margin-top:16px;
+.next-match {
+  margin-top: 16px;
 
-  display:flex;
-  align-items:center;
-  justify-content:space-between;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
 
-  gap:12px;
+  gap: 12px;
 
-  font-weight:700;
+  font-weight: 700;
 }
 
-.next-match strong{
-  color:#facc15;
+.next-match strong {
+  color: #facc15;
 }
 
-.next-date{
-  margin-top:12px;
+.next-date {
+  margin-top: 12px;
 
-  text-align:center;
+  text-align: center;
 
-  color:#cbd5e1;
+  color: #cbd5e1;
 
-  font-size:.85rem;
+  font-size: .85rem;
 }
 
-.sidebar-btn{
-  width:100%;
+.sidebar-btn {
+  width: 100%;
 
-  margin-top:16px;
+  margin-top: 16px;
 
-  height:44px;
+  height: 44px;
 
-  border:none;
+  border: none;
 
-  border-radius:14px;
+  border-radius: 14px;
 
-  cursor:pointer;
+  cursor: pointer;
 
-  font-weight:700;
+  font-weight: 700;
 
-  background:#eab308;
+  background: #eab308;
 
-  color:black;
+  color: black;
 }
 
-.sidebar-trophy{
-  text-align:center;
+.sidebar-trophy {
+  text-align: center;
 }
 
-.trophy-icon{
-  font-size:4rem;
+.trophy-icon {
+  font-size: 4rem;
 
-  color:#facc15;
+  color: #facc15;
 
-  margin-bottom:14px;
+  margin-bottom: 14px;
 }
 
 
@@ -423,30 +421,30 @@ SIDEBAR
 SECTION TITLES
 ===================================================== */
 
-.groups-section{
-  margin-top:10px;
+.groups-section {
+  margin-top: 10px;
 }
 
-.section-title-row{
-  margin-bottom:18px;
+.section-title-row {
+  margin-bottom: 18px;
 }
 
-.section-mini-title{
-  color:#93c5fd;
+.section-mini-title {
+  color: #93c5fd;
 
-  font-size:.8rem;
+  font-size: .8rem;
 
-  letter-spacing:2px;
+  letter-spacing: 2px;
 
-  text-transform:uppercase;
+  text-transform: uppercase;
 }
 
-.section-title{
-  margin-top:6px;
+.section-title {
+  margin-top: 6px;
 
-  font-size:2rem;
+  font-size: 2rem;
 
-  font-weight:800;
+  font-weight: 800;
 }
 
 
@@ -454,33 +452,33 @@ SECTION TITLES
 GROUPS TABS WRAPPER
 ===================================================== */
 
-.groups-tabs-wrapper{
-  display:flex;
-  align-items:center;
-  gap:10px;
+.groups-tabs-wrapper {
+  display: flex;
+  align-items: center;
+  gap: 10px;
 }
 
-.scroll-btn{
-  width:42px;
-  height:42px;
+.scroll-btn {
+  width: 42px;
+  height: 42px;
 
-  border:none;
+  border: none;
 
-  border-radius:12px;
+  border-radius: 12px;
 
-  cursor:pointer;
+  cursor: pointer;
 
-  background:#132544;
+  background: #132544;
 
-  color:white;
+  color: white;
 
-  flex-shrink:0;
+  flex-shrink: 0;
 
-  transition:.3s;
+  transition: .3s;
 }
 
-.scroll-btn:hover{
-  background:#1d4ed8;
+.scroll-btn:hover {
+  background: #1d4ed8;
 }
 
 
@@ -488,27 +486,27 @@ GROUPS TABS WRAPPER
 GROUPS CAROUSEL
 ===================================================== */
 
-#gruposCarousel{
-  flex:1;
+#gruposCarousel {
+  flex: 1;
 
-  display:flex;
-  gap:10px;
+  display: flex;
+  gap: 10px;
 
-  overflow-x:auto;
-  overflow-y:hidden;
+  overflow-x: auto;
+  overflow-y: hidden;
 
-  scroll-behavior:smooth;
+  scroll-behavior: smooth;
 
-  padding-bottom:8px;
+  padding-bottom: 8px;
 }
 
-#gruposCarousel::-webkit-scrollbar{
-  height:5px;
+#gruposCarousel::-webkit-scrollbar {
+  height: 5px;
 }
 
-#gruposCarousel::-webkit-scrollbar-thumb{
-  background:#2563eb;
-  border-radius:20px;
+#gruposCarousel::-webkit-scrollbar-thumb {
+  background: #2563eb;
+  border-radius: 20px;
 }
 
 
@@ -516,47 +514,43 @@ GROUPS CAROUSEL
 GROUP BUTTON
 ===================================================== */
 
-.grupo-tab{
-  flex:none;
+.grupo-tab {
+  flex: none;
 
-  border:none;
+  border: none;
 
-  border-radius:12px;
+  border-radius: 12px;
 
-  padding:10px 16px;
+  padding: 10px 16px;
 
-  min-width:90px;
+  min-width: 90px;
 
-  cursor:pointer;
+  cursor: pointer;
 
-  font-size:13px;
-  font-weight:700;
+  font-size: 13px;
+  font-weight: 700;
 
-  color:white;
+  color: white;
 
   background:
-    linear-gradient(
-      135deg,
+    linear-gradient(135deg,
       #1d4ed8,
-      #1e3a8a
-    );
+      #1e3a8a);
 
-  transition:.3s;
+  transition: .3s;
 }
 
-.grupo-tab:hover{
-  transform:translateY(-2px);
+.grupo-tab:hover {
+  transform: translateY(-2px);
 }
 
-.grupo-tab.active{
+.grupo-tab.active {
   background:
-    linear-gradient(
-      135deg,
+    linear-gradient(135deg,
       #eab308,
-      #facc15
-    );
+      #facc15);
 
-  color:black;
+  color: black;
 }
 
 
@@ -564,8 +558,19 @@ GROUP BUTTON
 GROUP MATCHES CONTAINER
 ===================================================== */
 
-.groups-matches-container{
-  margin-top:26px;
+.groups-matches-container {
+
+  margin-top: 26px;
+
+  display: flex;
+  flex-direction: column;
+
+  gap: 28px;
+
+  width: 100%;
+
+  overflow: visible;
+
 }
 
 
@@ -573,31 +578,47 @@ GROUP MATCHES CONTAINER
 GROUP CARD
 ===================================================== */
 
-.grupo-card{
-  background:rgba(5,15,40,.92);
+.grupo-card {
 
-  border-radius:28px;
-
-  overflow:hidden;
-
-  border:1px solid rgba(255,255,255,.08);
-
-  box-shadow:0 20px 40px rgba(0,0,0,.35);
-}
-
-.grupo-header{
-  padding:22px 24px;
+  width: 100%;
 
   background:
-    linear-gradient(
-      90deg,
-      #102a5c,
-      #0f172a
-    );
+    linear-gradient(180deg,
+      rgba(8, 26, 51, .96),
+      rgba(5, 15, 40, .98));
 
-  display:flex;
-  justify-content:space-between;
-  align-items:center;
+  border-radius: 28px;
+
+  border: 1px solid rgba(255, 255, 255, .08);
+
+  overflow: visible;
+
+  box-shadow:
+    0 20px 40px rgba(0, 0, 0, .35);
+
+}
+
+
+/* =====================================================
+GROUP HEADER
+===================================================== */
+
+.grupo-header {
+
+  padding: 22px 24px;
+
+  background:
+    linear-gradient(90deg,
+      #102a5c,
+      #0f172a);
+
+  border-top-left-radius: 28px;
+  border-top-right-radius: 28px;
+
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+
 }
 
 
@@ -605,15 +626,19 @@ GROUP CARD
 MATCH GRID
 ===================================================== */
 
-.matches-grid{
-  display:grid;
+.matches-grid {
+
+  width: 100%;
+
+  display: grid;
 
   grid-template-columns:
-    repeat(auto-fit,minmax(280px,1fr));
+    repeat(auto-fit, minmax(280px, 1fr));
 
-  gap:18px;
+  gap: 20px;
 
-  padding:22px;
+  padding: 24px;
+
 }
 
 
@@ -621,29 +646,43 @@ MATCH GRID
 MATCH CARD
 ===================================================== */
 
-.match-card{
-  background:rgba(20,30,60,.95);
+.match-card {
 
-  border:1px solid rgba(255,255,255,.08);
+  width: 100%;
 
-  border-radius:20px;
+  background:
+    linear-gradient(180deg,
+      rgba(20, 30, 60, .98),
+      rgba(10, 20, 40, .98));
 
-  padding:18px;
+  border: 1px solid rgba(255, 255, 255, .08);
 
-  display:flex;
-  flex-direction:column;
+  border-radius: 22px;
 
-  gap:14px;
+  padding: 18px;
 
-  transition:.3s;
+  display: flex;
+  flex-direction: column;
 
-  box-shadow:0 10px 25px rgba(0,0,0,.25);
+  gap: 15px;
+
+  transition: .3s ease;
+
+  box-shadow:
+    0 10px 25px rgba(0, 0, 0, .25);
+
 }
 
-.match-card:hover{
-  transform:translateY(-4px);
 
-  border-color:#3b82f6;
+.match-card:hover {
+
+  transform: translateY(-4px);
+
+  border-color: #3b82f6;
+
+  box-shadow:
+    0 18px 35px rgba(37, 99, 235, .18);
+
 }
 
 
@@ -651,39 +690,69 @@ MATCH CARD
 MATCH TEAMS
 ===================================================== */
 
-.match-teams{
-  display:flex;
-  flex-direction:column;
-  gap:10px;
+.match-teams {
+
+  display: flex;
+  flex-direction: column;
+
+  gap: 12px;
+
 }
 
-.team-row{
-  display:flex;
-  align-items:center;
-  gap:10px;
 
-  font-weight:600;
+.team-row {
+
+  display: flex;
+  align-items: center;
+
+  gap: 12px;
+
+  font-weight: 600;
+
+  color: white;
+
+  min-width: 0;
+
 }
 
-.flag-icon{
-  width:34px;
-  height:24px;
 
-  border-radius:4px;
+.team-row span {
 
-  object-fit:cover;
+  overflow: hidden;
 
-  border:1px solid rgba(255,255,255,.15);
+  text-overflow: ellipsis;
+
+  white-space: nowrap;
+
 }
 
-.vs-text{
-  text-align:center;
 
-  font-size:.8rem;
+.flag-icon {
 
-  color:#94a3b8;
+  width: 38px;
+  height: 26px;
 
-  font-weight:700;
+  border-radius: 5px;
+
+  object-fit: cover;
+
+  border: 1px solid rgba(255, 255, 255, .15);
+
+  flex-shrink: 0;
+
+}
+
+
+.vs-text {
+
+  text-align: center;
+
+  font-size: .8rem;
+
+  color: #94a3b8;
+
+  font-weight: 700;
+
 }
 
 
@@ -691,43 +760,63 @@ MATCH TEAMS
 PREDICTION AREA
 ===================================================== */
 
-.prediction-area{
-  display:flex;
-  align-items:center;
-  justify-content:center;
+.prediction-area {
 
-  gap:10px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+
+  gap: 12px;
+
+  margin-top: 5px;
+
 }
 
-.prediction-input{
-  width:56px;
-  height:46px;
 
-  border:none;
-  outline:none;
+.prediction-input {
 
-  border-radius:12px;
+  width: 58px;
+  height: 48px;
 
-  background:#14213d;
+  border: none;
+  outline: none;
 
-  border:1px solid rgba(255,255,255,.08);
+  border-radius: 12px;
 
-  color:white;
+  background: #14213d;
 
-  text-align:center;
+  border: 1px solid rgba(255, 255, 255, .08);
 
-  font-size:1rem;
-  font-weight:700;
+  color: white;
+
+  text-align: center;
+
+  font-size: 1rem;
+  font-weight: 700;
+
+  transition: .3s;
+
 }
 
-.prediction-input:focus{
-  border-color:#3b82f6;
+
+.prediction-input:focus {
+
+  border-color: #3b82f6;
+
+  box-shadow:
+    0 0 0 3px rgba(59, 130, 246, .18);
+
 }
 
-.score-separator{
-  font-size:1.1rem;
 
-  font-weight:700;
+.score-separator {
+
+  font-size: 1.1rem;
+
+  font-weight: 700;
+
+  color: #facc15;
+
 }
 
 
@@ -735,38 +824,50 @@ PREDICTION AREA
 BUTTON GUARDAR
 ===================================================== */
 
-.btn-guardar{
-  width:100%;
+.btn-guardar {
 
-  height:44px;
+  width: 100%;
 
-  border:none;
+  height: 46px;
 
-  border-radius:12px;
+  border: none;
 
-  cursor:pointer;
+  border-radius: 14px;
 
-  color:white;
+  cursor: pointer;
 
-  font-weight:700;
+  color: white;
+
+  font-weight: 700;
 
   background:
-    linear-gradient(
-      135deg,
+    linear-gradient(135deg,
       #22c55e,
-      #16a34a
-    );
+      #16a34a);
 
-  transition:.3s;
+  transition: .3s;
+
 }
 
-.btn-guardar:hover{
-  transform:scale(1.02);
+
+.btn-guardar:hover {
+
+  transform: translateY(-2px);
+
+  box-shadow:
+    0 10px 20px rgba(34, 197, 94, .25);
+
 }
 
-.btn-guardar:disabled{
-  opacity:.5;
-  cursor:not-allowed;
+
+.btn-guardar:disabled {
+
+  opacity: .45;
+
+  cursor: not-allowed;
+
+  transform: none;
+
 }
 
 
@@ -774,58 +875,63 @@ BUTTON GUARDAR
 MATCH DATE
 ===================================================== */
 
-.match-date{
-  text-align:center;
+.match-date {
 
-  font-size:.78rem;
+  margin-top: 4px;
 
-  color:#94a3b8;
+  text-align: center;
+
+  font-size: .78rem;
+
+  line-height: 1.4;
+
+  color: #94a3b8;
+
 }
-
 
 /* =====================================================
 ADMIN PANEL
 ===================================================== */
 
-.admin-panel{
-  width:100%;
+.admin-panel {
+  width: 100%;
 
-  background:rgba(8,20,45,.92);
+  background: rgba(8, 20, 45, .92);
 
-  border:1px solid rgba(250,204,21,.20);
+  border: 1px solid rgba(250, 204, 21, .20);
 
-  border-radius:28px;
+  border-radius: 28px;
 
-  padding:28px;
+  padding: 28px;
 
-  margin-bottom:30px;
+  margin-bottom: 30px;
 
-  box-shadow:0 25px 45px rgba(0,0,0,.35);
+  box-shadow: 0 25px 45px rgba(0, 0, 0, .35);
 }
 
-.admin-panel-header{
-  margin-bottom:24px;
+.admin-panel-header {
+  margin-bottom: 24px;
 
-  border-bottom:1px solid rgba(250,204,21,.15);
+  border-bottom: 1px solid rgba(250, 204, 21, .15);
 
-  padding-bottom:18px;
+  padding-bottom: 18px;
 }
 
-.admin-panel-title{
-  display:flex;
-  align-items:center;
-  gap:12px;
+.admin-panel-title {
+  display: flex;
+  align-items: center;
+  gap: 12px;
 
-  color:#facc15;
+  color: #facc15;
 }
 
-.admin-panel-title i{
-  font-size:1.5rem;
+.admin-panel-title i {
+  font-size: 1.5rem;
 }
 
-.admin-panel-title h2{
-  font-size:1.7rem;
-  font-weight:800;
+.admin-panel-title h2 {
+  font-size: 1.7rem;
+  font-weight: 800;
 }
 
 
@@ -833,26 +939,26 @@ ADMIN PANEL
 ADMIN GROUP
 ===================================================== */
 
-.admin-group{
-  margin-bottom:30px;
+.admin-group {
+  margin-bottom: 30px;
 
-  border:1px solid rgba(255,255,255,.08);
+  border: 1px solid rgba(255, 255, 255, .08);
 
-  border-radius:22px;
+  border-radius: 22px;
 
-  padding:20px;
+  padding: 20px;
 
-  background:rgba(255,255,255,.03);
+  background: rgba(255, 255, 255, .03);
 }
 
-.admin-group-title{
-  font-size:1.1rem;
+.admin-group-title {
+  font-size: 1.1rem;
 
-  font-weight:800;
+  font-weight: 800;
 
-  color:#fde047;
+  color: #fde047;
 
-  margin-bottom:18px;
+  margin-bottom: 18px;
 }
 
 
@@ -860,13 +966,13 @@ ADMIN GROUP
 ADMIN GRID
 ===================================================== */
 
-.admin-grid{
-  display:grid;
+.admin-grid {
+  display: grid;
 
   grid-template-columns:
-    repeat(4,minmax(0,1fr));
+    repeat(4, minmax(0, 1fr));
 
-  gap:14px;
+  gap: 14px;
 }
 
 
@@ -874,27 +980,27 @@ ADMIN GRID
 ADMIN CARD
 ===================================================== */
 
-.admin-card{
-  background:rgba(15,23,42,.95);
+.admin-card {
+  background: rgba(15, 23, 42, .95);
 
-  border:1px solid rgba(255,255,255,.08);
+  border: 1px solid rgba(255, 255, 255, .08);
 
-  border-radius:18px;
+  border-radius: 18px;
 
-  padding:14px;
+  padding: 14px;
 
-  display:flex;
-  flex-direction:column;
+  display: flex;
+  flex-direction: column;
 
-  gap:12px;
+  gap: 12px;
 
-  transition:.3s;
+  transition: .3s;
 }
 
-.admin-card:hover{
-  transform:translateY(-2px);
+.admin-card:hover {
+  transform: translateY(-2px);
 
-  border-color:#facc15;
+  border-color: #facc15;
 }
 
 
@@ -902,43 +1008,43 @@ ADMIN CARD
 ADMIN TEAMS
 ===================================================== */
 
-.admin-teams{
-  display:flex;
-  align-items:center;
-  justify-content:space-between;
+.admin-teams {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
 
-  gap:8px;
+  gap: 8px;
 }
 
-.admin-team{
-  display:flex;
-  flex-direction:column;
+.admin-team {
+  display: flex;
+  flex-direction: column;
 
-  align-items:center;
+  align-items: center;
 
-  gap:5px;
+  gap: 5px;
 
-  flex:1;
+  flex: 1;
 
-  font-size:12px;
-  font-weight:700;
+  font-size: 12px;
+  font-weight: 700;
 }
 
-.flag-admin{
-  width:34px;
-  height:24px;
+.flag-admin {
+  width: 34px;
+  height: 24px;
 
-  object-fit:cover;
+  object-fit: cover;
 
-  border-radius:4px;
+  border-radius: 4px;
 }
 
-.admin-vs{
-  color:#facc15;
+.admin-vs {
+  color: #facc15;
 
-  font-size:12px;
+  font-size: 12px;
 
-  font-weight:700;
+  font-weight: 700;
 }
 
 
@@ -946,31 +1052,31 @@ ADMIN TEAMS
 ADMIN SCORE
 ===================================================== */
 
-.admin-score{
-  display:flex;
-  align-items:center;
-  justify-content:center;
+.admin-score {
+  display: flex;
+  align-items: center;
+  justify-content: center;
 
-  gap:8px;
+  gap: 8px;
 }
 
-.admin-input{
-  width:45px;
-  height:40px;
+.admin-input {
+  width: 45px;
+  height: 40px;
 
-  border:none;
-  outline:none;
+  border: none;
+  outline: none;
 
-  border-radius:10px;
+  border-radius: 10px;
 
-  background:#1e293b;
+  background: #1e293b;
 
-  color:white;
+  color: white;
 
-  text-align:center;
+  text-align: center;
 
-  font-size:16px;
-  font-weight:700;
+  font-size: 16px;
+  font-weight: 700;
 }
 
 
@@ -978,33 +1084,31 @@ ADMIN SCORE
 ADMIN BTN
 ===================================================== */
 
-.admin-btn{
-  width:100%;
+.admin-btn {
+  width: 100%;
 
-  height:40px;
+  height: 40px;
 
-  border:none;
+  border: none;
 
-  border-radius:10px;
+  border-radius: 10px;
 
-  cursor:pointer;
+  cursor: pointer;
 
-  font-weight:700;
+  font-weight: 700;
 
   background:
-    linear-gradient(
-      90deg,
+    linear-gradient(90deg,
       #eab308,
-      #facc15
-    );
+      #facc15);
 
-  color:black;
+  color: black;
 
-  transition:.3s;
+  transition: .3s;
 }
 
-.admin-btn:hover{
-  transform:scale(1.02);
+.admin-btn:hover {
+  transform: scale(1.02);
 }
 
 
@@ -1012,40 +1116,38 @@ ADMIN BTN
 ADMIN BOTTOM
 ===================================================== */
 
-.admin-bottom-actions{
-  margin-top:25px;
+.admin-bottom-actions {
+  margin-top: 25px;
 
-  display:flex;
-  justify-content:center;
+  display: flex;
+  justify-content: center;
 }
 
-.admin-load-btn{
-  border:none;
+.admin-load-btn {
+  border: none;
 
-  cursor:pointer;
+  cursor: pointer;
 
-  height:48px;
+  height: 48px;
 
-  padding:0 26px;
+  padding: 0 26px;
 
-  border-radius:999px;
+  border-radius: 999px;
 
-  font-weight:700;
+  font-weight: 700;
 
   background:
-    linear-gradient(
-      90deg,
+    linear-gradient(90deg,
       #15803d,
-      #22c55e
-    );
+      #22c55e);
 
-  color:white;
+  color: white;
 
-  transition:.3s;
+  transition: .3s;
 }
 
-.admin-load-btn:hover{
-  transform:translateY(-2px);
+.admin-load-btn:hover {
+  transform: translateY(-2px);
 }
 
 
@@ -1053,16 +1155,16 @@ ADMIN BOTTOM
 FOOTER
 ===================================================== */
 
-.site-footer{
-  margin-top:60px;
+.site-footer {
+  margin-top: 60px;
 
-  padding:30px;
+  padding: 30px;
 
-  text-align:center;
+  text-align: center;
 
-  color:#94a3b8;
+  color: #94a3b8;
 
-  border-top:1px solid rgba(255,255,255,.06);
+  border-top: 1px solid rgba(255, 255, 255, .06);
 }
 
 
@@ -1070,19 +1172,19 @@ FOOTER
 TABLET
 ===================================================== */
 
-@media(max-width:1200px){
+@media(max-width:1200px) {
 
-  .main-layout{
-    grid-template-columns:1fr;
+  .main-layout {
+    grid-template-columns: 1fr;
   }
 
-  .sidebar-area{
-    order:-1;
+  .sidebar-area {
+    order: -1;
   }
 
-  .admin-grid{
+  .admin-grid {
     grid-template-columns:
-      repeat(3,1fr);
+      repeat(3, 1fr);
   }
 
 }
@@ -1092,59 +1194,65 @@ TABLET
 MOBILE
 ===================================================== */
 
-@media(max-width:768px){
+@media(max-width:768px) {
 
-  .hero-header{
-    min-height:460px;
+  .hero-header {
+    min-height: 460px;
 
-    border-bottom-left-radius:30px;
-    border-bottom-right-radius:30px;
+    border-bottom-left-radius: 30px;
+    border-bottom-right-radius: 30px;
   }
 
-  .hero-content{
-    padding:24px 18px 40px;
+  .hero-content {
+    padding: 24px 18px 40px;
   }
 
-  .topbar{
-    flex-direction:column;
-    align-items:center;
+  .topbar {
+    flex-direction: column;
+    align-items: center;
 
-    gap:20px;
+    gap: 20px;
   }
 
-  .hero-logo{
-    width:160px;
+  .hero-logo {
+    width: 160px;
   }
 
-  .user-actions{
-    flex-direction:column;
+  .user-actions {
+    flex-direction: column;
   }
 
-  .hero-title{
-    font-size:2.9rem;
+  .hero-title {
+    font-size: 2.9rem;
   }
 
-  .hero-subtitle{
-    font-size:.95rem;
+  .hero-subtitle {
+    font-size: .95rem;
 
-    line-height:1.6;
+    line-height: 1.6;
   }
 
-  .main-layout{
-    padding:25px 14px;
-  }
+ .main-layout{
+  padding:25px 12px;
+}
 
-  .matches-grid{
-    grid-template-columns:1fr;
-  }
+ .matches-grid{
 
-  .admin-grid{
+  grid-template-columns:1fr;
+
+  padding:16px;
+
+  gap:16px;
+
+}
+
+  .admin-grid {
     grid-template-columns:
-      repeat(2,1fr);
+      repeat(2, 1fr);
   }
 
-  .scroll-btn{
-    display:none;
+  .scroll-btn {
+    display: none;
   }
 
 }
@@ -1154,38 +1262,66 @@ MOBILE
 SMALL MOBILE
 ===================================================== */
 
-@media(max-width:480px){
+@media(max-width:480px) {
 
-  .hero-logo{
-    width:130px;
+  .hero-logo {
+    width: 130px;
   }
 
-  .hero-title{
-    font-size:2.3rem;
+  .hero-title {
+    font-size: 2.3rem;
   }
 
-  .hero-subtitle{
-    font-size:.92rem;
+  .hero-subtitle {
+    font-size: .92rem;
   }
 
-  .hero-stats{
-    gap:12px;
+  .hero-stats {
+    gap: 12px;
   }
 
-  .stat-card{
-    width:100%;
+  .stat-card {
+    width: 100%;
   }
 
-  .admin-grid{
-    grid-template-columns:1fr;
+  .admin-grid {
+    grid-template-columns: 1fr;
   }
 
-  .grupo-tab{
-    min-width:80px;
+  .grupo-tab {
+    min-width: 80px;
 
-    font-size:12px;
+    font-size: 12px;
 
-    padding:9px 14px;
+    padding: 9px 14px;
+  }
+/* =====================================================
+FIX OVERFLOW GROUPS
+===================================================== */
+
+.content-area{
+  overflow:hidden;
+}
+
+.grupo-card,
+.match-card,
+.matches-grid{
+  min-width:0;
+}
+
+
+/* =====================================================
+EXTRA LARGE SCREENS
+===================================================== */
+
+@media(min-width:1600px){
+
+  .matches-grid{
+
+    grid-template-columns:
+      repeat(4,minmax(280px,1fr));
+
   }
 
+}
 }
