@@ -831,11 +831,7 @@ async function loadAdminMatches() {
 
   });
 
-  let html = `
-    <div class="admin-title">
-      ⚽ Panel de Administración
-    </div>
-  `;
+  let html = '';
 
   Object.keys(partidosPorGrupo)
     .sort()
