@@ -70,7 +70,7 @@ function obtenerCodigoPais(nombre) {
 
 // Determina si es fase de grupos (equipos reales)
 function esFaseGrupos(match) {
-  return equipoGrupo[match.equipo_local] && equipoGrupo[match.equipo_visitante];
+  return match.fase === "grupos";
 }
 
 // Agrupa partidos por grupo

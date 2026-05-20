@@ -1,108 +1,271 @@
 export const todosLosPartidos = [
-  // FASE DE GRUPOS (72 partidos)
-  { local: "México", visitante: "Sudáfrica", fechaUTC: "2026-06-11T20:00:00Z" },
-  { local: "Corea del Sur", visitante: "República Checa", fechaUTC: "2026-06-12T02:00:00Z" },
-  { local: "Canadá", visitante: "Bosnia y Herzegovina", fechaUTC: "2026-06-12T19:00:00Z" },
-  { local: "Estados Unidos", visitante: "Paraguay", fechaUTC: "2026-06-13T01:00:00Z" },
-  { local: "Qatar", visitante: "Suiza", fechaUTC: "2026-06-13T19:00:00Z" },
-  { local: "Brasil", visitante: "Marruecos", fechaUTC: "2026-06-13T22:00:00Z" },
-  { local: "Haití", visitante: "Escocia", fechaUTC: "2026-06-14T01:00:00Z" },
-  { local: "Australia", visitante: "Turquía", fechaUTC: "2026-06-14T04:00:00Z" },
-  { local: "Alemania", visitante: "Curazao", fechaUTC: "2026-06-14T17:00:00Z" },
-  { local: "Países Bajos", visitante: "Japón", fechaUTC: "2026-06-14T20:00:00Z" },
-  { local: "Costa de Marfil", visitante: "Ecuador", fechaUTC: "2026-06-14T23:00:00Z" },
-  { local: "Suecia", visitante: "Túnez", fechaUTC: "2026-06-15T02:00:00Z" },
-  { local: "España", visitante: "Cabo Verde", fechaUTC: "2026-06-15T16:00:00Z" },
-  { local: "Bélgica", visitante: "Egipto", fechaUTC: "2026-06-15T19:00:00Z" },
-  { local: "Arabia Saudita", visitante: "Uruguay", fechaUTC: "2026-06-15T22:00:00Z" },
-  { local: "Irán", visitante: "Nueva Zelanda", fechaUTC: "2026-06-16T01:00:00Z" },
-  { local: "Francia", visitante: "Senegal", fechaUTC: "2026-06-16T19:00:00Z" },
-  { local: "Irak", visitante: "Noruega", fechaUTC: "2026-06-16T22:00:00Z" },
-  { local: "Argentina", visitante: "Argelia", fechaUTC: "2026-06-17T01:00:00Z" },
-  { local: "Austria", visitante: "Jordania", fechaUTC: "2026-06-17T04:00:00Z" },
-  { local: "Portugal", visitante: "RD Congo", fechaUTC: "2026-06-17T17:00:00Z" },
-  { local: "Inglaterra", visitante: "Croacia", fechaUTC: "2026-06-17T20:00:00Z" },
-  { local: "Ghana", visitante: "Panamá", fechaUTC: "2026-06-17T23:00:00Z" },
-  { local: "Uzbekistán", visitante: "Colombia", fechaUTC: "2026-06-18T02:00:00Z" },
-  { local: "República Checa", visitante: "Sudáfrica", fechaUTC: "2026-06-18T16:00:00Z" },
-  { local: "Suiza", visitante: "Bosnia y Herzegovina", fechaUTC: "2026-06-18T19:00:00Z" },
-  { local: "Canadá", visitante: "Qatar", fechaUTC: "2026-06-18T22:00:00Z" },
-  { local: "México", visitante: "Corea del Sur", fechaUTC: "2026-06-19T01:00:00Z" },
-  { local: "Estados Unidos", visitante: "Australia", fechaUTC: "2026-06-19T19:00:00Z" },
-  { local: "Escocia", visitante: "Marruecos", fechaUTC: "2026-06-19T22:00:00Z" },
-  { local: "Brasil", visitante: "Haití", fechaUTC: "2026-06-20T01:00:00Z" },
-  { local: "Turquía", visitante: "Paraguay", fechaUTC: "2026-06-20T04:00:00Z" },
-  { local: "Países Bajos", visitante: "Suecia", fechaUTC: "2026-06-20T17:00:00Z" },
-  { local: "Alemania", visitante: "Costa de Marfil", fechaUTC: "2026-06-20T20:00:00Z" },
-  { local: "Ecuador", visitante: "Curazao", fechaUTC: "2026-06-21T02:00:00Z" },
-  { local: "Túnez", visitante: "Japón", fechaUTC: "2026-06-21T04:00:00Z" },
-  { local: "España", visitante: "Arabia Saudita", fechaUTC: "2026-06-21T16:00:00Z" },
-  { local: "Bélgica", visitante: "Irán", fechaUTC: "2026-06-21T19:00:00Z" },
-  { local: "Uruguay", visitante: "Cabo Verde", fechaUTC: "2026-06-21T22:00:00Z" },
-  { local: "Nueva Zelanda", visitante: "Egipto", fechaUTC: "2026-06-22T01:00:00Z" },
-  { local: "Argentina", visitante: "Austria", fechaUTC: "2026-06-22T17:00:00Z" },
-  { local: "Francia", visitante: "Irak", fechaUTC: "2026-06-22T21:00:00Z" },
-  { local: "Noruega", visitante: "Senegal", fechaUTC: "2026-06-23T00:00:00Z" },
-  { local: "Jordania", visitante: "Argelia", fechaUTC: "2026-06-23T03:00:00Z" },
-  { local: "Portugal", visitante: "Uzbekistán", fechaUTC: "2026-06-23T17:00:00Z" },
-  { local: "Inglaterra", visitante: "Ghana", fechaUTC: "2026-06-23T20:00:00Z" },
-  { local: "Panamá", visitante: "Croacia", fechaUTC: "2026-06-23T23:00:00Z" },
-  { local: "Colombia", visitante: "RD Congo", fechaUTC: "2026-06-24T02:00:00Z" },
-  { local: "Suiza", visitante: "Canadá", fechaUTC: "2026-06-24T19:00:00Z" },
-  { local: "Bosnia y Herzegovina", visitante: "Qatar", fechaUTC: "2026-06-24T19:00:00Z" },
-  { local: "Escocia", visitante: "Brasil", fechaUTC: "2026-06-24T22:00:00Z" },
-  { local: "Marruecos", visitante: "Haití", fechaUTC: "2026-06-24T22:00:00Z" },
-  { local: "República Checa", visitante: "México", fechaUTC: "2026-06-25T01:00:00Z" },
-  { local: "Sudáfrica", visitante: "Corea del Sur", fechaUTC: "2026-06-25T01:00:00Z" },
-  { local: "Curazao", visitante: "Costa de Marfil", fechaUTC: "2026-06-25T20:00:00Z" },
-  { local: "Ecuador", visitante: "Alemania", fechaUTC: "2026-06-25T20:00:00Z" },
-  { local: "Japón", visitante: "Suecia", fechaUTC: "2026-06-25T23:00:00Z" },
-  { local: "Túnez", visitante: "Países Bajos", fechaUTC: "2026-06-25T23:00:00Z" },
-  { local: "Turquía", visitante: "Estados Unidos", fechaUTC: "2026-06-26T02:00:00Z" },
-  { local: "Noruega", visitante: "Francia", fechaUTC: "2026-06-26T19:00:00Z" },
-  { local: "Senegal", visitante: "Irak", fechaUTC: "2026-06-26T19:00:00Z" },
-  { local: "Cabo Verde", visitante: "Arabia Saudita", fechaUTC: "2026-06-27T00:00:00Z" },
-  { local: "Uruguay", visitante: "España", fechaUTC: "2026-06-27T00:00:00Z" },
-  { local: "Egipto", visitante: "Irán", fechaUTC: "2026-06-27T03:00:00Z" },
-  { local: "Nueva Zelanda", visitante: "Bélgica", fechaUTC: "2026-06-27T03:00:00Z" },
-  { local: "Panamá", visitante: "Inglaterra", fechaUTC: "2026-06-27T21:00:00Z" },
-  { local: "Croacia", visitante: "Ghana", fechaUTC: "2026-06-27T21:00:00Z" },
-  { local: "Colombia", visitante: "Portugal", fechaUTC: "2026-06-27T23:30:00Z" },
-  { local: "RD Congo", visitante: "Uzbekistán", fechaUTC: "2026-06-27T23:30:00Z" },
-  { local: "Argelia", visitante: "Austria", fechaUTC: "2026-06-28T02:00:00Z" },
-  { local: "Jordania", visitante: "Argentina", fechaUTC: "2026-06-28T02:00:00Z" },
 
-  // ======================= ELIMINATORIAS (32 partidos) =======================
-  { local: "2º Grupo A", visitante: "2º Grupo B", fechaUTC: "2026-06-28T22:00:00Z" },
-  { local: "1º Grupo E", visitante: "3º Grupo A/B/C/D/F", fechaUTC: "2026-06-29T16:00:00Z" },
-  { local: "1º Grupo F", visitante: "2º Grupo C", fechaUTC: "2026-06-29T22:00:00Z" },
-  { local: "1º Grupo C", visitante: "2º Grupo F", fechaUTC: "2026-06-30T02:00:00Z" },
-  { local: "1º Grupo I", visitante: "3º Grupo C/D/F/G/H", fechaUTC: "2026-06-30T20:00:00Z" },
-  { local: "2º Grupo E", visitante: "2º Grupo I", fechaUTC: "2026-06-30T23:00:00Z" },
-  { local: "1º Grupo A", visitante: "3º Grupo C/E/F/H/I", fechaUTC: "2026-07-01T01:00:00Z" },
-  { local: "1º Grupo L", visitante: "3º Grupo E/H/I/J/K", fechaUTC: "2026-07-01T16:00:00Z" },
-  { local: "1º Grupo D", visitante: "3º Grupo B/E/F/I/J", fechaUTC: "2026-07-01T19:00:00Z" },
-  { local: "1º Grupo G", visitante: "3º Grupo A/E/H/I/J", fechaUTC: "2026-07-01T22:00:00Z" },
-  { local: "2º Grupo K", visitante: "2º Grupo L", fechaUTC: "2026-07-02T16:00:00Z" },
-  { local: "1º Grupo H", visitante: "2º Grupo J", fechaUTC: "2026-07-02T22:00:00Z" },
-  { local: "1º Grupo B", visitante: "3º Grupo E/F/G/I/J", fechaUTC: "2026-07-03T01:00:00Z" },
-  { local: "1º Grupo J", visitante: "2º Grupo H", fechaUTC: "2026-07-03T16:00:00Z" },
-  { local: "1º Grupo K", visitante: "3º Grupo D/E/I/J/L", fechaUTC: "2026-07-03T19:00:00Z" },
-  { local: "2º Grupo D", visitante: "2º Grupo G", fechaUTC: "2026-07-04T01:00:00Z" },
-  { local: "Ganador 74", visitante: "Ganador 77", fechaUTC: "2026-07-04T18:00:00Z" },
-  { local: "Ganador 73", visitante: "Ganador 75", fechaUTC: "2026-07-05T01:00:00Z" },
-  { local: "Ganador 76", visitante: "Ganador 78", fechaUTC: "2026-07-05T20:00:00Z" },
-  { local: "Ganador 79", visitante: "Ganador 80", fechaUTC: "2026-07-06T01:00:00Z" },
-  { local: "Ganador 83", visitante: "Ganador 84", fechaUTC: "2026-07-06T20:00:00Z" },
-  { local: "Ganador 81", visitante: "Ganador 82", fechaUTC: "2026-07-07T01:00:00Z" },
-  { local: "Ganador 86", visitante: "Ganador 88", fechaUTC: "2026-07-07T20:00:00Z" },
-  { local: "Ganador 85", visitante: "Ganador 87", fechaUTC: "2026-07-08T01:00:00Z" },
-  { local: "Ganador 89", visitante: "Ganador 90", fechaUTC: "2026-07-09T20:00:00Z" },
-  { local: "Ganador 93", visitante: "Ganador 94", fechaUTC: "2026-07-10T22:00:00Z" },
-  { local: "Ganador 91", visitante: "Ganador 92", fechaUTC: "2026-07-11T20:00:00Z" },
-  { local: "Ganador 95", visitante: "Ganador 96", fechaUTC: "2026-07-12T01:00:00Z" },
-  { local: "Ganador 97", visitante: "Ganador 98", fechaUTC: "2026-07-14T22:00:00Z" },
-  { local: "Ganador 99", visitante: "Ganador 100", fechaUTC: "2026-07-15T22:00:00Z" },
-  { local: "Perdedor 101", visitante: "Perdedor 102", fechaUTC: "2026-07-18T20:00:00Z" },
-  { local: "Ganador 101", visitante: "Ganador 102", fechaUTC: "2026-07-19T22:00:00Z" }
+  // =========================================
+  // FASE DE GRUPOS
+  // =========================================
+
+  // ===== GRUPO A =====
+  {
+    fase: "grupos",
+    grupo: "A",
+    local: "México",
+    visitante: "Sudáfrica",
+    fechaUTC: "2026-06-11T20:00:00Z"
+  },
+  {
+    fase: "grupos",
+    grupo: "A",
+    local: "Corea del Sur",
+    visitante: "República Checa",
+    fechaUTC: "2026-06-12T03:00:00Z"
+  },
+  {
+    fase: "grupos",
+    grupo: "A",
+    local: "República Checa",
+    visitante: "Sudáfrica",
+    fechaUTC: "2026-06-18T17:00:00Z"
+  },
+  {
+    fase: "grupos",
+    grupo: "A",
+    local: "México",
+    visitante: "Corea del Sur",
+    fechaUTC: "2026-06-19T02:00:00Z"
+  },
+  {
+    fase: "grupos",
+    grupo: "A",
+    local: "República Checa",
+    visitante: "México",
+    fechaUTC: "2026-06-25T02:00:00Z"
+  },
+  {
+    fase: "grupos",
+    grupo: "A",
+    local: "Sudáfrica",
+    visitante: "Corea del Sur",
+    fechaUTC: "2026-06-25T02:00:00Z"
+  },
+
+  // ===== GRUPO B =====
+  {
+    fase: "grupos",
+    grupo: "B",
+    local: "Canadá",
+    visitante: "Bosnia y Herzegovina",
+    fechaUTC: "2026-06-12T20:00:00Z"
+  },
+  {
+    fase: "grupos",
+    grupo: "B",
+    local: "Catar",
+    visitante: "Suiza",
+    fechaUTC: "2026-06-13T20:00:00Z"
+  },
+  {
+    fase: "grupos",
+    grupo: "B",
+    local: "Suiza",
+    visitante: "Bosnia y Herzegovina",
+    fechaUTC: "2026-06-18T20:00:00Z"
+  },
+  {
+    fase: "grupos",
+    grupo: "B",
+    local: "Canadá",
+    visitante: "Catar",
+    fechaUTC: "2026-06-18T23:00:00Z"
+  },
+  {
+    fase: "grupos",
+    grupo: "B",
+    local: "Suiza",
+    visitante: "Canadá",
+    fechaUTC: "2026-06-24T20:00:00Z"
+  },
+  {
+    fase: "grupos",
+    grupo: "B",
+    local: "Bosnia y Herzegovina",
+    visitante: "Catar",
+    fechaUTC: "2026-06-24T20:00:00Z"
+  },
+
+  // ===== GRUPO C =====
+  {
+    fase: "grupos",
+    grupo: "C",
+    local: "Brasil",
+    visitante: "Marruecos",
+    fechaUTC: "2026-06-13T23:00:00Z"
+  },
+  {
+    fase: "grupos",
+    grupo: "C",
+    local: "Haití",
+    visitante: "Escocia",
+    fechaUTC: "2026-06-14T02:00:00Z"
+  },
+  {
+    fase: "grupos",
+    grupo: "C",
+    local: "Escocia",
+    visitante: "Marruecos",
+    fechaUTC: "2026-06-19T23:00:00Z"
+  },
+  {
+    fase: "grupos",
+    grupo: "C",
+    local: "Brasil",
+    visitante: "Haití",
+    fechaUTC: "2026-06-20T02:00:00Z"
+  },
+  {
+    fase: "grupos",
+    grupo: "C",
+    local: "Escocia",
+    visitante: "Brasil",
+    fechaUTC: "2026-06-24T23:00:00Z"
+  },
+  {
+    fase: "grupos",
+    grupo: "C",
+    local: "Marruecos",
+    visitante: "Haití",
+    fechaUTC: "2026-06-24T23:00:00Z"
+  },
+
+  // ===== GRUPO D =====
+  {
+    fase: "grupos",
+    grupo: "D",
+    local: "Estados Unidos",
+    visitante: "Paraguay",
+    fechaUTC: "2026-06-13T02:00:00Z"
+  },
+  {
+    fase: "grupos",
+    grupo: "D",
+    local: "Australia",
+    visitante: "Turquía",
+    fechaUTC: "2026-06-14T05:00:00Z"
+  },
+  {
+    fase: "grupos",
+    grupo: "D",
+    local: "Estados Unidos",
+    visitante: "Australia",
+    fechaUTC: "2026-06-19T20:00:00Z"
+  },
+  {
+    fase: "grupos",
+    grupo: "D",
+    local: "Turquía",
+    visitante: "Paraguay",
+    fechaUTC: "2026-06-20T05:00:00Z"
+  },
+  {
+    fase: "grupos",
+    grupo: "D",
+    local: "Turquía",
+    visitante: "Estados Unidos",
+    fechaUTC: "2026-06-26T03:00:00Z"
+  },
+  {
+    fase: "grupos",
+    grupo: "D",
+    local: "Paraguay",
+    visitante: "Australia",
+    fechaUTC: "2026-06-26T03:00:00Z"
+  },
+
+  // ===== GRUPO E =====
+  {
+    fase: "grupos",
+    grupo: "E",
+    local: "Alemania",
+    visitante: "Curazao",
+    fechaUTC: "2026-06-14T18:00:00Z"
+  },
+  {
+    fase: "grupos",
+    grupo: "E",
+    local: "Costa de Marfil",
+    visitante: "Ecuador",
+    fechaUTC: "2026-06-15T00:00:00Z"
+  },
+  {
+    fase: "grupos",
+    grupo: "E",
+    local: "Alemania",
+    visitante: "Costa de Marfil",
+    fechaUTC: "2026-06-20T21:00:00Z"
+  },
+  {
+    fase: "grupos",
+    grupo: "E",
+    local: "Ecuador",
+    visitante: "Curazao",
+    fechaUTC: "2026-06-21T03:00:00Z"
+  },
+  {
+    fase: "grupos",
+    grupo: "E",
+    local: "Curazao",
+    visitante: "Costa de Marfil",
+    fechaUTC: "2026-06-25T21:00:00Z"
+  },
+  {
+    fase: "grupos",
+    grupo: "E",
+    local: "Ecuador",
+    visitante: "Alemania",
+    fechaUTC: "2026-06-25T21:00:00Z"
+  },
+
+  // ===== GRUPO F =====
+  {
+    fase: "grupos",
+    grupo: "F",
+    local: "Países Bajos",
+    visitante: "Japón",
+    fechaUTC: "2026-06-14T21:00:00Z"
+  },
+  {
+    fase: "grupos",
+    grupo: "F",
+    local: "Suecia",
+    visitante: "Túnez",
+    fechaUTC: "2026-06-15T03:00:00Z"
+  },
+  {
+    fase: "grupos",
+    grupo: "F",
+    local: "Países Bajos",
+    visitante: "Suecia",
+    fechaUTC: "2026-06-20T18:00:00Z"
+  },
+  {
+    fase: "grupos",
+    grupo: "F",
+    local: "Túnez",
+    visitante: "Japón",
+    fechaUTC: "2026-06-21T05:00:00Z"
+  },
+  {
+    fase: "grupos",
+    grupo: "F",
+    local: "Japón",
+    visitante: "Suecia",
+    fechaUTC: "2026-06-26T00:00:00Z"
+  },
+  {
+    fase: "grupos",
+    grupo: "F",
+    local: "Túnez",
+    visitante: "Países Bajos",
+    fechaUTC: "2026-06-26T00:00:00Z"
+  }
+
 ];
