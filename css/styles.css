@@ -19,19 +19,23 @@
 .grupo-card {
   background: rgba(15, 42, 80, 0.7);
   backdrop-filter: blur(8px);
-  border-radius: 1rem;
+  border-radius: 1.5rem;
   overflow: hidden;
   border: 1px solid rgba(251, 191, 36, 0.4);
   transition: all 0.2s;
+  box-shadow: 0 8px 20px rgba(0,0,0,0.3);
 }
 .grupo-header {
   background: rgba(0, 0, 0, 0.5);
-  padding: 1rem;
+  padding: 1rem 1.5rem;
   cursor: pointer;
   display: flex;
   justify-content: space-between;
   align-items: center;
   border-bottom: 1px solid #fbbf24;
+}
+.grupo-header:hover {
+  background: rgba(0, 0, 0, 0.7);
 }
 .grupo-body {
   max-height: 0;
@@ -44,18 +48,27 @@
 }
 .match-row {
   display: grid;
-  grid-template-columns: 1fr 0.5fr 1fr 1.2fr 0.7fr;
+  grid-template-columns: 1fr 0.4fr 1fr 1.2fr 0.6fr;
   gap: 0.5rem;
   align-items: center;
-  padding: 0.75rem;
+  padding: 0.75rem 1rem;
   border-bottom: 1px solid rgba(255,255,255,0.1);
   font-size: 0.85rem;
 }
 @media (max-width: 768px) {
   .match-row {
     grid-template-columns: 1fr 0.3fr 1fr 1fr 0.5fr;
-    font-size: 0.75rem;
+    font-size: 0.7rem;
     gap: 0.25rem;
+    padding: 0.5rem;
+  }
+  .prediction-input {
+    width: 45px;
+    font-size: 0.7rem;
+  }
+  .btn-guardar {
+    padding: 2px 6px;
+    font-size: 0.6rem;
   }
 }
 .team {
@@ -76,16 +89,22 @@
   color: white;
   text-align: center;
   padding: 4px;
-  border-radius: 6px;
+  border-radius: 8px;
+  font-weight: bold;
 }
 .btn-guardar {
   background: #fbbf24;
   color: black;
   font-weight: bold;
-  padding: 4px 10px;
-  border-radius: 20px;
+  padding: 4px 12px;
+  border-radius: 30px;
   font-size: 0.7rem;
   transition: 0.2s;
+  cursor: pointer;
+}
+.btn-guardar:hover {
+  background: #f59e0b;
+  transform: scale(1.02);
 }
 .btn-guardar:disabled {
   opacity: 0.4;
@@ -94,46 +113,71 @@
 /* Botón de grupo (scroll) */
 .grupo-tab {
   background: rgba(255,255,255,0.1);
-  padding: 0.5rem 1.2rem;
+  padding: 0.6rem 1.5rem;
   border-radius: 40px;
   cursor: pointer;
   transition: 0.2s;
   white-space: nowrap;
   font-weight: bold;
+  font-size: 0.9rem;
 }
 .grupo-tab.active {
   background: #fbbf24;
   color: black;
-  box-shadow: 0 0 10px rgba(251,191,36,0.5);
+  box-shadow: 0 0 15px rgba(251,191,36,0.6);
 }
-/* Admin match */
+.grupo-tab:hover:not(.active) {
+  background: rgba(251,191,36,0.3);
+}
+
+/* Admin panel - tarjetas de resultados */
 .admin-match {
   background: #1e2a3a;
-  padding: 8px;
-  border-radius: 12px;
+  padding: 0.8rem;
+  border-radius: 1rem;
   display: flex;
   flex-wrap: wrap;
   justify-content: space-between;
   align-items: center;
   gap: 0.5rem;
+  border-left: 4px solid #fbbf24;
 }
 .admin-match input {
   width: 70px;
   background: #0f2a50;
-  color: white;
   border: 1px solid #fbbf24;
+  color: white;
+  padding: 0.3rem;
   border-radius: 6px;
-  padding: 4px;
   text-align: center;
 }
-/* Ranking (sidebar) */
+.admin-match button {
+  background: #10b981;
+  padding: 0.3rem 0.8rem;
+  border-radius: 20px;
+  font-size: 0.7rem;
+}
+.admin-match button:hover {
+  background: #059669;
+}
+
+/* Ranking (opcional, si se usa en algún lado) */
 .ranking-item {
   display: flex;
   justify-content: space-between;
   padding: 0.5rem;
   border-bottom: 1px solid rgba(255,255,255,0.2);
 }
-.ranking-pos {
-  font-weight: bold;
-  color: #fbbf24;
+
+/* Scroll personalizado */
+::-webkit-scrollbar {
+  width: 8px;
+}
+::-webkit-scrollbar-track {
+  background: #1e2a3a;
+  border-radius: 10px;
+}
+::-webkit-scrollbar-thumb {
+  background: #fbbf24;
+  border-radius: 10px;
 }
