@@ -1,69 +1,129 @@
 <!DOCTYPE html>
 <html lang="es">
-<!-- ===================================================== -->
-<!-- HERO HEADER FIFA 2026 -->
-<!-- Banner principal con branding mundialista -->
-<!-- ===================================================== -->
 
 <head>
-  <meta charset="UTF-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+
   <title>Polla Mundialista 2026 | MISAGATECH</title>
+
+  <!-- Tailwind -->
   <script src="https://cdn.tailwindcss.com"></script>
+
+  <!-- Fonts -->
   <link rel="preconnect" href="https://fonts.googleapis.com">
-  <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;500;600;700;800&display=swap"
+  <link
+    href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;500;600;700;800&display=swap"
     rel="stylesheet">
-  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0-beta3/css/all.min.css">
+
+  <!-- FontAwesome -->
+  <link rel="stylesheet"
+    href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0-beta3/css/all.min.css">
+
+  <!-- CSS -->
   <link rel="stylesheet" href="css/styles.css">
 </head>
 
-<body class="text-white overflow-x-hidden">
+<body>
+
   <!-- ===================================================== -->
-  <!-- AUTH SCREEN | LOGIN Y REGISTRO -->
+  <!-- AUTH SCREEN -->
   <!-- ===================================================== -->
-  <div id="authScreen" class="min-h-screen flex items-center justify-center p-4">
-    <div class="bg-white/10 backdrop-blur-md rounded-2xl p-8 w-full max-w-md text-center">
-      <div class="flex justify-center mb-4">
-        <img src="assets/img/logo-fifa.png" alt="Logo Mundial 2026" class="h-24 w-auto">
+
+  <div id="authScreen" class="auth-screen">
+
+    <div class="auth-card">
+
+      <div class="auth-logo-area">
+        <img src="assets/img/logo-fifa.png" alt="Logo Mundial" class="auth-logo">
       </div>
-      <h1 class="text-3xl font-bold text-yellow-400">COPA MUNDIAL 2026</h1>
-      <p class="text-gray-300 mt-2">Predice. Compite. Gana.</p>
-      <div class="mt-8 space-y-4">
-        <input type="email" id="loginEmail" placeholder="Correo electrónico"
-          class="w-full p-3 rounded-lg bg-white/20 text-white">
-        <input type="password" id="loginPassword" placeholder="Contraseña"
-          class="w-full p-3 rounded-lg bg-white/20 text-white">
-        <button id="btnLogin"
-          class="w-full bg-yellow-500 text-black font-bold p-3 rounded-lg transition hover:bg-yellow-600">Iniciar
-          sesión</button>
-        <hr class="border-gray-500">
-        <input type="text" id="registerName" placeholder="Nombre completo"
-          class="w-full p-3 rounded-lg bg-white/20 text-white">
-        <input type="email" id="registerEmail" placeholder="Correo electrónico"
-          class="w-full p-3 rounded-lg bg-white/20 text-white">
-        <input type="password" id="registerPassword" placeholder="Contraseña"
-          class="w-full p-3 rounded-lg bg-white/20 text-white">
-        <button id="btnRegister"
-          class="w-full bg-blue-600 text-white font-bold p-3 rounded-lg transition hover:bg-blue-700">Registrarse</button>
+
+      <h1 class="auth-title">
+        COPA MUNDIAL 2026
+      </h1>
+
+      <p class="auth-subtitle">
+        Predice. Compite. Gana.
+      </p>
+
+      <div class="auth-form">
+
+        <input
+          type="email"
+          id="loginEmail"
+          placeholder="Correo electrónico"
+          class="auth-input"
+        >
+
+        <input
+          type="password"
+          id="loginPassword"
+          placeholder="Contraseña"
+          class="auth-input"
+        >
+
+        <button id="btnLogin" class="auth-btn-login">
+          Iniciar sesión
+        </button>
+
+        <div class="auth-divider"></div>
+
+        <input
+          type="text"
+          id="registerName"
+          placeholder="Nombre completo"
+          class="auth-input"
+        >
+
+        <input
+          type="email"
+          id="registerEmail"
+          placeholder="Correo electrónico"
+          class="auth-input"
+        >
+
+        <input
+          type="password"
+          id="registerPassword"
+          placeholder="Contraseña"
+          class="auth-input"
+        >
+
+        <button id="btnRegister" class="auth-btn-register">
+          Registrarse
+        </button>
+
       </div>
+
     </div>
+
   </div>
 
   <!-- ===================================================== -->
   <!-- APP PRINCIPAL -->
   <!-- ===================================================== -->
-  <div id="appScreen" class="hidden min-h-screen pb-20">
-    <!-- Header con imagen de fondo (hero-copa.png) -->
-    <header class="hero-header relative overflow-hidden">
+
+  <div id="appScreen" class="hidden">
+
+    <!-- ===================================================== -->
+    <!-- HERO HEADER -->
+    <!-- ===================================================== -->
+
+    <header class="hero-header">
 
       <div class="hero-overlay"></div>
 
-      <div class="hero-content relative z-10">
+      <div class="hero-content">
+
+        <!-- TOPBAR -->
 
         <div class="topbar">
 
           <div class="logo-area">
-            <img src="assets/img/logo-fifa.png" class="hero-logo">
+            <img
+              src="assets/img/logo-fifa.png"
+              class="hero-logo"
+            >
           </div>
 
           <div class="user-actions">
@@ -71,9 +131,46 @@
             <span id="userEmail" class="user-badge"></span>
 
             <button id="btnLogout" class="logout-btn">
+
               <i class="fas fa-sign-out-alt"></i>
+
               Salir
+
             </button>
+
+          </div>
+
+        </div>
+
+        <!-- HERO CENTER -->
+
+        <div class="hero-center">
+
+          <div class="hero-badge">
+            FIFA WORLD CUP 2026
+          </div>
+
+          <h1 class="hero-title">
+            POLLA MUNDIALISTA
+          </h1>
+
+          <p class="hero-subtitle">
+            Vive cada partido como un estratega del balón ⚽
+          </p>
+
+          <!-- STATS -->
+
+          <div class="hero-stats">
+
+            <div class="stat-card">
+              <strong id="misPuntos">0</strong>
+              <span>Puntos</span>
+            </div>
+
+            <div class="stat-card">
+              <strong id="miPosicion">-</strong>
+              <span>Posición</span>
+            </div>
 
           </div>
 
@@ -83,125 +180,203 @@
 
     </header>
 
-  <!-- ===================================================== -->
-  <!-- MAIN LAYOUT -->
-  <!-- Contenido principal + sidebar -->
-  <!-- ===================================================== -->
-  <main class="main-layout">
     <!-- ===================================================== -->
-    <!-- CONTENT AREA -->
-    <!-- Zona principal de partidos y grupos -->
+    <!-- MAIN -->
     <!-- ===================================================== -->
-    <div class="content-area">
+
+    <main class="main-layout">
+
       <!-- ===================================================== -->
-      <!-- ADMIN PANEL -->
-      <!-- Visible únicamente para administradores -->
+      <!-- CONTENT -->
       <!-- ===================================================== -->
-      <div id="adminPanel"
-        class="hidden bg-gray-900/80 backdrop-blur rounded-xl p-5 mb-6 border border-yellow-500/50 shadow-lg">
-        <div class="flex items-center gap-2 border-b border-yellow-500/30 pb-2 mb-4">
-          <i class="fas fa-user-shield text-yellow-400 text-xl"></i>
-          <h2 class="text-xl font-bold text-yellow-400">Panel de Administración</h2>
-        </div>
-        <div id="adminMatchesList" class="grid grid-cols-1 md:grid-cols-2 gap-3 max-h-96 overflow-y-auto p-1"></div>
-        <div class="mt-5 flex justify-center">
-          <button id="btnCargarPartidos"
-            class="bg-green-700 hover:bg-green-800 text-white px-6 py-2 rounded-full transition flex items-center gap-2"><i
-              class="fas fa-download"></i> Cargar Mundial 2026</button>
-        </div>
+
+      <div class="content-area">
+
+        <!-- ===================================================== -->
+        <!-- ADMIN PANEL -->
+        <!-- ===================================================== -->
+
+        <section id="adminPanel" class="hidden admin-panel">
+
+          <!-- HEADER -->
+
+          <div class="admin-panel-header">
+
+            <div class="admin-panel-title">
+
+              <i class="fas fa-user-shield"></i>
+
+              <h2>
+                Panel de Administración
+              </h2>
+
+            </div>
+
+          </div>
+
+          <!-- MATCHES -->
+
+          <div id="adminMatchesList"></div>
+
+          <!-- BTN -->
+
+          <div class="admin-bottom-actions">
+
+            <button id="btnCargarPartidos" class="admin-load-btn">
+
+              <i class="fas fa-download"></i>
+
+              Cargar Mundial 2026
+
+            </button>
+
+          </div>
+
+        </section>
+
+        <!-- ===================================================== -->
+        <!-- GROUPS SECTION -->
+        <!-- ===================================================== -->
+
+        <section class="groups-section">
+
+          <div class="section-title-row">
+
+            <div>
+
+              <span class="section-mini-title">
+                FASE INICIAL
+              </span>
+
+              <h2 class="section-title">
+                Fase de Grupos
+              </h2>
+
+            </div>
+
+          </div>
+
+          <!-- TABS -->
+
+          <div class="groups-tabs-wrapper">
+
+            <button id="scrollGruposLeft" class="scroll-btn">
+
+              <i class="fas fa-chevron-left"></i>
+
+            </button>
+
+            <div id="gruposCarousel"></div>
+
+            <button id="scrollGruposRight" class="scroll-btn">
+
+              <i class="fas fa-chevron-right"></i>
+
+            </button>
+
+          </div>
+
+        </section>
+
+        <!-- ===================================================== -->
+        <!-- MATCHES -->
+        <!-- ===================================================== -->
+
+        <div id="gruposContainer" class="groups-matches-container"></div>
+
       </div>
 
       <!-- ===================================================== -->
-      <!-- GROUPS SECTION -->
-      <!-- Tarjetas de grupos mundialistas -->
+      <!-- SIDEBAR -->
       <!-- ===================================================== -->
-      <section class="groups-section">
 
-        <div class="section-title-row">
+      <aside class="sidebar-area">
 
-          <div>
-            <span class="section-mini-title">
-              FASE INICIAL
-            </span>
+        <!-- POSICIÓN -->
 
-            <h2 class="section-title">
-              Fase de Grupos
-            </h2>
+        <div class="sidebar-card">
+
+          <h3 class="sidebar-small-title">
+            Mi posición actual
+          </h3>
+
+          <div class="sidebar-big-number" id="miPosicion">
+            -
+          </div>
+
+          <div class="sidebar-points">
+            <span id="misPuntos">0</span> PTS
           </div>
 
         </div>
 
-        <div id="gruposCarousel"></div>
+        <!-- PRÓXIMO PARTIDO -->
 
-   </section>
+        <div class="sidebar-card">
 
-<!-- MATCHES CONTAINER -->
-<div id="gruposContainer" class="groups-matches-container"></div>
+          <h3 class="sidebar-small-title">
+            Próximo Partido
+          </h3>
 
-</div>
+          <div class="next-match">
 
-    <!-- ===================================================== -->
-    <!-- MATCHES CONTAINER -->
-    <!-- Aquí se renderizan los partidos dinámicamente -->
-    <!-- ===================================================== -->
-    <div id="gruposContainer" class="groups-matches-container"></div>
-    </div>
+            <span id="proxLocal">---</span>
 
-    <!-- ===================================================== -->
-    <!-- SIDEBAR -->
-    <!-- Ranking, próximos partidos y premios -->
-    <!-- ===================================================== -->
-    <aside class="sidebar-area">
-      <!-- CARD | POSICIÓN DEL USUARIO -->
-      <div
-        class="bg-gradient-to-br from-white/10 to-white/5 backdrop-blur rounded-2xl p-5 text-center border border-white/20 shadow-xl">
-        <h3 class="text-gray-300 text-sm uppercase tracking-wider">Mi posición actual</h3>
-        <div class="text-6xl font-bold text-yellow-400 my-2" id="miPosicion">-</div>
-        <div class="text-2xl font-semibold"><span id="misPuntos">0</span> PTS</div>
-        <button id="verTablaBtn" class="mt-3 text-yellow-400 text-sm hover:underline flex items-center gap-1 mx-auto"><i
-            class="fas fa-chart-line"></i> Ver tabla completa →</button>
-      </div>
+            <strong>VS</strong>
 
-      <!-- CARD | PRÓXIMO PARTIDO -->
-      <div class="bg-white/10 backdrop-blur rounded-2xl p-5 border border-white/10">
-        <h3 class="text-gray-300 text-sm uppercase tracking-wider flex items-center gap-2"><i class="far fa-clock"></i>
-          Próximo partido</h3>
-        <div id="proximoPartido" class="mt-3 text-center">
-          <div class="flex justify-between items-center gap-3 text-lg font-bold">
-            <span id="proxLocal" class="flex-1">---</span>
-            <span class="text-yellow-400 text-xl">VS</span>
-            <span id="proxVisit" class="flex-1">---</span>
+            <span id="proxVisit">---</span>
+
           </div>
-          <div class="text-xs text-gray-300 mt-2" id="proxFecha">--/--/---- --:--</div>
-          <button id="verGrupoBtn"
-            class="mt-3 bg-yellow-600/40 hover:bg-yellow-600/60 text-yellow-200 px-4 py-1 rounded-full text-sm transition">Ver
-            grupo</button>
+
+          <div class="next-date" id="proxFecha">
+            --/--/----
+          </div>
+
+          <button id="verGrupoBtn" class="sidebar-btn">
+            Ver grupo
+          </button>
+
         </div>
-      </div>
 
-      <!-- CARD | PREMIOS -->
-      <div
-        class="bg-gradient-to-r from-yellow-600/20 to-orange-700/20 rounded-2xl p-5 text-center border border-yellow-500/50">
-        <i class="fas fa-trophy text-5xl text-yellow-400 mb-2"></i>
-        <h3 class="font-bold text-xl mt-2">¡GANA GRANDES PREMIOS!</h3>
-        <p class="text-sm text-gray-300 mt-1">Los mejores puntajes recibirán increíbles recompensas.</p>
-        <button
-          class="mt-4 bg-yellow-500 hover:bg-yellow-600 text-black px-5 py-2 rounded-full text-sm font-bold transition">Ver
-          premios</button>
-      </div>
-    </aside>
-  </main>
-  <!-- ===================================================== -->
-  <!-- FOOTER -->
-  <!-- ===================================================== -->
+        <!-- PREMIOS -->
 
-  <footer class="site-footer">
-    © 2026 MISAGATECH · Polla Mundialista FIFA 2026
-  </footer>
+        <div class="sidebar-card sidebar-trophy">
+
+          <i class="fas fa-trophy trophy-icon"></i>
+
+          <h3>
+            ¡GANA PREMIOS!
+          </h3>
+
+          <p>
+            Los mejores estrategas subirán al podio dorado 🏆
+          </p>
+
+        </div>
+
+      </aside>
+
+    </main>
+
+    <!-- ===================================================== -->
+    <!-- FOOTER -->
+    <!-- ===================================================== -->
+
+    <footer class="site-footer">
+
+      © 2026 MISAGATECH · Polla Mundialista FIFA 2026
+
+    </footer>
+
   </div>
+
+  <!-- ===================================================== -->
+  <!-- SCRIPTS -->
+  <!-- ===================================================== -->
 
   <script type="module" src="js/firebase.js"></script>
   <script type="module" src="js/app.js"></script>
+
 </body>
 
 </html>

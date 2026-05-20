@@ -267,320 +267,320 @@ export const todosLosPartidos = [
     visitante: "Países Bajos",
     fechaUTC: "2026-06-26T00:00:00Z"
   },
-// ======================================================
-// GRUPO G
-// ======================================================
+  // ======================================================
+  // GRUPO G
+  // ======================================================
 
-{
-  fase: "grupos",
-  grupo: "G",
-  local: "Bélgica",
-  visitante: "Egipto",
-  fechaUTC: "2026-06-13T18:00:00Z"
-},
+  {
+    fase: "grupos",
+    grupo: "G",
+    local: "Bélgica",
+    visitante: "Egipto",
+    fechaUTC: "2026-06-13T18:00:00Z"
+  },
 
-{
-  fase: "grupos",
-  grupo: "G",
-  local: "Irán",
-  visitante: "Nueva Zelanda",
-  fechaUTC: "2026-06-14T21:00:00Z"
-},
+  {
+    fase: "grupos",
+    grupo: "G",
+    local: "Irán",
+    visitante: "Nueva Zelanda",
+    fechaUTC: "2026-06-14T21:00:00Z"
+  },
 
-{
-  fase: "grupos",
-  grupo: "G",
-  local: "Bélgica",
-  visitante: "Irán",
-  fechaUTC: "2026-06-18T19:00:00Z"
-},
+  {
+    fase: "grupos",
+    grupo: "G",
+    local: "Bélgica",
+    visitante: "Irán",
+    fechaUTC: "2026-06-18T19:00:00Z"
+  },
 
-{
-  fase: "grupos",
-  grupo: "G",
-  local: "Egipto",
-  visitante: "Nueva Zelanda",
-  fechaUTC: "2026-06-18T22:00:00Z"
-},
+  {
+    fase: "grupos",
+    grupo: "G",
+    local: "Egipto",
+    visitante: "Nueva Zelanda",
+    fechaUTC: "2026-06-18T22:00:00Z"
+  },
 
-{
-  fase: "grupos",
-  grupo: "G",
-  local: "Nueva Zelanda",
-  visitante: "Bélgica",
-  fechaUTC: "2026-06-24T20:00:00Z"
-},
+  {
+    fase: "grupos",
+    grupo: "G",
+    local: "Nueva Zelanda",
+    visitante: "Bélgica",
+    fechaUTC: "2026-06-24T20:00:00Z"
+  },
 
-{
-  fase: "grupos",
-  grupo: "G",
-  local: "Egipto",
-  visitante: "Irán",
-  fechaUTC: "2026-06-24T20:00:00Z"
-},
-
-
-// ======================================================
-// GRUPO H
-// ======================================================
-
-{
-  fase: "grupos",
-  grupo: "H",
-  local: "España",
-  visitante: "Cabo Verde",
-  fechaUTC: "2026-06-13T17:00:00Z"
-},
-
-{
-  fase: "grupos",
-  grupo: "H",
-  local: "Arabia Saudita",
-  visitante: "Uruguay",
-  fechaUTC: "2026-06-14T20:00:00Z"
-},
-
-{
-  fase: "grupos",
-  grupo: "H",
-  local: "España",
-  visitante: "Uruguay",
-  fechaUTC: "2026-06-19T18:00:00Z"
-},
-
-{
-  fase: "grupos",
-  grupo: "H",
-  local: "Cabo Verde",
-  visitante: "Arabia Saudita",
-  fechaUTC: "2026-06-19T21:00:00Z"
-},
-
-{
-  fase: "grupos",
-  grupo: "H",
-  local: "Uruguay",
-  visitante: "Cabo Verde",
-  fechaUTC: "2026-06-25T20:00:00Z"
-},
-
-{
-  fase: "grupos",
-  grupo: "H",
-  local: "Arabia Saudita",
-  visitante: "España",
-  fechaUTC: "2026-06-25T20:00:00Z"
-},
+  {
+    fase: "grupos",
+    grupo: "G",
+    local: "Egipto",
+    visitante: "Irán",
+    fechaUTC: "2026-06-24T20:00:00Z"
+  },
 
 
-// ======================================================
-// GRUPO I
-// ======================================================
+  // ======================================================
+  // GRUPO H
+  // ======================================================
 
-{
-  fase: "grupos",
-  grupo: "I",
-  local: "Francia",
-  visitante: "Senegal",
-  fechaUTC: "2026-06-14T18:00:00Z"
-},
+  {
+    fase: "grupos",
+    grupo: "H",
+    local: "España",
+    visitante: "Cabo Verde",
+    fechaUTC: "2026-06-13T17:00:00Z"
+  },
 
-{
-  fase: "grupos",
-  grupo: "I",
-  local: "Noruega",
-  visitante: "Irak",
-  fechaUTC: "2026-06-14T22:00:00Z"
-},
+  {
+    fase: "grupos",
+    grupo: "H",
+    local: "Arabia Saudita",
+    visitante: "Uruguay",
+    fechaUTC: "2026-06-14T20:00:00Z"
+  },
 
-{
-  fase: "grupos",
-  grupo: "I",
-  local: "Francia",
-  visitante: "Noruega",
-  fechaUTC: "2026-06-19T19:00:00Z"
-},
+  {
+    fase: "grupos",
+    grupo: "H",
+    local: "España",
+    visitante: "Uruguay",
+    fechaUTC: "2026-06-19T18:00:00Z"
+  },
 
-{
-  fase: "grupos",
-  grupo: "I",
-  local: "Senegal",
-  visitante: "Irak",
-  fechaUTC: "2026-06-19T22:00:00Z"
-},
+  {
+    fase: "grupos",
+    grupo: "H",
+    local: "Cabo Verde",
+    visitante: "Arabia Saudita",
+    fechaUTC: "2026-06-19T21:00:00Z"
+  },
 
-{
-  fase: "grupos",
-  grupo: "I",
-  local: "Irak",
-  visitante: "Francia",
-  fechaUTC: "2026-06-25T19:00:00Z"
-},
+  {
+    fase: "grupos",
+    grupo: "H",
+    local: "Uruguay",
+    visitante: "Cabo Verde",
+    fechaUTC: "2026-06-25T20:00:00Z"
+  },
 
-{
-  fase: "grupos",
-  grupo: "I",
-  local: "Senegal",
-  visitante: "Noruega",
-  fechaUTC: "2026-06-25T19:00:00Z"
-},
-
-
-// ======================================================
-// GRUPO J
-// ======================================================
-
-{
-  fase: "grupos",
-  grupo: "J",
-  local: "Argentina",
-  visitante: "Argelia",
-  fechaUTC: "2026-06-15T18:00:00Z"
-},
-
-{
-  fase: "grupos",
-  grupo: "J",
-  local: "Austria",
-  visitante: "Jordania",
-  fechaUTC: "2026-06-15T21:00:00Z"
-},
-
-{
-  fase: "grupos",
-  grupo: "J",
-  local: "Argentina",
-  visitante: "Austria",
-  fechaUTC: "2026-06-20T19:00:00Z"
-},
-
-{
-  fase: "grupos",
-  grupo: "J",
-  local: "Argelia",
-  visitante: "Jordania",
-  fechaUTC: "2026-06-20T22:00:00Z"
-},
-
-{
-  fase: "grupos",
-  grupo: "J",
-  local: "Jordania",
-  visitante: "Argentina",
-  fechaUTC: "2026-06-26T20:00:00Z"
-},
-
-{
-  fase: "grupos",
-  grupo: "J",
-  local: "Argelia",
-  visitante: "Austria",
-  fechaUTC: "2026-06-26T20:00:00Z"
-},
+  {
+    fase: "grupos",
+    grupo: "H",
+    local: "Arabia Saudita",
+    visitante: "España",
+    fechaUTC: "2026-06-25T20:00:00Z"
+  },
 
 
-// ======================================================
-// GRUPO K
-// ======================================================
+  // ======================================================
+  // GRUPO I
+  // ======================================================
 
-{
-  fase: "grupos",
-  grupo: "K",
-  local: "Portugal",
-  visitante: "RD Congo",
-  fechaUTC: "2026-06-15T17:00:00Z"
-},
+  {
+    fase: "grupos",
+    grupo: "I",
+    local: "Francia",
+    visitante: "Senegal",
+    fechaUTC: "2026-06-14T18:00:00Z"
+  },
 
-{
-  fase: "grupos",
-  grupo: "K",
-  local: "Uzbekistán",
-  visitante: "Colombia",
-  fechaUTC: "2026-06-15T20:00:00Z"
-},
+  {
+    fase: "grupos",
+    grupo: "I",
+    local: "Noruega",
+    visitante: "Irak",
+    fechaUTC: "2026-06-14T22:00:00Z"
+  },
 
-{
-  fase: "grupos",
-  grupo: "K",
-  local: "Portugal",
-  visitante: "Colombia",
-  fechaUTC: "2026-06-21T18:00:00Z"
-},
+  {
+    fase: "grupos",
+    grupo: "I",
+    local: "Francia",
+    visitante: "Noruega",
+    fechaUTC: "2026-06-19T19:00:00Z"
+  },
 
-{
-  fase: "grupos",
-  grupo: "K",
-  local: "RD Congo",
-  visitante: "Uzbekistán",
-  fechaUTC: "2026-06-21T21:00:00Z"
-},
+  {
+    fase: "grupos",
+    grupo: "I",
+    local: "Senegal",
+    visitante: "Irak",
+    fechaUTC: "2026-06-19T22:00:00Z"
+  },
 
-{
-  fase: "grupos",
-  grupo: "K",
-  local: "Colombia",
-  visitante: "RD Congo",
-  fechaUTC: "2026-06-26T19:00:00Z"
-},
+  {
+    fase: "grupos",
+    grupo: "I",
+    local: "Irak",
+    visitante: "Francia",
+    fechaUTC: "2026-06-25T19:00:00Z"
+  },
 
-{
-  fase: "grupos",
-  grupo: "K",
-  local: "Uzbekistán",
-  visitante: "Portugal",
-  fechaUTC: "2026-06-26T19:00:00Z"
-},
+  {
+    fase: "grupos",
+    grupo: "I",
+    local: "Senegal",
+    visitante: "Noruega",
+    fechaUTC: "2026-06-25T19:00:00Z"
+  },
 
 
-// ======================================================
-// GRUPO L
-// ======================================================
+  // ======================================================
+  // GRUPO J
+  // ======================================================
 
-{
-  fase: "grupos",
-  grupo: "L",
-  local: "Inglaterra",
-  visitante: "Croacia",
-  fechaUTC: "2026-06-16T18:00:00Z"
-},
+  {
+    fase: "grupos",
+    grupo: "J",
+    local: "Argentina",
+    visitante: "Argelia",
+    fechaUTC: "2026-06-15T18:00:00Z"
+  },
 
-{
-  fase: "grupos",
-  grupo: "L",
-  local: "Panamá",
-  visitante: "Ghana",
-  fechaUTC: "2026-06-16T21:00:00Z"
-},
+  {
+    fase: "grupos",
+    grupo: "J",
+    local: "Austria",
+    visitante: "Jordania",
+    fechaUTC: "2026-06-15T21:00:00Z"
+  },
 
-{
-  fase: "grupos",
-  grupo: "L",
-  local: "Inglaterra",
-  visitante: "Panamá",
-  fechaUTC: "2026-06-22T19:00:00Z"
-},
+  {
+    fase: "grupos",
+    grupo: "J",
+    local: "Argentina",
+    visitante: "Austria",
+    fechaUTC: "2026-06-20T19:00:00Z"
+  },
 
-{
-  fase: "grupos",
-  grupo: "L",
-  local: "Croacia",
-  visitante: "Ghana",
-  fechaUTC: "2026-06-22T22:00:00Z"
-},
+  {
+    fase: "grupos",
+    grupo: "J",
+    local: "Argelia",
+    visitante: "Jordania",
+    fechaUTC: "2026-06-20T22:00:00Z"
+  },
 
-{
-  fase: "grupos",
-  grupo: "L",
-  local: "Ghana",
-  visitante: "Inglaterra",
-  fechaUTC: "2026-06-27T20:00:00Z"
-},
+  {
+    fase: "grupos",
+    grupo: "J",
+    local: "Jordania",
+    visitante: "Argentina",
+    fechaUTC: "2026-06-26T20:00:00Z"
+  },
 
-{
-  fase: "grupos",
-  grupo: "L",
-  local: "Croacia",
-  visitante: "Panamá",
-  fechaUTC: "2026-06-27T20:00:00Z"
-},
+  {
+    fase: "grupos",
+    grupo: "J",
+    local: "Argelia",
+    visitante: "Austria",
+    fechaUTC: "2026-06-26T20:00:00Z"
+  },
+
+
+  // ======================================================
+  // GRUPO K
+  // ======================================================
+
+  {
+    fase: "grupos",
+    grupo: "K",
+    local: "Portugal",
+    visitante: "RD Congo",
+    fechaUTC: "2026-06-15T17:00:00Z"
+  },
+
+  {
+    fase: "grupos",
+    grupo: "K",
+    local: "Uzbekistán",
+    visitante: "Colombia",
+    fechaUTC: "2026-06-15T20:00:00Z"
+  },
+
+  {
+    fase: "grupos",
+    grupo: "K",
+    local: "Portugal",
+    visitante: "Colombia",
+    fechaUTC: "2026-06-21T18:00:00Z"
+  },
+
+  {
+    fase: "grupos",
+    grupo: "K",
+    local: "RD Congo",
+    visitante: "Uzbekistán",
+    fechaUTC: "2026-06-21T21:00:00Z"
+  },
+
+  {
+    fase: "grupos",
+    grupo: "K",
+    local: "Colombia",
+    visitante: "RD Congo",
+    fechaUTC: "2026-06-26T19:00:00Z"
+  },
+
+  {
+    fase: "grupos",
+    grupo: "K",
+    local: "Uzbekistán",
+    visitante: "Portugal",
+    fechaUTC: "2026-06-26T19:00:00Z"
+  },
+
+
+  // ======================================================
+  // GRUPO L
+  // ======================================================
+
+  {
+    fase: "grupos",
+    grupo: "L",
+    local: "Inglaterra",
+    visitante: "Croacia",
+    fechaUTC: "2026-06-16T18:00:00Z"
+  },
+
+  {
+    fase: "grupos",
+    grupo: "L",
+    local: "Panamá",
+    visitante: "Ghana",
+    fechaUTC: "2026-06-16T21:00:00Z"
+  },
+
+  {
+    fase: "grupos",
+    grupo: "L",
+    local: "Inglaterra",
+    visitante: "Panamá",
+    fechaUTC: "2026-06-22T19:00:00Z"
+  },
+
+  {
+    fase: "grupos",
+    grupo: "L",
+    local: "Croacia",
+    visitante: "Ghana",
+    fechaUTC: "2026-06-22T22:00:00Z"
+  },
+
+  {
+    fase: "grupos",
+    grupo: "L",
+    local: "Ghana",
+    visitante: "Inglaterra",
+    fechaUTC: "2026-06-27T20:00:00Z"
+  },
+
+  {
+    fase: "grupos",
+    grupo: "L",
+    local: "Croacia",
+    visitante: "Panamá",
+    fechaUTC: "2026-06-27T20:00:00Z"
+  },
 ];
