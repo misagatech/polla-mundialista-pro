@@ -87,11 +87,24 @@ body{
 }
 
 .hero-logo{
-  width:150px;
-  object-fit:contain;
-  filter:drop-shadow(0 8px 20px rgba(0,0,0,.4));
+  width: 240px;
+  max-width: none;
+  object-fit: contain;
+  filter: drop-shadow(0 10px 25px rgba(0,0,0,.55));
+  position: relative;
+  z-index: 5;
 }
+/* =========================
+   RESPONSIVE LOGO
+========================= */
 
+@media (max-width: 768px){
+
+  .hero-logo{
+    width: 150px;
+  }
+
+}
 .user-actions{
   display:flex;
   align-items:center;
@@ -542,9 +555,6 @@ body{
     gap:20px;
   }
 
-  .hero-logo{
-    width:120px;
-  }
 
   .hero-center{
     margin-top:50px;
