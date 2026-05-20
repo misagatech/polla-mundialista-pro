@@ -1,5 +1,4 @@
 import { db, auth } from "./firebase.js";
-
 import {
   collection,
   query,
@@ -12,990 +11,507 @@ import {
   orderBy,
   writeBatch
 } from "https://www.gstatic.com/firebasejs/12.12.0/firebase-firestore.js";
-
 import {
   onAuthStateChanged,
   signInWithEmailAndPassword,
   createUserWithEmailAndPassword,
   signOut
 } from "https://www.gstatic.com/firebasejs/12.12.0/firebase-auth.js";
-
 import { todosLosPartidos } from "./partidos.js";
-
 
 // ======================================================
 // ELEMENTOS DOM
 // ======================================================
-
 const authScreen = document.getElementById("authScreen");
 const appScreen = document.getElementById("appScreen");
-
 const adminPanel = document.getElementById("adminPanel");
-
 const gruposContainer = document.getElementById("gruposContainer");
-
 const gruposCarousel = document.getElementById("gruposCarousel");
-
-const scrollGruposLeft =
-  document.getElementById("scrollGruposLeft");
-
-const scrollGruposRight =
-  document.getElementById("scrollGruposRight");
-
+const scrollGruposLeft = document.getElementById("scrollGruposLeft");
+const scrollGruposRight = document.getElementById("scrollGruposRight");
 const userEmailSpan = document.getElementById("userEmail");
-
 const miPosicionSpan = document.getElementById("miPosicion");
 const misPuntosSpan = document.getElementById("misPuntos");
-
 const proxLocalSpan = document.getElementById("proxLocal");
 const proxVisitSpan = document.getElementById("proxVisit");
 const proxFechaSpan = document.getElementById("proxFecha");
 
-
 // ======================================================
-// VARIABLES
+// VARIABLES GLOBALES
 // ======================================================
-
 let currentUser = null;
 let currentUserRol = null;
-
 let matchesUnsubscribe = null;
-
+let rankingUnsubscribe = null;
 let gruposData = {};
 let grupoActivo = "A";
+let adminGrupoActivo = "A";
 
 // ======================================================
-// BANDERAS
+// BANDERAS (códigos de país para flagcdn)
 // ======================================================
-
 function obtenerCodigoPais(nombre) {
-
   const paises = {
-
-    "México": "mx",
-    "Sudáfrica": "za",
-    "Corea del Sur": "kr",
-    "República Checa": "cz",
-
-    "Canadá": "ca",
-    "Bosnia y Herzegovina": "ba",
-    "Qatar": "qa",
-    "Suiza": "ch",
-
-    "Brasil": "br",
-    "Marruecos": "ma",
-    "Haití": "ht",
-    "Escocia": "gb-sct",
-
-    "Estados Unidos": "us",
-    "Paraguay": "py",
-    "Australia": "au",
-    "Turquía": "tr",
-
-    "Alemania": "de",
-    "Curazao": "cw",
-    "Costa de Marfil": "ci",
-    "Ecuador": "ec",
-
-    "Países Bajos": "nl",
-    "Japón": "jp",
-    "Suecia": "se",
-    "Túnez": "tn",
-
-    "Bélgica": "be",
-    "Egipto": "eg",
-    "Irán": "ir",
-    "Nueva Zelanda": "nz",
-
-    "España": "es",
-    "Cabo Verde": "cv",
-    "Arabia Saudita": "sa",
-    "Uruguay": "uy",
-
-    "Francia": "fr",
-    "Senegal": "sn",
-    "Noruega": "no",
-    "Irak": "iq",
-
-    "Argentina": "ar",
-    "Argelia": "dz",
-    "Austria": "at",
-    "Jordania": "jo",
-
-    "Portugal": "pt",
-    "RD Congo": "cd",
-    "Uzbekistán": "uz",
-    "Colombia": "co",
-
-    "Inglaterra": "gb-eng",
-    "Croacia": "hr",
-    "Panamá": "pa",
-    "Ghana": "gh"
-
+    "México": "mx", "Sudáfrica": "za", "Corea del Sur": "kr", "República Checa": "cz",
+    "Canadá": "ca", "Bosnia y Herzegovina": "ba", "Qatar": "qa", "Suiza": "ch",
+    "Brasil": "br", "Marruecos": "ma", "Haití": "ht", "Escocia": "gb-sct",
+    "Estados Unidos": "us", "Paraguay": "py", "Australia": "au", "Turquía": "tr",
+    "Alemania": "de", "Curazao": "cw", "Costa de Marfil": "ci", "Ecuador": "ec",
+    "Países Bajos": "nl", "Japón": "jp", "Suecia": "se", "Túnez": "tn",
+    "Bélgica": "be", "Egipto": "eg", "Irán": "ir", "Nueva Zelanda": "nz",
+    "España": "es", "Cabo Verde": "cv", "Arabia Saudita": "sa", "Uruguay": "uy",
+    "Francia": "fr", "Senegal": "sn", "Noruega": "no", "Irak": "iq",
+    "Argentina": "ar", "Argelia": "dz", "Austria": "at", "Jordania": "jo",
+    "Portugal": "pt", "RD Congo": "cd", "Uzbekistán": "uz", "Colombia": "co",
+    "Inglaterra": "gb-eng", "Croacia": "hr", "Panamá": "pa", "Ghana": "gh"
   };
-
   return paises[nombre] || "un";
-
 }
 
-
 // ======================================================
-// CÓDIGOS FIFA
+// CÓDIGOS FIFA (3 letras)
 // ======================================================
-
 const fifaCodes = {
-
-  "México": "MEX",
-  "Sudáfrica": "RSA",
-  "Corea del Sur": "KOR",
-  "República Checa": "CZE",
-
-  "Canadá": "CAN",
-  "Bosnia y Herzegovina": "BIH",
-  "Qatar": "QAT",
-  "Suiza": "SUI",
-
-  "Brasil": "BRA",
-  "Marruecos": "MAR",
-  "Haití": "HAI",
-  "Escocia": "SCO",
-
-  "Estados Unidos": "USA",
-  "Paraguay": "PAR",
-  "Australia": "AUS",
-  "Turquía": "TUR",
-
-  "Alemania": "GER",
-  "Curazao": "CUW",
-  "Costa de Marfil": "CIV",
-  "Ecuador": "ECU",
-
-  "Países Bajos": "NED",
-  "Japón": "JPN",
-  "Suecia": "SWE",
-  "Túnez": "TUN",
-
-  "Bélgica": "BEL",
-  "Egipto": "EGY",
-  "Irán": "IRN",
-  "Nueva Zelanda": "NZL",
-
-  "España": "ESP",
-  "Cabo Verde": "CPV",
-  "Arabia Saudita": "KSA",
-  "Uruguay": "URU",
-
-  "Francia": "FRA",
-  "Senegal": "SEN",
-  "Noruega": "NOR",
-  "Irak": "IRQ",
-
-  "Argentina": "ARG",
-  "Argelia": "ALG",
-  "Austria": "AUT",
-  "Jordania": "JOR",
-
-  "Portugal": "POR",
-  "RD Congo": "COD",
-  "Uzbekistán": "UZB",
-  "Colombia": "COL",
-
-  "Inglaterra": "ENG",
-  "Croacia": "CRO",
-  "Panamá": "PAN",
-  "Ghana": "GHA"
-
+  "México": "MEX", "Sudáfrica": "RSA", "Corea del Sur": "KOR", "República Checa": "CZE",
+  "Canadá": "CAN", "Bosnia y Herzegovina": "BIH", "Qatar": "QAT", "Suiza": "SUI",
+  "Brasil": "BRA", "Marruecos": "MAR", "Haití": "HAI", "Escocia": "SCO",
+  "Estados Unidos": "USA", "Paraguay": "PAR", "Australia": "AUS", "Turquía": "TUR",
+  "Alemania": "GER", "Curazao": "CUW", "Costa de Marfil": "CIV", "Ecuador": "ECU",
+  "Países Bajos": "NED", "Japón": "JPN", "Suecia": "SWE", "Túnez": "TUN",
+  "Bélgica": "BEL", "Egipto": "EGY", "Irán": "IRN", "Nueva Zelanda": "NZL",
+  "España": "ESP", "Cabo Verde": "CPV", "Arabia Saudita": "KSA", "Uruguay": "URU",
+  "Francia": "FRA", "Senegal": "SEN", "Noruega": "NOR", "Irak": "IRQ",
+  "Argentina": "ARG", "Argelia": "ALG", "Austria": "AUT", "Jordania": "JOR",
+  "Portugal": "POR", "RD Congo": "COD", "Uzbekistán": "UZB", "Colombia": "COL",
+  "Inglaterra": "ENG", "Croacia": "CRO", "Panamá": "PAN", "Ghana": "GHA"
 };
 
-
 // ======================================================
-// FASE GRUPOS
+// UTILIDADES
 // ======================================================
-
 function esFaseGrupos(match) {
   return match.fase === "grupos";
 }
 
-
-// ======================================================
-// AGRUPAR PARTIDOS
-// ======================================================
-
 function agruparPartidos(partidos) {
-
   const grupos = {};
-
   partidos.forEach(match => {
-
     const grupo = match.grupo;
-
-    if (!grupos[grupo]) {
-      grupos[grupo] = [];
-    }
-
+    if (!grupos[grupo]) grupos[grupo] = [];
     grupos[grupo].push(match);
-
   });
-
   for (const g in grupos) {
-
-    grupos[g].sort((a, b) => {
-      return a.hora_partido.toDate() - b.hora_partido.toDate();
-    });
-
+    grupos[g].sort((a, b) => a.hora_partido.toDate() - b.hora_partido.toDate());
   }
-
   return grupos;
-
 }
 
-
 // ======================================================
-// MOSTRAR TODOS LOS GRUPOS
+// RENDERIZAR GRUPOS (FASE DE GRUPOS - USUARIO NORMAL)
 // ======================================================
-
 function mostrarTodosLosGrupos() {
-
   const grupos = Object.keys(gruposData).sort();
-
-  // ======================================================
-  // CREAR BOTONES DEL CARRUSEL
-  // ======================================================
-
+  // Botones del carrusel
   let tabsHTML = "";
-
   grupos.forEach(grupo => {
-
     tabsHTML += `
-      <button
-        class="grupo-tab ${grupo === grupoActivo ? "active" : ""}"
-        onclick="window.cambiarGrupo('${grupo}')"
-      >
+      <button class="grupo-tab ${grupo === grupoActivo ? "active" : ""}" 
+              onclick="window.cambiarGrupo('${grupo}')">
         Grupo ${grupo}
       </button>
     `;
-
   });
-
   gruposCarousel.innerHTML = tabsHTML;
 
-  // ======================================================
-  // MOSTRAR SOLO GRUPO ACTIVO
-  // ======================================================
-
+  // Mostrar solo el grupo activo
   let html = "";
-
-  const partidosGrupo =
-    gruposData[grupoActivo] || [];
+  const partidosGrupo = gruposData[grupoActivo] || [];
+  if (partidosGrupo.length === 0) {
+    gruposContainer.innerHTML = `<div class="text-center py-10">No hay partidos en este grupo</div>`;
+    return;
+  }
 
   html += `
     <div class="grupo-card">
-
       <div class="grupo-header">
-
-        <h3 class="text-xl font-bold text-yellow-300">
-          GRUPO ${grupoActivo}
-        </h3>
-
+        <h3 class="text-xl font-bold text-yellow-300">GRUPO ${grupoActivo}</h3>
       </div>
-
       <div class="matches-grid">
   `;
-
   partidosGrupo.forEach(match => {
-
     const matchId = match.id;
-
-    const predLocal = match.userPred
-      ? match.userPred.pred_local
-      : "";
-
-    const predVisit = match.userPred
-      ? match.userPred.pred_visitante
-      : "";
-
+    const predLocal = match.userPred ? match.userPred.pred_local : "";
+    const predVisit = match.userPred ? match.userPred.pred_visitante : "";
     const isBlocked = match.bloqueado;
+    const fechaLocal = match.hora_partido.toDate().toLocaleString("es-CO", { timeZone: "America/Bogota" });
 
     html += `
       <div class="match-card">
-
         <div class="match-teams">
-
           <div class="team-row">
-
-            <img
-              class="flag-icon"
-              src="https://flagcdn.com/w40/${obtenerCodigoPais(match.equipo_local)}.png"
-            >
-
+            <img class="flag-icon" src="https://flagcdn.com/${obtenerCodigoPais(match.equipo_local)}.svg">
             <span>${match.equipo_local}</span>
-
           </div>
-
-          <div class="vs-text">
-            VS
-          </div>
-
+          <div class="vs-text">VS</div>
           <div class="team-row">
-
-            <img
-              class="flag-icon"
-              src="https://flagcdn.com/w40/${obtenerCodigoPais(match.equipo_visitante)}.png"
-            >
-
+            <img class="flag-icon" src="https://flagcdn.com/${obtenerCodigoPais(match.equipo_visitante)}.svg">
             <span>${match.equipo_visitante}</span>
-
           </div>
-
         </div>
-
         <div class="prediction-area">
-
-          <input
-            type="number"
-            id="local_${matchId}"
-            value="${predLocal}"
-            placeholder="0"
-            class="prediction-input"
-            ${isBlocked ? "disabled" : ""}
-          >
-
+          <input type="number" id="local_${matchId}" value="${predLocal}" placeholder="0" class="prediction-input" ${isBlocked ? "disabled" : ""}>
           <span class="score-separator">-</span>
-
-          <input
-            type="number"
-            id="visit_${matchId}"
-            value="${predVisit}"
-            placeholder="0"
-            class="prediction-input"
-            ${isBlocked ? "disabled" : ""}
-          >
-
+          <input type="number" id="visit_${matchId}" value="${predVisit}" placeholder="0" class="prediction-input" ${isBlocked ? "disabled" : ""}>
         </div>
-
-        <button
-          class="btn-guardar"
-          onclick="window.savePrediction('${matchId}')"
-          ${isBlocked ? "disabled" : ""}
-        >
+        <button class="btn-guardar" onclick="window.savePrediction('${matchId}')" ${isBlocked ? "disabled" : ""}>
           Guardar
         </button>
-
-        <div class="match-date">
-
-          📅 ${match.hora_partido.toDate().toLocaleString("es-CO", {
-            timeZone: "America/Bogota"
-          })}
-
-        </div>
-
+        <div class="match-date">📅 ${fechaLocal}</div>
       </div>
     `;
-
   });
-
-  html += `
-      </div>
-    </div>
-  `;
-
+  html += `</div></div>`;
   gruposContainer.innerHTML = html;
-
 }
-// ======================================================
-// CAMBIAR GRUPO
-// ======================================================
 
+// ======================================================
+// CAMBIAR GRUPO (desde carrusel)
+// ======================================================
 window.cambiarGrupo = (grupo) => {
-
   grupoActivo = grupo;
-
   mostrarTodosLosGrupos();
-
 };
-// ======================================================
-// SCROLL CARRUSEL
-// ======================================================
 
-scrollGruposLeft?.addEventListener("click", () => {
-
-  gruposCarousel.scrollBy({
-    left: -300,
-    behavior: "smooth"
+// ======================================================
+// SCROLL DEL CARRUSEL
+// ======================================================
+if (scrollGruposLeft && scrollGruposRight) {
+  scrollGruposLeft.addEventListener("click", () => {
+    gruposCarousel.scrollBy({ left: -300, behavior: "smooth" });
   });
-
-});
-
-scrollGruposRight?.addEventListener("click", () => {
-
-  gruposCarousel.scrollBy({
-    left: 300,
-    behavior: "smooth"
+  scrollGruposRight.addEventListener("click", () => {
+    gruposCarousel.scrollBy({ left: 300, behavior: "smooth" });
   });
+}
 
-});
 // ======================================================
-// CARGAR PARTIDOS
+// CARGAR PARTIDOS Y PREDICCIONES (REALTIME)
 // ======================================================
-
 async function loadMatchesAndPredictions() {
-
-  const q = query(
-    collection(db, "matches"),
-    orderBy("hora_partido")
-  );
-
+  if (matchesUnsubscribe) matchesUnsubscribe();
+  const q = query(collection(db, "matches"), orderBy("hora_partido"));
   matchesUnsubscribe = onSnapshot(q, async (snapshot) => {
-
     let matches = [];
-
     for (const matchDoc of snapshot.docs) {
-
-      const match = {
-        id: matchDoc.id,
-        ...matchDoc.data()
-      };
-
+      const match = { id: matchDoc.id, ...matchDoc.data() };
       const predQuery = query(
         collection(db, "predictions"),
         where("user_id", "==", currentUser.uid),
         where("match_id", "==", match.id)
       );
-
       const predSnap = await getDocs(predQuery);
-
-      match.userPred = predSnap.empty
-        ? null
-        : predSnap.docs[0].data();
-
-      match.bloqueado =
-        new Date() >= match.hora_partido.toDate();
-
+      match.userPred = predSnap.empty ? null : predSnap.docs[0].data();
+      match.bloqueado = new Date() >= match.hora_partido.toDate();
       matches.push(match);
-
     }
-
     const partidosGrupos = matches.filter(esFaseGrupos);
-
     gruposData = agruparPartidos(partidosGrupos);
-
     mostrarTodosLosGrupos();
 
-    // Próximo partido
+    // Próximo partido (el más cercano en el futuro)
     const ahora = new Date();
-
     const proximos = partidosGrupos
       .filter(m => m.hora_partido.toDate() > ahora)
       .sort((a, b) => a.hora_partido.toDate() - b.hora_partido.toDate());
-
     if (proximos.length > 0) {
-
       const p = proximos[0];
-
       proxLocalSpan.innerText = p.equipo_local;
       proxVisitSpan.innerText = p.equipo_visitante;
-
-      proxFechaSpan.innerText = p.hora_partido
-        .toDate()
-        .toLocaleString("es-CO", {
-          timeZone: "America/Bogota"
-        });
-
+      proxFechaSpan.innerText = p.hora_partido.toDate().toLocaleString("es-CO", { timeZone: "America/Bogota" });
+    } else {
+      proxLocalSpan.innerText = "---";
+      proxVisitSpan.innerText = "---";
+      proxFechaSpan.innerText = "No hay más partidos";
     }
-
   });
-
 }
 
-
 // ======================================================
-// GUARDAR PREDICCIÓN
+// GUARDAR PREDICCIÓN (desde los inputs)
 // ======================================================
-
 window.savePrediction = async (matchId) => {
-
-  const local = parseInt(
-    document.getElementById(`local_${matchId}`).value
-  ) || 0;
-
-  const visit = parseInt(
-    document.getElementById(`visit_${matchId}`).value
-  ) || 0;
+  const localInput = document.getElementById(`local_${matchId}`);
+  const visitInput = document.getElementById(`visit_${matchId}`);
+  if (!localInput || !visitInput) return alert("Error: No se encontraron los inputs");
+  const local = parseInt(localInput.value) || 0;
+  const visit = parseInt(visitInput.value) || 0;
 
   const existingQuery = query(
     collection(db, "predictions"),
     where("user_id", "==", currentUser.uid),
     where("match_id", "==", matchId)
   );
-
   const existing = await getDocs(existingQuery);
-
   if (existing.empty) {
-
     await addDoc(collection(db, "predictions"), {
-
       user_id: currentUser.uid,
       match_id: matchId,
-
       pred_local: local,
       pred_visitante: visit,
-
       puntos: 0
-
     });
-
   } else {
-
-    await updateDoc(
-      doc(db, "predictions", existing.docs[0].id),
-      {
-        pred_local: local,
-        pred_visitante: visit
-      }
-    );
-
+    await updateDoc(doc(db, "predictions", existing.docs[0].id), {
+      pred_local: local,
+      pred_visitante: visit
+    });
   }
-
   alert("✅ Predicción guardada");
-
 };
 
-
 // ======================================================
-// RANKING
+// RANKING EN TIEMPO REAL
 // ======================================================
-
 function loadRanking() {
-
+  if (rankingUnsubscribe) rankingUnsubscribe();
   const rankingRef = collection(db, "ranking");
-
-  onSnapshot(
+  rankingUnsubscribe = onSnapshot(
     query(rankingRef, orderBy("puntos", "desc")),
     (snapshot) => {
-
       let pos = 1;
-
       let encontrado = false;
-
       snapshot.forEach(docSnap => {
-
         const data = docSnap.data();
-
         if (data.user_id === currentUser.uid) {
-
           miPosicionSpan.innerText = pos + "°";
           misPuntosSpan.innerText = data.puntos;
-
           encontrado = true;
-
         }
-
         pos++;
-
       });
-
       if (!encontrado) {
-
         miPosicionSpan.innerText = "-";
         misPuntosSpan.innerText = "0";
-
       }
-
     }
   );
-
 }
 
-
 // ======================================================
-// AUTH
+// PANEL ADMINISTRADOR (con grupos y filtro)
 // ======================================================
-
-onAuthStateChanged(auth, async (user) => {
-
-  if (user) {
-
-    currentUser = user;
-
-    const usersRef = collection(db, "users");
-
-    const q = query(
-      usersRef,
-      where("email", "==", user.email)
-    );
-
-    const snap = await getDocs(q);
-
-    if (!snap.empty) {
-
-      currentUserRol = snap.docs[0].data().rol;
-
-    } else {
-
-      await addDoc(usersRef, {
-
-        uid: user.uid,
-        nombre: user.email,
-        email: user.email,
-
-        puntos_totales: 0,
-
-        rol: "user"
-
-      });
-
-      currentUserRol = "user";
-
-    }
-
-    userEmailSpan.innerText = user.email;
-
-    authScreen.classList.add("hidden");
-    appScreen.classList.remove("hidden");
-
-    if (currentUserRol === "admin") {
-
-      adminPanel.classList.remove("hidden");
-
-      loadAdminMatches();
-
-      setupUploadButton();
-
-    }
-
-    loadMatchesAndPredictions();
-
-    loadRanking();
-
-  } else {
-
-    authScreen.classList.remove("hidden");
-    appScreen.classList.add("hidden");
-
-  }
-
-});
-
-
-// ======================================================
-// LOGIN
-// ======================================================
-
-document.getElementById("btnLogin").onclick = async () => {
-
-  const email =
-    document.getElementById("loginEmail").value;
-
-  const pwd =
-    document.getElementById("loginPassword").value;
-
-  try {
-
-    await signInWithEmailAndPassword(
-      auth,
-      email,
-      pwd
-    );
-
-  } catch (error) {
-
-    alert(error.message);
-
-  }
-
-};
-
-
-// ======================================================
-// REGISTER
-// ======================================================
-
-document.getElementById("btnRegister").onclick = async () => {
-
-  const name =
-    document.getElementById("registerName").value;
-
-  const email =
-    document.getElementById("registerEmail").value;
-
-  const pwd =
-    document.getElementById("registerPassword").value;
-
-  try {
-
-    const cred =
-      await createUserWithEmailAndPassword(
-        auth,
-        email,
-        pwd
-      );
-
-    await addDoc(collection(db, "users"), {
-
-      uid: cred.user.uid,
-      nombre: name,
-      email: email,
-
-      puntos_totales: 0,
-
-      rol: "user"
-
-    });
-
-    alert("✅ Registro exitoso");
-
-  } catch (error) {
-
-    alert(error.message);
-
-  }
-
-};
-
-
-// ======================================================
-// LOGOUT
-// ======================================================
-
-document.getElementById("btnLogout").onclick = async () => {
-
-  await signOut(auth);
-
-};
-
-
-// ======================================================
-// ADMIN
-// ======================================================
-
 async function loadAdminMatches() {
-
   const q = query(
     collection(db, "matches"),
     where("estado", "in", ["pendiente", "en_juego"])
   );
-
   const snapshot = await getDocs(q);
-
   const partidosPorGrupo = {};
-
   snapshot.forEach(docSnap => {
-
-    const match = {
-      id: docSnap.id,
-      ...docSnap.data()
-    };
-
+    const match = { id: docSnap.id, ...docSnap.data() };
     const grupo = match.grupo || "OTROS";
-
-    if (!partidosPorGrupo[grupo]) {
-      partidosPorGrupo[grupo] = [];
-    }
-
+    if (!partidosPorGrupo[grupo]) partidosPorGrupo[grupo] = [];
     partidosPorGrupo[grupo].push(match);
-
   });
 
-  let html = "";
+  const gruposOrdenados = Object.keys(partidosPorGrupo).sort();
+  // Botones de grupos
+  let tabsHTML = `<div class="admin-groups-tabs" style="display: flex; gap: 8px; overflow-x: auto; margin-bottom: 20px; padding-bottom: 8px;">`;
+  gruposOrdenados.forEach(grupo => {
+    tabsHTML += `
+      <button class="admin-grupo-tab ${adminGrupoActivo === grupo ? "active" : ""}" 
+              data-grupo="${grupo}" 
+              style="flex: none; padding: 8px 16px; border-radius: 30px; background: ${adminGrupoActivo === grupo ? "#facc15" : "#1e293b"}; color: ${adminGrupoActivo === grupo ? "black" : "white"}; border: none; cursor: pointer; font-weight: bold;">
+        Grupo ${grupo}
+      </button>
+    `;
+  });
+  tabsHTML += `</div>`;
 
-  Object.keys(partidosPorGrupo)
-    .sort()
-    .forEach(grupo => {
-
-      html += `
-        <div class="admin-group">
-
-          <div class="admin-group-title">
-            GRUPO ${grupo}
+  // Mostrar solo el grupo activo
+  const partidosGrupo = partidosPorGrupo[adminGrupoActivo] || [];
+  let html = `<div class="admin-grid">`;
+  partidosGrupo.forEach(match => {
+    html += `
+      <div class="admin-card">
+        <div class="admin-teams">
+          <div class="admin-team">
+            <img class="flag-admin" src="https://flagcdn.com/${obtenerCodigoPais(match.equipo_local)}.svg">
+            <span>${fifaCodes[match.equipo_local] || match.equipo_local}</span>
           </div>
-
-          <div class="admin-grid">
-      `;
-
-      partidosPorGrupo[grupo].forEach(match => {
-
-        html += `
-          <div class="admin-card">
-
-            <div class="admin-teams">
-
-              <div class="admin-team">
-
-                <img
-                  class="flag-admin"
-                  src="https://flagcdn.com/w40/${obtenerCodigoPais(match.equipo_local)}.png"
-                >
-
-                <span>
-                  ${fifaCodes[match.equipo_local] || match.equipo_local}
-                </span>
-
-              </div>
-
-              <div class="admin-vs">
-                VS
-              </div>
-
-              <div class="admin-team">
-
-                <img
-                  class="flag-admin"
-                  src="https://flagcdn.com/w40/${obtenerCodigoPais(match.equipo_visitante)}.png"
-                >
-
-                <span>
-                  ${fifaCodes[match.equipo_visitante] || match.equipo_visitante}
-                </span>
-
-              </div>
-
-            </div>
-
-            <div class="admin-score">
-
-              <input
-                type="number"
-                id="res_local_${match.id}"
-                placeholder="0"
-                class="admin-input"
-              >
-
-              <span>-</span>
-
-              <input
-                type="number"
-                id="res_vis_${match.id}"
-                placeholder="0"
-                class="admin-input"
-              >
-
-            </div>
-
-            <button
-              class="admin-btn"
-              onclick="window.submitResult('${match.id}')"
-            >
-              Guardar
-            </button>
-
-          </div>
-        `;
-
-      });
-
-      html += `
+          <div class="admin-vs">VS</div>
+          <div class="admin-team">
+            <img class="flag-admin" src="https://flagcdn.com/${obtenerCodigoPais(match.equipo_visitante)}.svg">
+            <span>${fifaCodes[match.equipo_visitante] || match.equipo_visitante}</span>
           </div>
         </div>
-      `;
+        <div class="admin-score">
+          <input type="number" id="res_local_${match.id}" placeholder="0" class="admin-input">
+          <span>-</span>
+          <input type="number" id="res_vis_${match.id}" placeholder="0" class="admin-input">
+        </div>
+        <button class="admin-btn" onclick="window.submitResult('${match.id}')">Guardar</button>
+      </div>
+    `;
+  });
+  html += `</div>`;
 
-    });
+  const adminMatchesList = document.getElementById("adminMatchesList");
+  if (adminMatchesList) adminMatchesList.innerHTML = tabsHTML + html;
 
-  document.getElementById("adminMatchesList").innerHTML = html;
-
+  // Asignar eventos a los botones de grupos (evitar múltiples listeners)
+  document.querySelectorAll(".admin-grupo-tab").forEach(btn => {
+    btn.removeEventListener("click", window.adminGroupChangeHandler);
+    const handler = () => {
+      adminGrupoActivo = btn.dataset.grupo;
+      loadAdminMatches();
+    };
+    btn.addEventListener("click", handler);
+    btn.adminGroupChangeHandler = handler; // guardar referencia
+  });
 }
 
-
 // ======================================================
-// SUBIR RESULTADOS
+// CAMBIAR GRUPO EN ADMIN (desde los botones)
 // ======================================================
-
-window.submitResult = async (matchId) => {
-
-  const local = parseInt(
-    document.getElementById(`res_local_${matchId}`).value
-  );
-
-  const visit = parseInt(
-    document.getElementById(`res_vis_${matchId}`).value
-  );
-
-  if (isNaN(local) || isNaN(visit)) {
-    return alert("Ingresa números válidos");
-  }
-
-  const matchRef = doc(db, "matches", matchId);
-
-  await updateDoc(matchRef, {
-
-    resultado_local: local,
-    resultado_visitante: visit,
-
-    estado: "finalizado"
-
-  });
-
-  alert("✅ Resultado guardado");
-
+window.cambiarGrupoAdmin = (grupo) => {
+  adminGrupoActivo = grupo;
+  loadAdminMatches();
 };
 
-
 // ======================================================
-// CARGAR PARTIDOS FIREBASE
+// SUBIR RESULTADOS (ADMIN)
 // ======================================================
+window.submitResult = async (matchId) => {
+  const localInput = document.getElementById(`res_local_${matchId}`);
+  const visitInput = document.getElementById(`res_vis_${matchId}`);
+  if (!localInput || !visitInput) return alert("Error: No se encontraron los inputs");
+  const local = parseInt(localInput.value);
+  const visit = parseInt(visitInput.value);
+  if (isNaN(local) || isNaN(visit)) return alert("Ingresa números válidos");
 
-async function cargarTodosLosPartidos() {
-
-  const existingMatches = await getDocs(
-    collection(db, "matches")
-  );
-
-  const batchDelete = writeBatch(db);
-
-  existingMatches.forEach(docItem => {
-    batchDelete.delete(docItem.ref);
+  const matchRef = doc(db, "matches", matchId);
+  await updateDoc(matchRef, {
+    resultado_local: local,
+    resultado_visitante: visit,
+    estado: "finalizado"
   });
+  alert("✅ Resultado guardado. Recarga la página para ver efectos.");
+  // Opcional: recargar el panel admin
+  loadAdminMatches();
+};
 
+// ======================================================
+// CARGAR TODOS LOS PARTIDOS DESDE partidos.js (ADMIN)
+// ======================================================
+async function cargarTodosLosPartidos() {
+  const existingMatches = await getDocs(collection(db, "matches"));
+  const batchDelete = writeBatch(db);
+  existingMatches.forEach(docItem => batchDelete.delete(docItem.ref));
   await batchDelete.commit();
 
   for (const p of todosLosPartidos) {
-
     await addDoc(collection(db, "matches"), {
-
       equipo_local: p.local,
       equipo_visitante: p.visitante,
-
       hora_partido: new Date(p.fechaUTC),
-
       fase: p.fase,
       grupo: p.grupo || null,
-
       estado: "pendiente",
-
       resultado_local: null,
       resultado_visitante: null
-
     });
-
   }
-
   console.log("✅ Partidos cargados");
-
 }
-
-
-// ======================================================
-// BOTÓN ADMIN
-// ======================================================
 
 function setupUploadButton() {
-
-  const btn =
-    document.getElementById("btnCargarPartidos");
-
+  const btn = document.getElementById("btnCargarPartidos");
   if (!btn) return;
-
   btn.onclick = async () => {
-
-    if (confirm("¿Cargar partidos nuevamente?")) {
-
+    if (confirm("¿Cargar partidos nuevamente? Se borrarán los existentes.")) {
       await cargarTodosLosPartidos();
-
-      alert("✅ Partidos cargados");
-
+      alert("✅ Partidos cargados. La página se recargará.");
       location.reload();
-
     }
-
   };
-
 }
+
+// ======================================================
+// LOGIN, REGISTRO, LOGOUT
+// ======================================================
+document.getElementById("btnLogin").onclick = async () => {
+  const email = document.getElementById("loginEmail").value;
+  const pwd = document.getElementById("loginPassword").value;
+  try {
+    await signInWithEmailAndPassword(auth, email, pwd);
+  } catch (error) {
+    alert(error.message);
+  }
+};
+
+document.getElementById("btnRegister").onclick = async () => {
+  const name = document.getElementById("registerName").value;
+  const email = document.getElementById("registerEmail").value;
+  const pwd = document.getElementById("registerPassword").value;
+  try {
+    const cred = await createUserWithEmailAndPassword(auth, email, pwd);
+    await addDoc(collection(db, "users"), {
+      uid: cred.user.uid,
+      nombre: name,
+      email: email,
+      puntos_totales: 0,
+      rol: "user"
+    });
+    alert("✅ Registro exitoso. Ahora inicia sesión.");
+  } catch (error) {
+    alert(error.message);
+  }
+};
+
+document.getElementById("btnLogout").onclick = async () => {
+  await signOut(auth);
+};
+
+// ======================================================
+// ESTADO DE AUTENTICACIÓN (CORAZÓN DE LA APP)
+// ======================================================
+onAuthStateChanged(auth, async (user) => {
+  if (user) {
+    currentUser = user;
+    const usersRef = collection(db, "users");
+    const q = query(usersRef, where("email", "==", user.email));
+    const snap = await getDocs(q);
+    if (!snap.empty) {
+      currentUserRol = snap.docs[0].data().rol;
+    } else {
+      await addDoc(usersRef, {
+        uid: user.uid,
+        nombre: user.email.split('@')[0],
+        email: user.email,
+        puntos_totales: 0,
+        rol: "user"
+      });
+      currentUserRol = "user";
+    }
+    userEmailSpan.innerText = user.email;
+    authScreen.classList.add("hidden");
+    appScreen.classList.remove("hidden");
+
+    if (currentUserRol === "admin") {
+      adminPanel.classList.remove("hidden");
+      loadAdminMatches();
+      setupUploadButton();
+    } else {
+      adminPanel.classList.add("hidden");
+    }
+    loadMatchesAndPredictions();
+    loadRanking();
+  } else {
+    // Limpiar listeners
+    if (matchesUnsubscribe) matchesUnsubscribe();
+    if (rankingUnsubscribe) rankingUnsubscribe();
+    authScreen.classList.remove("hidden");
+    appScreen.classList.add("hidden");
+  }
+});

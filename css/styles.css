@@ -727,18 +727,16 @@ MATCH TEAMS
 }
 
 
-.flag-icon {
+.flag-icon{
 
-  width: 38px;
-  height: 26px;
+  width:38px;
+  height:28px;
 
-  border-radius: 5px;
+  object-fit:cover;
 
-  object-fit: cover;
+  border-radius:4px;
 
-  border: 1px solid rgba(255, 255, 255, .15);
-
-  flex-shrink: 0;
+  background:white;
 
 }
 
@@ -1030,13 +1028,17 @@ ADMIN TEAMS
   font-weight: 700;
 }
 
-.flag-admin {
-  width: 34px;
-  height: 24px;
+.flag-admin{
 
-  object-fit: cover;
+  width:38px;
+  height:28px;
 
-  border-radius: 4px;
+  object-fit:cover;
+
+  border-radius:4px;
+
+  background:white;
+
 }
 
 .admin-vs {
@@ -1290,11 +1292,13 @@ SMALL MOBILE
 
   .grupo-tab {
     min-width: 80px;
-
     font-size: 12px;
-
     padding: 9px 14px;
   }
+
+}
+
+
 /* =====================================================
 FIX OVERFLOW GROUPS
 ===================================================== */
@@ -1314,7 +1318,7 @@ FIX OVERFLOW GROUPS
 EXTRA LARGE SCREENS
 ===================================================== */
 
-@media(min-width:1600px){
+@media(min-width:1400px){
 
   .matches-grid{
 
@@ -1323,5 +1327,4 @@ EXTRA LARGE SCREENS
 
   }
 
-}
 }
