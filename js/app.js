@@ -254,6 +254,71 @@ window.savePrediction = async (matchId) => {
     if (!currentUser) {
       return alert("Debes iniciar sesión");
     }
+        // =========================================
+    // VALIDAR PARTICIPANTE
+    // =========================================
+
+    const participantRef =
+      doc(db, "participants", currentUser.uid);
+
+    const participantSnap =
+      await getDoc(participantRef);
+
+    if (!participantSnap.exists()) {
+
+      return alert(
+        "No estás registrado como participante"
+      );
+
+    }
+
+    const participantData =
+      participantSnap.data();
+
+    // SIN PAGO
+
+    if (!participantData.paid_groups) {
+
+      return alert(
+        "Debes realizar el pago para participar"
+      );
+
+    }
+
+    // SIN ACCESO
+
+    if (!participantData.enabled_groups) {
+
+      return alert(
+        "Tu acceso aún no ha sido habilitado"
+      );
+
+    }
+
+    // =========================================
+    // VALIDAR EXPULSADO
+    // =========================================
+
+    const userRef =
+      doc(db, "users", currentUser.uid);
+
+    const userSnap =
+      await getDoc(userRef);
+
+    if (userSnap.exists()) {
+
+      const userData =
+        userSnap.data();
+
+      if (userData.expulsado === true) {
+
+        return alert(
+          "Tu cuenta fue bloqueada"
+        );
+
+      }
+
+    }
 
     const localInput =
       document.getElementById(`local_${matchId}`);
@@ -963,6 +1028,7 @@ onAuthStateChanged(auth, async (user) => {
     if (snap.exists()) {
       const userData = snap.data();
       currentUserRol = userData.rol || "user";
+      console.log("ROL ACTUAL:", currentUserRol);
     } else {
 
       alert("Usuario no encontrado");
@@ -980,6 +1046,7 @@ onAuthStateChanged(auth, async (user) => {
       adminPanel.classList.remove("hidden");
       loadAdminMatches();
       loadAdminParticipants();
+      console.log("CARGANDO PARTICIPANTES ADMIN");
       setupUploadButton();
     } else {
       adminPanel.classList.add("hidden");
