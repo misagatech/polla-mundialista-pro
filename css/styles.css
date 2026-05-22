@@ -1349,4 +1349,118 @@ EXTRA LARGE SCREENS
   color: #facc15;
   font-weight: 700;
 }
+.admin-participants-section {
+  margin-top: 40px;
+}
+
+.admin-section-header {
+  margin-bottom: 20px;
+}
+
+.admin-section-title {
+  font-size: 22px;
+  font-weight: 700;
+  color: #facc15;
+}
+
+.admin-participants-grid {
+  display: flex;
+  flex-direction: column;
+  gap: 14px;
+}
+
+.admin-user-card {
+  background: rgba(255,255,255,0.04);
+
+  border: 1px solid rgba(255,255,255,0.08);
+
+  border-radius: 18px;
+
+  padding: 18px;
+}
+
+.admin-user-top {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+
+  margin-bottom: 14px;
+}
+
+.admin-user-name {
+  font-size: 16px;
+  font-weight: 700;
+  color: white;
+}
+
+.admin-user-email {
+  font-size: 13px;
+  opacity: 0.7;
+}
+
+.admin-user-status {
+  display: flex;
+  gap: 10px;
+  flex-wrap: wrap;
+}
+
+.admin-badge {
+  padding: 6px 12px;
+
+  border-radius: 30px;
+
+  font-size: 12px;
+  font-weight: 700;
+}
+
+.badge-paid {
+  background: rgba(34,197,94,0.2);
+  color: #4ade80;
+}
+
+.badge-pending {
+  background: rgba(239,68,68,0.2);
+  color: #f87171;
+}
+
+.badge-enabled {
+  background: rgba(59,130,246,0.2);
+  color: #60a5fa;
+}
+
+.badge-disabled {
+  background: rgba(107,114,128,0.2);
+  color: #d1d5db;
+}
+.admin-action-btn {
+  border: none;
+
+  background: #1e293b;
+
+  color: white;
+
+  padding: 10px 14px;
+
+  border-radius: 12px;
+
+  cursor: pointer;
+
+  font-size: 13px;
+
+  font-weight: 600;
+
+  transition: 0.2s;
+}
+
+.admin-action-btn:hover {
+  transform: translateY(-2px);
+
+  opacity: 0.9;
+}
+
+.admin-action-btn.danger {
+  background: rgba(239,68,68,0.2);
+
+  color: #f87171;
+}
 }

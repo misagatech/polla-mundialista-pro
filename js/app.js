@@ -38,6 +38,11 @@ const misPuntosSpan = document.getElementById("misPuntos");
 const proxLocalSpan = document.getElementById("proxLocal");
 const proxVisitSpan = document.getElementById("proxVisit");
 const proxFechaSpan = document.getElementById("proxFecha");
+const totalParticipantesSpan = document.getElementById("totalParticipantes");
+const totalAcumuladoSpan = document.getElementById("totalAcumulado");
+const premioPrimeroSpan = document.getElementById("premioPrimero");
+const premioOrganizacionSpan = document.getElementById("premioOrganizacion");
+const premioPlataformaSpan = document.getElementById("premioPlataforma");
 
 // ======================================================
 // VARIABLES GLOBALES
@@ -46,6 +51,8 @@ let currentUser = null;
 let currentUserRol = null;
 let matchesUnsubscribe = null;
 let rankingUnsubscribe = null;
+let participantsUnsubscribe = null;
+let adminParticipantsUnsubscribe = null;
 let gruposData = {};
 let grupoActivo = "A";
 let adminGrupoActivo = "A";
@@ -606,7 +613,365 @@ document.getElementById("btnRegister").onclick = async () => {
 document.getElementById("btnLogout").onclick = async () => {
   await signOut(auth);
 };
+// ======================================================
+// PREMIOS Y ACUMULADO EN TIEMPO REAL
+// ======================================================
 
+function loadPrizePoolRealtime() {
+
+  if (participantsUnsubscribe) {
+    participantsUnsubscribe();
+  }
+
+  const participantsRef =
+    collection(db, "participants");
+
+  participantsUnsubscribe =
+    onSnapshot(participantsRef, (snapshot) => {
+
+      let totalParticipantes = 0;
+
+      let totalAcumulado = 0;
+
+      snapshot.forEach(docSnap => {
+
+        const data = docSnap.data();
+
+        if (data.paid_groups === true) {
+
+          totalParticipantes++;
+
+          totalAcumulado +=
+            Number(data.amount_groups || 0);
+
+        }
+
+      });
+
+      // ======================================================
+      // ADMIN PARTICIPANTES
+      // ======================================================
+
+      function loadAdminParticipants() {
+
+        if (adminParticipantsUnsubscribe) {
+          adminParticipantsUnsubscribe();
+        }
+
+        const participantsRef =
+          collection(db, "participants");
+
+        adminParticipantsUnsubscribe =
+          onSnapshot(participantsRef, async (snapshot) => {
+
+            const adminList =
+              document.getElementById(
+                "adminParticipantsList"
+              );
+
+            if (!adminList) return;
+
+            let html =
+              `<div class="admin-participants-grid">`;
+
+            for (const docSnap of snapshot.docs) {
+
+              const participant =
+                docSnap.data();
+
+              const uid =
+                participant.uid;
+              // ======================================================
+              // TOGGLE PAGO
+              // ======================================================
+
+              window.togglePago = async (uid) => {
+
+                const participantRef =
+                  doc(db, "participants", uid);
+
+                const snap =
+                  await getDoc(participantRef);
+
+                if (!snap.exists()) return;
+
+                const data = snap.data();
+
+                const nuevoEstado =
+                  !data.paid_groups;
+
+                await updateDoc(participantRef, {
+
+                  paid_groups: nuevoEstado,
+
+                  amount_groups:
+                    nuevoEstado ? 55000 : 0
+
+                });
+
+              };
+
+
+              // ======================================================
+              // TOGGLE HABILITADO
+              // ======================================================
+
+              window.toggleHabilitado =
+                async (uid) => {
+
+                  const participantRef =
+                    doc(db, "participants", uid);
+
+                  const snap =
+                    await getDoc(participantRef);
+
+                  if (!snap.exists()) return;
+
+                  const data =
+                    snap.data();
+
+                  await updateDoc(participantRef, {
+
+                    enabled_groups:
+                      !data.enabled_groups
+
+                  });
+
+                };
+
+
+              // ======================================================
+              // TOGGLE EXPULSADO
+              // ======================================================
+
+              window.toggleExpulsado =
+                async (uid) => {
+
+                  const userRef =
+                    doc(db, "users", uid);
+
+                  const snap =
+                    await getDoc(userRef);
+
+                  if (!snap.exists()) return;
+
+                  const data =
+                    snap.data();
+
+                  const nuevoEstado =
+                    !data.expulsado;
+
+                  await updateDoc(userRef, {
+
+                    expulsado:
+                      nuevoEstado
+
+                  });
+
+                };
+
+              // =====================================
+              // USER DATA
+              // =====================================
+
+              const userRef =
+                doc(db, "users", uid);
+
+              const userSnap =
+                await getDoc(userRef);
+
+              let nombre = "Sin nombre";
+              let email = "Sin email";
+
+              let expulsado = false;
+
+              if (userSnap.exists()) {
+
+                const userData =
+                  userSnap.data();
+
+                nombre =
+                  userData.nombre || "Sin nombre";
+
+                email =
+                  userData.email || "Sin email";
+
+                expulsado =
+                  userData.expulsado || false;
+
+              }
+
+              // =====================================
+              // BADGES
+              // =====================================
+
+              const paidBadge =
+                participant.paid_groups
+                  ? `<span class="admin-badge badge-paid">PAGÓ</span>`
+                  : `<span class="admin-badge badge-pending">NO PAGÓ</span>`;
+
+              const enabledBadge =
+                participant.enabled_groups
+                  ? `<span class="admin-badge badge-enabled">HABILITADO</span>`
+                  : `<span class="admin-badge badge-disabled">BLOQUEADO</span>`;
+
+              const expulsadoBadge =
+                expulsado
+                  ? `<span class="admin-badge badge-pending">EXPULSADO</span>`
+                  : "";
+
+              // =====================================
+              // CARD
+              // =====================================
+
+              html += `
+
+          <div class="admin-user-card">
+
+            <div class="admin-user-top">
+
+              <div>
+
+                <div class="admin-user-name">
+                  ${nombre}
+                </div>
+
+                <div class="admin-user-email">
+                  ${email}
+                </div>
+
+              </div>
+
+            </div>
+
+            <div class="admin-user-status">
+
+              ${paidBadge}
+
+              ${enabledBadge}
+
+              ${expulsadoBadge}
+
+            </div>
+
+            <div style="margin-top:14px;">
+
+              💰 Pago:
+              <strong>
+                ${formatearCOP(
+                participant.amount_groups || 0
+              )}
+              </strong>
+
+            </div>
+
+            <div style="margin-top:8px;">
+
+              📋 Estado:
+              <strong>
+                ${participant.groups_status || "pending"}
+              </strong>
+
+            </div>
+            <div
+  style="
+    display:flex;
+    gap:10px;
+    flex-wrap:wrap;
+    margin-top:16px;
+  "
+>
+
+  <button
+    class="admin-action-btn"
+    onclick="window.togglePago('${uid}')"
+  >
+    💰 Pago
+  </button>
+
+  <button
+    class="admin-action-btn"
+    onclick="window.toggleHabilitado('${uid}')"
+  >
+    🔓 Acceso
+  </button>
+
+  <button
+    class="admin-action-btn danger"
+    onclick="window.toggleExpulsado('${uid}')"
+  >
+    🚫 Expulsar
+  </button>
+
+</div>
+
+          </div>
+
+        `;
+
+            }
+
+            html += `</div>`;
+
+            adminList.innerHTML = html;
+
+          });
+
+      }
+
+      // =====================================
+      // CÁLCULOS
+      // =====================================
+
+      const premioPrimero =
+        totalAcumulado * 0.7;
+
+      const premioOrganizacion =
+        totalAcumulado * 0.2;
+
+      const premioPlataforma =
+        totalAcumulado * 0.1;
+
+      // =====================================
+      // RENDER
+      // =====================================
+
+      totalParticipantesSpan.innerText =
+        totalParticipantes;
+
+      totalAcumuladoSpan.innerText =
+        formatearCOP(totalAcumulado);
+
+      premioPrimeroSpan.innerText =
+        formatearCOP(premioPrimero);
+
+      premioOrganizacionSpan.innerText =
+        formatearCOP(premioOrganizacion);
+
+      premioPlataformaSpan.innerText =
+        formatearCOP(premioPlataforma);
+
+    });
+
+}
+
+
+// ======================================================
+// FORMATEAR MONEDA COP
+// ======================================================
+
+function formatearCOP(valor) {
+
+  return new Intl.NumberFormat(
+    "es-CO",
+    {
+      style: "currency",
+      currency: "COP",
+      maximumFractionDigits: 0
+    }
+  ).format(valor);
+
+}
 // ======================================================
 // ESTADO DE AUTENTICACIÓN (CORAZÓN DE LA APP)
 // ======================================================
@@ -635,16 +1000,20 @@ onAuthStateChanged(auth, async (user) => {
     if (currentUserRol === "admin") {
       adminPanel.classList.remove("hidden");
       loadAdminMatches();
+      loadAdminParticipants();
       setupUploadButton();
     } else {
       adminPanel.classList.add("hidden");
     }
     loadMatchesAndPredictions();
     loadRanking();
+    loadPrizePoolRealtime();
   } else {
     // Limpiar listeners
     if (matchesUnsubscribe) matchesUnsubscribe();
     if (rankingUnsubscribe) rankingUnsubscribe();
+    if (participantsUnsubscribe) participantsUnsubscribe();
+    if (adminParticipantsUnsubscribe) adminParticipantsUnsubscribe();
     authScreen.classList.remove("hidden");
     appScreen.classList.add("hidden");
   }
