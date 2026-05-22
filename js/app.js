@@ -40,8 +40,6 @@ const proxVisitSpan = document.getElementById("proxVisit");
 const proxFechaSpan = document.getElementById("proxFecha");
 const totalParticipantesSpan = document.getElementById("totalParticipantes");
 const totalAcumuladoSpan = document.getElementById("totalAcumulado");
-const premioPrimeroSpan = document.getElementById("premioPrimero");
-const premioOrganizacionSpan = document.getElementById("premioOrganizacion");
 const premioPlataformaSpan = document.getElementById("premioPlataforma");
 
 // ======================================================
@@ -215,8 +213,8 @@ async function loadMatchesAndPredictions() {
     for (const matchDoc of snapshot.docs) {
       const match = { id: matchDoc.id, ...matchDoc.data() };
       const predQuery = query(
-        collection(db, "predictions"),
-        where("user_id", "==", currentUser.uid),
+        collection(db, "predictions_groups"),
+        where("uid", "==", currentUser.uid),
         where("match_id", "==", match.id)
       );
       const predSnap = await getDocs(predQuery);
