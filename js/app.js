@@ -4,12 +4,15 @@ import {
   query,
   where,
   getDocs,
+  getDoc,
   addDoc,
+  setDoc,
   updateDoc,
   doc,
   onSnapshot,
   orderBy,
-  writeBatch
+  writeBatch,
+  serverTimestamp
 } from "https://www.gstatic.com/firebasejs/12.12.0/firebase-firestore.js";
 import {
   onAuthStateChanged,
@@ -240,33 +243,136 @@ async function loadMatchesAndPredictions() {
 // GUARDAR PREDICCIÓN (desde los inputs)
 // ======================================================
 window.savePrediction = async (matchId) => {
-  const localInput = document.getElementById(`local_${matchId}`);
-  const visitInput = document.getElementById(`visit_${matchId}`);
-  if (!localInput || !visitInput) return alert("Error: No se encontraron los inputs");
-  const local = parseInt(localInput.value) || 0;
-  const visit = parseInt(visitInput.value) || 0;
 
-  const existingQuery = query(
-    collection(db, "predictions"),
-    where("user_id", "==", currentUser.uid),
-    where("match_id", "==", matchId)
-  );
-  const existing = await getDocs(existingQuery);
-  if (existing.empty) {
-    await addDoc(collection(db, "predictions"), {
-      user_id: currentUser.uid,
-      match_id: matchId,
-      pred_local: local,
-      pred_visitante: visit,
-      puntos: 0
-    });
-  } else {
-    await updateDoc(doc(db, "predictions", existing.docs[0].id), {
-      pred_local: local,
-      pred_visitante: visit
-    });
+  try {
+
+    if (!currentUser) {
+      return alert("Debes iniciar sesión");
+    }
+
+    const localInput =
+      document.getElementById(`local_${matchId}`);
+
+    const visitInput =
+      document.getElementById(`visit_${matchId}`);
+
+    if (!localInput || !visitInput) {
+      return alert("Inputs no encontrados");
+    }
+
+    const local =
+      parseInt(localInput.value);
+
+    const visit =
+      parseInt(visitInput.value);
+
+    if (isNaN(local) || isNaN(visit)) {
+      return alert("Ingresa números válidos");
+    }
+
+    if (local < 0 || visit < 0) {
+      return alert("No se permiten negativos");
+    }
+
+    // =========================================
+    // VALIDAR DEADLINE GLOBAL
+    // =========================================
+
+    const settingsRef =
+      doc(db, "settings", "config");
+
+    const settingsSnap =
+      await getDoc(settingsRef);
+
+    if (!settingsSnap.exists()) {
+      return alert("Configuración no encontrada");
+    }
+
+    const settingsData =
+      settingsSnap.data();
+
+    const deadline =
+      settingsData.groups_deadline.toDate();
+
+    if (new Date() > deadline) {
+      return alert(
+        "La fase de grupos ya fue cerrada"
+      );
+    }
+
+    // =========================================
+    // VALIDAR PARTIDO
+    // =========================================
+
+    const matchRef =
+      doc(db, "matches", matchId);
+
+    const matchSnap =
+      await getDoc(matchRef);
+
+    if (!matchSnap.exists()) {
+      return alert("Partido no encontrado");
+    }
+
+    const matchData =
+      matchSnap.data();
+
+    const horaPartido =
+      matchData.hora_partido.toDate();
+
+    if (new Date() >= horaPartido) {
+      return alert(
+        "Este partido ya comenzó"
+      );
+    }
+
+    // =========================================
+    // ID INTELIGENTE
+    // =========================================
+
+    const predictionId =
+      `${currentUser.uid}_${matchId}`;
+
+    // =========================================
+    // GUARDAR PREDICCIÓN
+    // =========================================
+
+    await setDoc(
+      doc(
+        db,
+        "predictions_groups",
+        predictionId
+      ),
+      {
+        uid: currentUser.uid,
+
+        match_id: matchId,
+
+        pred_local: local,
+
+        pred_visitante: visit,
+
+        submitted: false,
+
+        locked: false,
+
+        updated_at: serverTimestamp()
+      },
+      {
+        merge: true
+      }
+    );
+
+    alert("✅ Predicción guardada");
+
+  } catch (error) {
+
+    console.error(error);
+
+    alert(error.message);
+
   }
-  alert("✅ Predicción guardada");
+
 };
 
 // ======================================================
@@ -456,13 +562,41 @@ document.getElementById("btnRegister").onclick = async () => {
   const pwd = document.getElementById("registerPassword").value;
   try {
     const cred = await createUserWithEmailAndPassword(auth, email, pwd);
-    await addDoc(collection(db, "users"), {
-      uid: cred.user.uid,
-      nombre: name,
-      email: email,
-      puntos_totales: 0,
-      rol: "user"
-    });
+    await setDoc(
+      doc(db, "users", cred.user.uid),
+      {
+        uid: cred.user.uid,
+
+        nombre: name,
+
+        email: email,
+
+        rol: "user",
+
+        expulsado: false,
+
+        created_at: serverTimestamp()
+      }
+    );
+
+    await setDoc(
+      doc(db, "participants", cred.user.uid),
+      {
+        uid: cred.user.uid,
+
+        paid_groups: false,
+
+        amount_groups: 0,
+
+        groups_status: "pending",
+
+        enabled_groups: false,
+
+        submitted_groups_at: null,
+
+        created_at: serverTimestamp()
+      }
+    );
     alert("✅ Registro exitoso. Ahora inicia sesión.");
   } catch (error) {
     alert(error.message);
@@ -479,20 +613,20 @@ document.getElementById("btnLogout").onclick = async () => {
 onAuthStateChanged(auth, async (user) => {
   if (user) {
     currentUser = user;
-    const usersRef = collection(db, "users");
-    const q = query(usersRef, where("email", "==", user.email));
-    const snap = await getDocs(q);
-    if (!snap.empty) {
-      currentUserRol = snap.docs[0].data().rol;
+    const userRef = doc(db, "users", user.uid);
+
+    const snap = await getDoc(userRef);
+    if (snap.exists()) {
+      const userData = snap.data();
+      currentUserRol = userData.rol || "user";
     } else {
-      await addDoc(usersRef, {
-        uid: user.uid,
-        nombre: user.email.split('@')[0],
-        email: user.email,
-        puntos_totales: 0,
-        rol: "user"
-      });
-      currentUserRol = "user";
+
+      alert("Usuario no encontrado");
+
+      await signOut(auth);
+
+      return;
+
     }
     userEmailSpan.innerText = user.email;
     authScreen.classList.add("hidden");
