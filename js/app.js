@@ -1104,12 +1104,17 @@ window.togglePago = async (uid) => {
 
   await updateDoc(participantRef, {
 
-    paid_groups: nuevoEstado,
+  paid_groups: nuevoEstado,
 
-    amount_groups:
-      nuevoEstado ? 55000 : 0
+  amount_groups:
+    nuevoEstado ? 55000 : 0,
 
-  });
+  groups_status:
+    nuevoEstado
+      ? "approved"
+      : "pending"
+
+});
 
 };
 
