@@ -449,30 +449,185 @@ window.savePrediction = async (matchId) => {
 // RANKING EN TIEMPO REAL
 // ======================================================
 function loadRanking() {
-  if (rankingUnsubscribe) rankingUnsubscribe();
-  const rankingRef = collection(db, "ranking");
-  rankingUnsubscribe = onSnapshot(
-    query(rankingRef, orderBy("puntos", "desc")),
-    (snapshot) => {
-      let pos = 1;
-      let encontrado = false;
-      snapshot.forEach(docSnap => {
-        const data = docSnap.data();
-        if (data.user_id === currentUser.uid) {
-          miPosicionSpan.innerText = pos + "°";
-          misPuntosSpan.innerText = data.puntos;
-          encontrado = true;
-        }
-        pos++;
-      });
-      if (!encontrado) {
-        miPosicionSpan.innerText = "-";
-        misPuntosSpan.innerText = "0";
-      }
-    }
-  );
-}
 
+  if (rankingUnsubscribe)
+    rankingUnsubscribe();
+
+  const rankingRef =
+    collection(db, "ranking");
+
+  rankingUnsubscribe =
+    onSnapshot(
+
+      query(
+        rankingRef,
+        orderBy("puntos", "desc")
+      ),
+
+      async (snapshot) => {
+
+        let pos = 1;
+
+        let encontrado = false;
+
+        let rankingHTML = "";
+
+        for (const docSnap of snapshot.docs) {
+
+          const data =
+            docSnap.data();
+
+          // =====================================
+          // DATOS USER
+          // =====================================
+
+          const userRef =
+            doc(db, "users", data.user_id);
+
+          const userSnap =
+            await getDoc(userRef);
+
+          let nombre =
+            "Usuario";
+
+          if (userSnap.exists()) {
+
+            nombre =
+              userSnap.data().nombre
+              || "Usuario";
+
+          }
+
+          // =====================================
+          // MI POSICIÓN
+          // =====================================
+
+          if (
+            data.user_id === currentUser.uid
+          ) {
+
+            miPosicionSpan.innerText =
+              pos + "°";
+
+            misPuntosSpan.innerText =
+              data.puntos;
+
+            encontrado = true;
+
+          }
+
+          // =====================================
+          // HTML RANKING
+          // =====================================
+
+          rankingHTML += `
+
+            <div
+              style="
+                display:flex;
+                justify-content:space-between;
+                align-items:center;
+                padding:12px 14px;
+                border-bottom:1px solid rgba(255,255,255,0.08);
+              "
+            >
+
+              <div
+                style="
+                  display:flex;
+                  align-items:center;
+                  gap:10px;
+                "
+              >
+
+                <div
+                  style="
+                    width:34px;
+                    height:34px;
+                    border-radius:50%;
+                    background:${pos === 1
+              ? "#facc15"
+              : pos === 2
+                ? "#cbd5e1"
+                : pos === 3
+                  ? "#f97316"
+                  : "#1e293b"
+            };
+                    display:flex;
+                    align-items:center;
+                    justify-content:center;
+                    font-weight:800;
+                    color:${pos <= 3 ? "black" : "white"};
+                  "
+                >
+                  ${pos}
+                </div>
+
+                <div>
+                  <div
+                    style="
+                      font-weight:700;
+                      font-size:14px;
+                    "
+                  >
+                    ${nombre}
+                  </div>
+                </div>
+
+              </div>
+
+              <div
+                style="
+                  font-weight:800;
+                  color:#facc15;
+                "
+              >
+                ${data.puntos} pts
+              </div>
+
+            </div>
+
+          `;
+
+          pos++;
+
+        }
+
+        // =====================================
+        // SIN PUNTOS
+        // =====================================
+
+        if (!encontrado) {
+
+          miPosicionSpan.innerText =
+            "-";
+
+          misPuntosSpan.innerText =
+            "0";
+
+        }
+
+        // =====================================
+        // PINTAR RANKING
+        // =====================================
+
+        const rankingContainer =
+          document.getElementById(
+            "rankingList"
+          );
+
+        if (rankingContainer) {
+
+          rankingContainer.innerHTML =
+            rankingHTML;
+
+        }
+
+      }
+
+    );
+
+}
 // ======================================================
 // PANEL ADMINISTRADOR (con grupos y filtro)
 // ======================================================
@@ -572,6 +727,137 @@ window.submitResult = async (matchId) => {
     resultado_visitante: visit,
     estado: "finalizado"
   });
+  // ======================================================
+// CALCULAR PUNTOS
+// ======================================================
+
+const predictionsQuery =
+  query(
+    collection(db, "predictions_groups"),
+    where("match_id", "==", matchId)
+  );
+
+const predictionsSnap =
+  await getDocs(predictionsQuery);
+
+for (const predDoc of predictionsSnap.docs) {
+
+  const pred =
+    predDoc.data();
+    // =====================================
+// EVITAR DUPLICAR PUNTOS
+// =====================================
+
+if (pred.points_assigned === true) {
+  continue;
+}
+
+  let puntos = 0;
+
+  // =====================================
+  // RESULTADO EXACTO
+  // =====================================
+
+  if (
+    pred.pred_local === local &&
+    pred.pred_visitante === visit
+  ) {
+
+    puntos = 3;
+
+  }
+
+  else {
+
+    // =====================================
+    // GANADOR
+    // =====================================
+
+    const real =
+      local > visit
+        ? "L"
+
+        : local < visit
+          ? "V"
+
+          : "E";
+
+    const usuario =
+      pred.pred_local > pred.pred_visitante
+        ? "L"
+
+        : pred.pred_local < pred.pred_visitante
+          ? "V"
+
+          : "E";
+
+    if (real === usuario) {
+
+      puntos = 1;
+
+    }
+
+  }
+
+  // =====================================
+  // ACTUALIZAR RANKING
+  // =====================================
+
+  const rankingRef =
+    doc(db, "ranking", pred.uid);
+
+  const rankingSnap =
+    await getDoc(rankingRef);
+
+  if (!rankingSnap.exists()) {
+
+    await setDoc(rankingRef, {
+
+      user_id: pred.uid,
+
+      puntos: puntos,
+
+      updated_at: serverTimestamp()
+
+    });
+    await updateDoc(predDoc.ref, {
+
+  points_assigned: true,
+
+  points: puntos
+
+});
+
+  } else {
+
+    const rankingData =
+      rankingSnap.data();
+
+    await updateDoc(rankingRef, {
+
+      puntos:
+        (rankingData.puntos || 0)
+        + puntos,
+
+      updated_at:
+        serverTimestamp()
+
+    });
+    // =====================================
+// MARCAR PUNTOS ASIGNADOS
+// =====================================
+
+await updateDoc(predDoc.ref, {
+
+  points_assigned: true,
+
+  points: puntos
+
+});
+
+  }
+
+}
   alert("✅ Resultado guardado. Recarga la página para ver efectos.");
   // Opcional: recargar el panel admin
   loadAdminMatches();
@@ -761,95 +1047,85 @@ function loadAdminParticipants() {
 
         const uid =
           participant.uid;
-        // ======================================================
-        // TOGGLE PAGO
-        // ======================================================
+          // =====================================
+// FUNCIONES ADMIN
+// =====================================
 
-        window.togglePago = async (uid) => {
+window.togglePago = async (uid) => {
 
-          const participantRef =
-            doc(db, "participants", uid);
+  const participantRef =
+    doc(db, "participants", uid);
 
-          const snap =
-            await getDoc(participantRef);
+  const snap =
+    await getDoc(participantRef);
 
-          if (!snap.exists()) return;
+  if (!snap.exists()) return;
 
-          const data = snap.data();
+  const data = snap.data();
 
-          const nuevoEstado =
-            !data.paid_groups;
+  const nuevoEstado =
+    !data.paid_groups;
 
-          await updateDoc(participantRef, {
+  await updateDoc(participantRef, {
 
-            paid_groups: nuevoEstado,
+    paid_groups: nuevoEstado,
 
-            amount_groups:
-              nuevoEstado ? 55000 : 0
+    amount_groups:
+      nuevoEstado ? 55000 : 0
 
-          });
+  });
 
-        };
+};
 
+window.toggleHabilitado =
+  async (uid) => {
 
-        // ======================================================
-        // TOGGLE HABILITADO
-        // ======================================================
+    const participantRef =
+      doc(db, "participants", uid);
 
-        window.toggleHabilitado =
-          async (uid) => {
+    const snap =
+      await getDoc(participantRef);
 
-            const participantRef =
-              doc(db, "participants", uid);
+    if (!snap.exists()) return;
 
-            const snap =
-              await getDoc(participantRef);
+    const data =
+      snap.data();
 
-            if (!snap.exists()) return;
+    await updateDoc(participantRef, {
 
-            const data =
-              snap.data();
+      enabled_groups:
+        !data.enabled_groups
 
-            await updateDoc(participantRef, {
+    });
 
-              enabled_groups:
-                !data.enabled_groups
+};
 
-            });
+window.toggleExpulsado =
+  async (uid) => {
 
-          };
+    const userRef =
+      doc(db, "users", uid);
 
+    const snap =
+      await getDoc(userRef);
 
-        // ======================================================
-        // TOGGLE EXPULSADO
-        // ======================================================
+    if (!snap.exists()) return;
 
-        window.toggleExpulsado =
-          async (uid) => {
+    const data =
+      snap.data();
 
-            const userRef =
-              doc(db, "users", uid);
+    const nuevoEstado =
+      !data.expulsado;
 
-            const snap =
-              await getDoc(userRef);
+    await updateDoc(userRef, {
 
-            if (!snap.exists()) return;
+      expulsado:
+        nuevoEstado
 
-            const data =
-              snap.data();
+    });
 
-            const nuevoEstado =
-              !data.expulsado;
-
-            await updateDoc(userRef, {
-
-              expulsado:
-                nuevoEstado
-
-            });
-
-          };
-
+};
+        
         // =====================================
         // USER DATA
         // =====================================
