@@ -625,41 +625,7 @@ function loadRanking() {
     );
 
 }
-        // =====================================
-        // SIN PUNTOS
-        // =====================================
-
-        if (!encontrado) {
-
-          miPosicionSpan.innerText =
-            "-";
-
-          misPuntosSpan.innerText =
-            "0";
-
-        }
-
-        // =====================================
-        // PINTAR RANKING
-        // =====================================
-
-        const rankingContainer =
-          document.getElementById(
-            "rankingList"
-          );
-
-        if (rankingContainer) {
-
-          rankingContainer.innerHTML =
-            rankingHTML;
-
-        }
-
-      }
-
-    );
-
-}
+        
 // ======================================================
 // PANEL ADMINISTRADOR (con grupos y filtro)
 // ======================================================
@@ -745,158 +711,56 @@ window.cambiarGrupoAdmin = (grupo) => {
 // ======================================================
 // SUBIR RESULTADOS (ADMIN)
 // ======================================================
-window.submitResult = async (matchId) => {
-  const localInput = document.getElementById(`res_local_${matchId}`);
-  const visitInput = document.getElementById(`res_vis_${matchId}`);
-  if (!localInput || !visitInput) return alert("Error: No se encontraron los inputs");
-  const local = parseInt(localInput.value);
-  const visit = parseInt(visitInput.value);
-  if (isNaN(local) || isNaN(visit)) return alert("Ingresa números válidos");
 
-  const matchRef = doc(db, "matches", matchId);
+window.submitResult = async (matchId) => {
+
+  const localInput =
+    document.getElementById(`res_local_${matchId}`);
+
+  const visitInput =
+    document.getElementById(`res_vis_${matchId}`);
+
+  if (!localInput || !visitInput) {
+
+    return alert(
+      "Error: No se encontraron los inputs"
+    );
+
+  }
+
+  const local =
+    parseInt(localInput.value);
+
+  const visit =
+    parseInt(visitInput.value);
+
+  if (isNaN(local) || isNaN(visit)) {
+
+    return alert(
+      "Ingresa números válidos"
+    );
+
+  }
+
+  const matchRef =
+    doc(db, "matches", matchId);
+
   await updateDoc(matchRef, {
+
     resultado_local: local,
+
     resultado_visitante: visit,
+
     estado: "finalizado"
+
   });
 
   await calcularPuntos(matchId);
 
-alert("✅ Resultado guardado");
-  // ======================================================
-// CALCULAR PUNTOS
-// ======================================================
+  alert("✅ Resultado guardado");
 
-const predictionsQuery =
-  query(
-    collection(db, "predictions_groups"),
-    where("match_id", "==", matchId)
-  );
-
-const predictionsSnap =
-  await getDocs(predictionsQuery);
-
-for (const predDoc of predictionsSnap.docs) {
-
-  const pred =
-    predDoc.data();
-    // =====================================
-// EVITAR DUPLICAR PUNTOS
-// =====================================
-
-if (pred.points_assigned === true) {
-  continue;
-}
-
-  let puntos = 0;
-
-  // =====================================
-  // RESULTADO EXACTO
-  // =====================================
-
-  if (
-    pred.pred_local === local &&
-    pred.pred_visitante === visit
-  ) {
-
-    puntos = 3;
-
-  }
-
-  else {
-
-    // =====================================
-    // GANADOR
-    // =====================================
-
-    const real =
-      local > visit
-        ? "L"
-
-        : local < visit
-          ? "V"
-
-          : "E";
-
-    const usuario =
-      pred.pred_local > pred.pred_visitante
-        ? "L"
-
-        : pred.pred_local < pred.pred_visitante
-          ? "V"
-
-          : "E";
-
-    if (real === usuario) {
-
-      puntos = 1;
-
-    }
-
-  }
-
-  // =====================================
-  // ACTUALIZAR RANKING
-  // =====================================
-
-  const rankingRef =
-    doc(db, "ranking", pred.uid);
-
-  const rankingSnap =
-    await getDoc(rankingRef);
-
-  if (!rankingSnap.exists()) {
-
-    await setDoc(rankingRef, {
-
-      user_id: pred.uid,
-
-      puntos: puntos,
-
-      updated_at: serverTimestamp()
-
-    });
-    await updateDoc(predDoc.ref, {
-
-  points_assigned: true,
-
-  points: puntos
-
-});
-
-  } else {
-
-    const rankingData =
-      rankingSnap.data();
-
-    await updateDoc(rankingRef, {
-
-      puntos:
-        (rankingData.puntos || 0)
-        + puntos,
-
-      updated_at:
-        serverTimestamp()
-
-    });
-    // =====================================
-// MARCAR PUNTOS ASIGNADOS
-// =====================================
-
-await updateDoc(predDoc.ref, {
-
-  points_assigned: true,
-
-  points: puntos
-
-});
-
-  }
-
-}
-  alert("✅ Resultado guardado. Recarga la página para ver efectos.");
-  // Opcional: recargar el panel admin
   loadAdminMatches();
+
 };
 
 // ======================================================
@@ -934,7 +798,149 @@ function setupUploadButton() {
     }
   };
 }
+// ======================================================
+// CALCULAR PUNTOS
+// ======================================================
 
+async function calcularPuntos(matchId) {
+
+  const matchRef =
+    doc(db, "matches", matchId);
+
+  const matchSnap =
+    await getDoc(matchRef);
+
+  if (!matchSnap.exists()) return;
+
+  const match =
+    matchSnap.data();
+
+  const local =
+    match.resultado_local;
+
+  const visit =
+    match.resultado_visitante;
+
+  const predictionsQuery =
+    query(
+      collection(db, "predictions_groups"),
+      where("match_id", "==", matchId)
+    );
+
+  const predictionsSnap =
+    await getDocs(predictionsQuery);
+
+  for (const predDoc of predictionsSnap.docs) {
+
+    const pred =
+      predDoc.data();
+
+    // =====================================
+    // EVITAR DUPLICAR PUNTOS
+    // =====================================
+
+    if (pred.points_assigned === true) {
+      continue;
+    }
+
+    let puntos = 0;
+
+    // =====================================
+    // MARCADOR EXACTO
+    // =====================================
+
+    if (
+      pred.pred_local === local &&
+      pred.pred_visitante === visit
+    ) {
+
+      puntos = 3;
+
+    }
+
+    else {
+
+      // =====================================
+      // GANADOR O EMPATE
+      // =====================================
+
+      const real =
+        local > visit
+          ? "L"
+          : local < visit
+            ? "V"
+            : "E";
+
+      const usuario =
+        pred.pred_local > pred.pred_visitante
+          ? "L"
+          : pred.pred_local < pred.pred_visitante
+            ? "V"
+            : "E";
+
+      if (real === usuario) {
+
+        puntos = 1;
+
+      }
+
+    }
+
+    // =====================================
+    // RANKING
+    // =====================================
+
+    const rankingRef =
+      doc(db, "ranking", pred.uid);
+
+    const rankingSnap =
+      await getDoc(rankingRef);
+
+    if (!rankingSnap.exists()) {
+
+      await setDoc(rankingRef, {
+
+        user_id: pred.uid,
+
+        puntos: puntos,
+
+        updated_at: serverTimestamp()
+
+      });
+
+    } else {
+
+      const rankingData =
+        rankingSnap.data();
+
+      await updateDoc(rankingRef, {
+
+        puntos:
+          (rankingData.puntos || 0)
+          + puntos,
+
+        updated_at:
+          serverTimestamp()
+
+      });
+
+    }
+
+    // =====================================
+    // MARCAR PUNTOS
+    // =====================================
+
+    await updateDoc(predDoc.ref, {
+
+      points_assigned: true,
+
+      points: puntos
+
+    });
+
+  }
+
+}
 // ======================================================
 // LOGIN, REGISTRO, LOGOUT
 // ======================================================
