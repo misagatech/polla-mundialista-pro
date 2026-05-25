@@ -727,6 +727,10 @@ window.submitResult = async (matchId) => {
     resultado_visitante: visit,
     estado: "finalizado"
   });
+
+  await calcularPuntos(matchId);
+
+alert("✅ Resultado guardado");
   // ======================================================
 // CALCULAR PUNTOS
 // ======================================================
@@ -1303,6 +1307,19 @@ onAuthStateChanged(auth, async (user) => {
     const snap = await getDoc(userRef);
     if (snap.exists()) {
       const userData = snap.data();
+        // =========================================
+  // VALIDAR EXPULSADO GLOBAL
+  // =========================================
+
+  if (userData.expulsado === true) {
+
+    alert("Tu cuenta fue bloqueada");
+
+    await signOut(auth);
+
+    return;
+
+  }
       currentUserRol = userData.rol || "user";
       console.log("ROL ACTUAL:", currentUserRol);
     } else {
