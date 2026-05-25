@@ -448,6 +448,7 @@ window.savePrediction = async (matchId) => {
 // ======================================================
 // RANKING EN TIEMPO REAL
 // ======================================================
+
 function loadRanking() {
 
   if (rankingUnsubscribe)
@@ -493,8 +494,8 @@ function loadRanking() {
           if (userSnap.exists()) {
 
             nombre =
-              userSnap.data().nombre
-              || "Usuario";
+              userSnap.data().nombre ||
+              "Usuario";
 
           }
 
@@ -517,6 +518,21 @@ function loadRanking() {
           }
 
           // =====================================
+          // MEDALLAS
+          // =====================================
+
+          let medalla = "";
+
+          if (pos === 1)
+            medalla = "🥇";
+
+          else if (pos === 2)
+            medalla = "🥈";
+
+          else if (pos === 3)
+            medalla = "🥉";
+
+          // =====================================
           // HTML RANKING
           // =====================================
 
@@ -527,8 +543,9 @@ function loadRanking() {
                 display:flex;
                 justify-content:space-between;
                 align-items:center;
-                padding:12px 14px;
+                padding:10px 0;
                 border-bottom:1px solid rgba(255,255,255,0.08);
+                gap:10px;
               "
             >
 
@@ -537,53 +554,29 @@ function loadRanking() {
                   display:flex;
                   align-items:center;
                   gap:10px;
+                  min-width:0;
                 "
               >
 
-                <div
+                <span>
+                  ${medalla || "#" + pos}
+                </span>
+
+                <span
                   style="
-                    width:34px;
-                    height:34px;
-                    border-radius:50%;
-                    background:${pos === 1
-              ? "#facc15"
-              : pos === 2
-                ? "#cbd5e1"
-                : pos === 3
-                  ? "#f97316"
-                  : "#1e293b"
-            };
-                    display:flex;
-                    align-items:center;
-                    justify-content:center;
-                    font-weight:800;
-                    color:${pos <= 3 ? "black" : "white"};
+                    white-space:nowrap;
+                    overflow:hidden;
+                    text-overflow:ellipsis;
                   "
                 >
-                  ${pos}
-                </div>
-
-                <div>
-                  <div
-                    style="
-                      font-weight:700;
-                      font-size:14px;
-                    "
-                  >
-                    ${nombre}
-                  </div>
-                </div>
+                  ${nombre}
+                </span>
 
               </div>
 
-              <div
-                style="
-                  font-weight:800;
-                  color:#facc15;
-                "
-              >
+              <strong>
                 ${data.puntos} pts
-              </div>
+              </strong>
 
             </div>
 
@@ -593,6 +586,45 @@ function loadRanking() {
 
         }
 
+        // =====================================
+        // SIN RANKING
+        // =====================================
+
+        if (!encontrado) {
+
+          miPosicionSpan.innerText =
+            "-";
+
+          misPuntosSpan.innerText =
+            "0";
+
+        }
+
+        // =====================================
+        // INSERTAR HTML
+        // =====================================
+
+        const rankingList =
+          document.getElementById(
+            "rankingList"
+          );
+
+        if (rankingList) {
+
+          rankingList.innerHTML =
+            rankingHTML || `
+              <div style="margin-top:10px;">
+                No hay ranking aún
+              </div>
+            `;
+
+        }
+
+      }
+
+    );
+
+}
         // =====================================
         // SIN PUNTOS
         // =====================================
