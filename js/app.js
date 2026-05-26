@@ -477,6 +477,10 @@ function loadRanking() {
 
           const data =
             docSnap.data();
+          if (!data.user_id) {
+            console.log("⚠️ Ranking corrupto:", docSnap.id);
+            continue;
+          }
 
           // =====================================
           // DATOS USER
@@ -942,6 +946,12 @@ window.reabrirPartido = async (matchId) => {
       const pred =
         predDoc.data();
 
+      const predLocal =
+        Number(pred.pred_local);
+
+      const predVisit =
+        Number(pred.pred_visitante);
+
       if (pred.points_assigned === true) {
 
         const puntosARestar =
@@ -1109,6 +1119,12 @@ async function calcularPuntos(matchId) {
     const pred =
       predDoc.data();
 
+    const predLocal =
+      Number(pred.pred_local);
+
+    const predVisit =
+      Number(pred.pred_visitante);
+
     // =====================================
     // EVITAR DUPLICAR PUNTOS
     // =====================================
@@ -1124,8 +1140,8 @@ async function calcularPuntos(matchId) {
     // =====================================
 
     if (
-      Number(pred.pred_local) === local &&
-      Number(pred.pred_visitante) === visit
+      predLocal === local &&
+      predVisit === visit
     ) {
 
       puntos = 3;
@@ -1146,11 +1162,9 @@ async function calcularPuntos(matchId) {
             : "E";
 
       const usuario =
-        Number(pred.pred_local) >
-          Number(pred.pred_visitante)
+        predLocal > predVisit
           ? "L"
-          : Number(pred.pred_local) <
-            Number(pred.pred_visitante)
+          : predLocal < predVisit
             ? "V"
             : "E";
 
