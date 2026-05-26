@@ -1656,101 +1656,118 @@ function generarDieciseisavos() {
   if (!container) return;
 
   // =====================================
-  // PARTIDO FIFA 73
-  // 2A vs 2B
-  // =====================================
+// PARTIDOS OFICIALES FIFA
+// =====================================
 
-  const local =
-    clasificadosGlobales["2A"];
+const partidos = [
 
-  const visitante =
-    clasificadosGlobales["2B"];
+  {
+    numero: 73,
+    local: clasificadosGlobales["2A"],
+    visitante: clasificadosGlobales["2B"]
+  },
 
-  // SI NO EXISTEN
+  {
+    numero: 75,
+    local: clasificadosGlobales["1F"],
+    visitante: clasificadosGlobales["2C"]
+  },
 
-  if (!local || !visitante) {
+  {
+    numero: 76,
+    local: clasificadosGlobales["1C"],
+    visitante: clasificadosGlobales["2F"]
+  },
 
-    container.innerHTML = `
-      <div class="tabla-grupo-card">
+  {
+    numero: 78,
+    local: clasificadosGlobales["2E"],
+    visitante: clasificadosGlobales["2I"]
+  },
 
-        <h3 class="tabla-title">
-          Dieciseisavos
-        </h3>
+  {
+    numero: 83,
+    local: clasificadosGlobales["2K"],
+    visitante: clasificadosGlobales["2L"]
+  },
 
-        <div style="padding:20px;">
-          Esperando clasificados...
-        </div>
+  {
+    numero: 84,
+    local: clasificadosGlobales["1H"],
+    visitante: clasificadosGlobales["2J"]
+  },
 
-      </div>
-    `;
+  {
+    numero: 86,
+    local: clasificadosGlobales["1J"],
+    visitante: clasificadosGlobales["2H"]
+  },
 
-    return;
-
+  {
+    numero: 88,
+    local: clasificadosGlobales["2D"],
+    visitante: clasificadosGlobales["2G"]
   }
 
-  // =====================================
-  // HTML
-  // =====================================
+];
 
-  container.innerHTML = `
+// =====================================
+// HTML
+// =====================================
 
-    <div class="tabla-grupo-card">
+let html = `
 
-      <h3 class="tabla-title">
-        Dieciseisavos
-      </h3>
+  <div class="tabla-grupo-card">
 
-      <div
-        style="
-          padding:20px;
-          display:flex;
-          justify-content:space-between;
-          align-items:center;
-          gap:20px;
-        "
-      >
+    <h3 class="tabla-title">
+      Dieciseisavos de Final
+    </h3>
 
-        <div
-          style="
-            display:flex;
-            align-items:center;
-            gap:10px;
-          "
+    <div class="dieciseisavos-grid">
+
+`;
+
+partidos.forEach(partido => {
+
+  if (!partido.local || !partido.visitante) {
+    return;
+  }
+
+  html += `
+
+    <div class="knockout-card">
+
+      <div class="knockout-match-number">
+        Partido ${partido.numero}
+      </div>
+
+      <div class="knockout-team">
+
+        <img
+          src="https://flagcdn.com/${obtenerCodigoPais(partido.local)}.svg"
+          width="24"
         >
 
-          <img
-            src="https://flagcdn.com/${obtenerCodigoPais(local)}.svg"
-            width="28"
-          >
+        <span>
+          ${fifaCodes[partido.local]}
+        </span>
 
-          <strong>
-            ${local}
-          </strong>
+      </div>
 
-        </div>
+      <div class="knockout-vs">
+        VS
+      </div>
 
-        <div>
-          VS
-        </div>
+      <div class="knockout-team">
 
-        <div
-          style="
-            display:flex;
-            align-items:center;
-            gap:10px;
-          "
+        <img
+          src="https://flagcdn.com/${obtenerCodigoPais(partido.visitante)}.svg"
+          width="24"
         >
 
-          <img
-            src="https://flagcdn.com/${obtenerCodigoPais(visitante)}.svg"
-            width="28"
-          >
-
-          <strong>
-            ${visitante}
-          </strong>
-
-        </div>
+        <span>
+          ${fifaCodes[partido.visitante]}
+        </span>
 
       </div>
 
@@ -1758,6 +1775,17 @@ function generarDieciseisavos() {
 
   `;
 
+});
+
+html += `
+
+    </div>
+
+  </div>
+
+`;
+
+container.innerHTML = html;
 }
 // ======================================================
 // LOGIN, REGISTRO, LOGOUT
