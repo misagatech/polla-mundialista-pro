@@ -254,7 +254,7 @@ window.savePrediction = async (matchId) => {
     if (!currentUser) {
       return alert("Debes iniciar sesión");
     }
-        // =========================================
+    // =========================================
     // VALIDAR PARTICIPANTE
     // =========================================
 
@@ -625,14 +625,18 @@ function loadRanking() {
     );
 
 }
-        
+
 // ======================================================
 // PANEL ADMINISTRADOR (con grupos y filtro)
 // ======================================================
 async function loadAdminMatches() {
   const q = query(
     collection(db, "matches"),
-    where("estado", "in", ["pendiente", "en_juego"])
+    where("estado", "in", [
+      "pendiente",
+      "en_juego",
+      "resultado_cargado"
+    ])
   );
   const snapshot = await getDocs(q);
   const partidosPorGrupo = {};
@@ -679,7 +683,21 @@ async function loadAdminMatches() {
           <span>-</span>
           <input type="number" id="res_vis_${match.id}" placeholder="0" class="admin-input">
         </div>
-        <button class="admin-btn" onclick="window.submitResult('${match.id}')">Guardar</button>
+       <button 
+  class="admin-btn"
+  onclick="window.submitResult('${match.id}')">
+  Guardar
+</button>
+
+${match.estado === "resultado_cargado" ? `
+
+  <button
+    class="admin-btn finalizar-btn"
+    onclick="window.finalizarPartido('${match.id}')">
+    Finalizar
+  </button>
+
+` : ""}
       </div>
     `;
   });
@@ -746,23 +764,93 @@ window.submitResult = async (matchId) => {
     doc(db, "matches", matchId);
 
   await updateDoc(matchRef, {
-
-    resultado_local: local,
-
-    resultado_visitante: visit,
-
-    estado: "finalizado"
-
+    resultado_local: Number(local),
+    resultado_visitante: Number(visit),
+    estado: "resultado_cargado"
   });
 
-  await calcularPuntos(matchId);
-
-  alert("✅ Resultado guardado");
+  alert("✅ Resultado guardado. Puedes corregirlo si es necesario");
 
   loadAdminMatches();
 
 };
+// ======================================================
+// FINALIZAR PARTIDO (ADMIN)
+// ======================================================
 
+window.finalizarPartido = async (matchId) => {
+
+  try {
+
+    const matchRef =
+      doc(db, "matches", matchId);
+
+    const matchSnap =
+      await getDoc(matchRef);
+
+    if (!matchSnap.exists()) {
+
+      return alert(
+        "Partido no encontrado"
+      );
+
+    }
+
+    const match =
+      matchSnap.data();
+
+    // VALIDAR RESULTADOS
+
+    if (
+      match.resultado_local === null ||
+      match.resultado_visitante === null
+    ) {
+
+      return alert(
+        "Debes guardar resultados primero"
+      );
+
+    }
+
+    // EVITAR DOBLE FINALIZACIÓN
+
+    if (match.estado === "finalizado") {
+
+      return alert(
+        "Este partido ya fue finalizado"
+      );
+
+    }
+
+    // CAMBIAR ESTADO
+
+    await updateDoc(matchRef, {
+
+      estado: "finalizado"
+
+    });
+
+    // CALCULAR PUNTOS
+
+    await calcularPuntos(matchId);
+
+    alert(
+      "✅ Partido finalizado y puntos calculados"
+    );
+
+    loadAdminMatches();
+
+  } catch (error) {
+
+    console.error(error);
+
+    alert(
+      "Error al finalizar partido"
+    );
+
+  }
+
+};
 // ======================================================
 // CARGAR TODOS LOS PARTIDOS DESDE partidos.js (ADMIN)
 // ======================================================
@@ -781,7 +869,8 @@ async function cargarTodosLosPartidos() {
       grupo: p.grupo || null,
       estado: "pendiente",
       resultado_local: null,
-      resultado_visitante: null
+      resultado_visitante: null,
+      puntos_calculados: false
     });
   }
   console.log("✅ Partidos cargados");
@@ -814,6 +903,19 @@ async function calcularPuntos(matchId) {
 
   const match =
     matchSnap.data();
+  // =====================================
+  // EVITAR RECALCULAR PARTIDO
+  // =====================================
+
+  if (match.puntos_calculados === true) {
+
+    console.log(
+      "⚠️ Este partido ya calculó puntos"
+    );
+
+    return;
+
+  }
 
   const local =
     match.resultado_local;
@@ -884,6 +986,7 @@ async function calcularPuntos(matchId) {
 
       }
 
+
     }
 
     // =====================================
@@ -939,7 +1042,15 @@ async function calcularPuntos(matchId) {
     });
 
   }
+  // =====================================
+  // MARCAR PARTIDO CALCULADO
+  // =====================================
 
+  await updateDoc(matchRef, {
+
+    puntos_calculados: true
+
+  });
 }
 // ======================================================
 // LOGIN, REGISTRO, LOGOUT
@@ -1089,90 +1200,90 @@ function loadAdminParticipants() {
 
         const uid =
           participant.uid;
-          // =====================================
-// FUNCIONES ADMIN
-// =====================================
+        // =====================================
+        // FUNCIONES ADMIN
+        // =====================================
 
-window.togglePago = async (uid) => {
+        window.togglePago = async (uid) => {
 
-  const participantRef =
-    doc(db, "participants", uid);
+          const participantRef =
+            doc(db, "participants", uid);
 
-  const snap =
-    await getDoc(participantRef);
+          const snap =
+            await getDoc(participantRef);
 
-  if (!snap.exists()) return;
+          if (!snap.exists()) return;
 
-  const data = snap.data();
+          const data = snap.data();
 
-  const nuevoEstado =
-    !data.paid_groups;
+          const nuevoEstado =
+            !data.paid_groups;
 
-  await updateDoc(participantRef, {
+          await updateDoc(participantRef, {
 
-  paid_groups: nuevoEstado,
+            paid_groups: nuevoEstado,
 
-  amount_groups:
-    nuevoEstado ? 55000 : 0,
+            amount_groups:
+              nuevoEstado ? 55000 : 0,
 
-  groups_status:
-    nuevoEstado
-      ? "approved"
-      : "pending"
+            groups_status:
+              nuevoEstado
+                ? "approved"
+                : "pending"
 
-});
+          });
 
-};
+        };
 
-window.toggleHabilitado =
-  async (uid) => {
+        window.toggleHabilitado =
+          async (uid) => {
 
-    const participantRef =
-      doc(db, "participants", uid);
+            const participantRef =
+              doc(db, "participants", uid);
 
-    const snap =
-      await getDoc(participantRef);
+            const snap =
+              await getDoc(participantRef);
 
-    if (!snap.exists()) return;
+            if (!snap.exists()) return;
 
-    const data =
-      snap.data();
+            const data =
+              snap.data();
 
-    await updateDoc(participantRef, {
+            await updateDoc(participantRef, {
 
-      enabled_groups:
-        !data.enabled_groups
+              enabled_groups:
+                !data.enabled_groups
 
-    });
+            });
 
-};
+          };
 
-window.toggleExpulsado =
-  async (uid) => {
+        window.toggleExpulsado =
+          async (uid) => {
 
-    const userRef =
-      doc(db, "users", uid);
+            const userRef =
+              doc(db, "users", uid);
 
-    const snap =
-      await getDoc(userRef);
+            const snap =
+              await getDoc(userRef);
 
-    if (!snap.exists()) return;
+            if (!snap.exists()) return;
 
-    const data =
-      snap.data();
+            const data =
+              snap.data();
 
-    const nuevoEstado =
-      !data.expulsado;
+            const nuevoEstado =
+              !data.expulsado;
 
-    await updateDoc(userRef, {
+            await updateDoc(userRef, {
 
-      expulsado:
-        nuevoEstado
+              expulsado:
+                nuevoEstado
 
-    });
+            });
 
-};
-        
+          };
+
         // =====================================
         // USER DATA
         // =====================================
@@ -1350,19 +1461,19 @@ onAuthStateChanged(auth, async (user) => {
     const snap = await getDoc(userRef);
     if (snap.exists()) {
       const userData = snap.data();
-        // =========================================
-  // VALIDAR EXPULSADO GLOBAL
-  // =========================================
+      // =========================================
+      // VALIDAR EXPULSADO GLOBAL
+      // =========================================
 
-  if (userData.expulsado === true) {
+      if (userData.expulsado === true) {
 
-    alert("Tu cuenta fue bloqueada");
+        alert("Tu cuenta fue bloqueada");
 
-    await signOut(auth);
+        await signOut(auth);
 
-    return;
+        return;
 
-  }
+      }
       currentUserRol = userData.rol || "user";
       console.log("ROL ACTUAL:", currentUserRol);
     } else {
