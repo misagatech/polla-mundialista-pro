@@ -679,15 +679,36 @@ async function loadAdminMatches() {
           </div>
         </div>
         <div class="admin-score">
-          <input type="number" id="res_local_${match.id}" placeholder="0" class="admin-input">
-          <span>-</span>
-          <input type="number" id="res_vis_${match.id}" placeholder="0" class="admin-input">
+        <input
+  type="number"
+  id="res_local_${match.id}"
+  placeholder="0"
+  class="admin-input"
+  value="${match.resultado_local ?? ""}"
+  ${match.estado === "finalizado" ? "disabled" : ""}
+>
+
+<span>-</span>
+
+<input
+  type="number"
+  id="res_vis_${match.id}"
+  placeholder="0"
+  class="admin-input"
+  value="${match.resultado_visitante ?? ""}"
+  ${match.estado === "finalizado" ? "disabled" : ""}
+>
+      
         </div>
-       <button 
-  class="admin-btn"
-  onclick="window.submitResult('${match.id}')">
-  Guardar
-</button>
+      ${match.estado !== "finalizado" ? `
+
+  <button 
+    class="admin-btn"
+    onclick="window.submitResult('${match.id}')">
+    Guardar
+  </button>
+
+` : ""}
 
 ${match.estado === "resultado_cargado" ? `
 
