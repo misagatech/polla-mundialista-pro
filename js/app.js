@@ -52,6 +52,7 @@ let rankingUnsubscribe = null;
 let participantsUnsubscribe = null;
 let adminParticipantsUnsubscribe = null;
 let gruposData = {};
+let clasificadosGlobales = {};
 let grupoActivo = "A";
 let adminGrupoActivo = "A";
 
@@ -154,7 +155,7 @@ function mostrarTodosLosGrupos() {
     const start = match.hora_partido.toDate();
 
     const isStarted = now >= start;
-    const hasPrediction = match.userPred !== null;
+    const hasPrediction = !!match.userPred;
     const fechaLocal = match.hora_partido.toDate().toLocaleString("es-CO", { timeZone: "America/Bogota" });
 
     html += `
@@ -259,7 +260,7 @@ async function loadMatchesAndPredictions() {
       );
       const predSnap = await getDocs(predQuery);
       match.userPred = predSnap.empty ? null : predSnap.docs[0].data();
-      match.bloqueado = new Date() >= match.hora_partido.toDate();
+      
       matches.push(match);
     }
     const partidosGrupos = matches.filter(esFaseGrupos);
@@ -785,7 +786,7 @@ ${match.estado === "finalizado" ? `
 
   // Asignar eventos a los botones de grupos (evitar múltiples listeners)
   document.querySelectorAll(".admin-grupo-tab").forEach(btn => {
-    btn.removeEventListener("click", window.adminGroupChangeHandler);
+
     const handler = () => {
       adminGrupoActivo = btn.dataset.grupo;
       loadAdminMatches();
@@ -1450,8 +1451,7 @@ async function generarTablaGrupos() {
 
   let html = "";
 
-  const gruposOrdenados =
-    Object.keys(grupos).sort();
+  const gruposOrdenados = [grupoActivo];
 
   gruposOrdenados.forEach(grupo => {
 
@@ -1511,6 +1511,25 @@ async function generarTablaGrupos() {
           <tbody>
 
     `;
+    // =====================================
+    // GUARDAR CLASIFICADOS
+    // =====================================
+
+    if (tabla[0]) {
+
+      clasificadosGlobales[
+        `1${grupo}`
+      ] = tabla[0].equipo;
+
+    }
+
+    if (tabla[1]) {
+
+      clasificadosGlobales[
+        `2${grupo}`
+      ] = tabla[1].equipo;
+
+    }
 
     tabla.forEach((team, index) => {
 
@@ -1554,8 +1573,10 @@ async function generarTablaGrupos() {
           </td>
 
           <td>
-            ${team.dg}
-          </td>
+  ${team.dg > 0
+          ? "+" + team.dg
+          : team.dg}
+</td>
 
         </tr>
 
@@ -1577,6 +1598,126 @@ async function generarTablaGrupos() {
 
   tablaContainer.innerHTML =
     html;
+  if (Object.keys(clasificadosGlobales).length >= 24) {
+  generarDieciseisavos();
+}
+
+}
+// ======================================================
+// GENERAR DIECISEISAVOS
+// ======================================================
+
+function generarDieciseisavos() {
+
+  const container =
+    document.getElementById(
+      "dieciseisavosContainer"
+    );
+
+  if (!container) return;
+
+  // =====================================
+  // PARTIDO FIFA 73
+  // 2A vs 2B
+  // =====================================
+
+  const local =
+    clasificadosGlobales["2A"];
+
+  const visitante =
+    clasificadosGlobales["2B"];
+
+  // SI NO EXISTEN
+
+  if (!local || !visitante) {
+
+    container.innerHTML = `
+      <div class="tabla-grupo-card">
+
+        <h3 class="tabla-title">
+          Dieciseisavos
+        </h3>
+
+        <div style="padding:20px;">
+          Esperando clasificados...
+        </div>
+
+      </div>
+    `;
+
+    return;
+
+  }
+
+  // =====================================
+  // HTML
+  // =====================================
+
+  container.innerHTML = `
+
+    <div class="tabla-grupo-card">
+
+      <h3 class="tabla-title">
+        Dieciseisavos
+      </h3>
+
+      <div
+        style="
+          padding:20px;
+          display:flex;
+          justify-content:space-between;
+          align-items:center;
+          gap:20px;
+        "
+      >
+
+        <div
+          style="
+            display:flex;
+            align-items:center;
+            gap:10px;
+          "
+        >
+
+          <img
+            src="https://flagcdn.com/${obtenerCodigoPais(local)}.svg"
+            width="28"
+          >
+
+          <strong>
+            ${local}
+          </strong>
+
+        </div>
+
+        <div>
+          VS
+        </div>
+
+        <div
+          style="
+            display:flex;
+            align-items:center;
+            gap:10px;
+          "
+        >
+
+          <img
+            src="https://flagcdn.com/${obtenerCodigoPais(visitante)}.svg"
+            width="28"
+          >
+
+          <strong>
+            ${visitante}
+          </strong>
+
+        </div>
+
+      </div>
+
+    </div>
+
+  `;
 
 }
 // ======================================================
