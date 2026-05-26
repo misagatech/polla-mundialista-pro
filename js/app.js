@@ -265,6 +265,7 @@ async function loadMatchesAndPredictions() {
     const partidosGrupos = matches.filter(esFaseGrupos);
     gruposData = agruparPartidos(partidosGrupos);
     mostrarTodosLosGrupos();
+    generarTablaGrupos();
 
     // Próximo partido (el más cercano en el futuro)
     const ahora = new Date();
@@ -1281,6 +1282,302 @@ async function calcularPuntos(matchId) {
     puntos_calculados: true
 
   });
+}
+// ======================================================
+// TABLA DE POSICIONES
+// ======================================================
+
+async function generarTablaGrupos() {
+
+  const tablaContainer =
+    document.getElementById(
+      "tablaGruposContainer"
+    );
+
+  if (!tablaContainer) return;
+
+  // =====================================
+  // OBTENER PARTIDOS
+  // =====================================
+
+  const matchesSnap =
+    await getDocs(
+      collection(db, "matches")
+    );
+
+  const grupos = {};
+
+  // =====================================
+  // RECORRER PARTIDOS
+  // =====================================
+
+  matchesSnap.forEach(docSnap => {
+
+    const match =
+      docSnap.data();
+
+    // SOLO FASE DE GRUPOS
+
+    if (
+      match.fase !== "grupos"
+    ) return;
+
+    const grupo =
+      match.grupo;
+
+    if (!grupos[grupo]) {
+
+      grupos[grupo] = {};
+
+    }
+
+    // EQUIPOS
+
+    const equipos = [
+      match.equipo_local,
+      match.equipo_visitante
+    ];
+
+    equipos.forEach(equipo => {
+
+      if (!grupos[grupo][equipo]) {
+
+        grupos[grupo][equipo] = {
+
+          equipo,
+
+          pj: 0,
+          pg: 0,
+          pe: 0,
+          pp: 0,
+
+          gf: 0,
+          gc: 0,
+          dg: 0,
+
+          pts: 0
+
+        };
+
+      }
+
+    });
+
+    // =====================================
+    // SOLO SI ESTÁ FINALIZADO
+    // =====================================
+
+    if (
+      match.estado !== "finalizado"
+    ) return;
+
+    const local =
+      grupos[grupo][
+      match.equipo_local
+      ];
+
+    const visit =
+      grupos[grupo][
+      match.equipo_visitante
+      ];
+
+    const gl =
+      Number(
+        match.resultado_local
+      );
+
+    const gv =
+      Number(
+        match.resultado_visitante
+      );
+
+    // PJ
+
+    local.pj++;
+    visit.pj++;
+
+    // GOLES
+
+    local.gf += gl;
+    local.gc += gv;
+
+    visit.gf += gv;
+    visit.gc += gl;
+
+    // DIFERENCIA
+
+    local.dg =
+      local.gf - local.gc;
+
+    visit.dg =
+      visit.gf - visit.gc;
+
+    // GANADOR
+
+    if (gl > gv) {
+
+      local.pg++;
+      local.pts += 3;
+
+      visit.pp++;
+
+    }
+
+    else if (gv > gl) {
+
+      visit.pg++;
+      visit.pts += 3;
+
+      local.pp++;
+
+    }
+
+    else {
+
+      local.pe++;
+      visit.pe++;
+
+      local.pts++;
+      visit.pts++;
+
+    }
+
+  });
+
+  // =====================================
+  // GENERAR HTML
+  // =====================================
+
+  let html = "";
+
+  const gruposOrdenados =
+    Object.keys(grupos).sort();
+
+  gruposOrdenados.forEach(grupo => {
+
+    const tabla =
+      Object.values(
+        grupos[grupo]
+      );
+
+    // =====================================
+    // ORDENAR TABLA FIFA
+    // =====================================
+
+    tabla.sort((a, b) => {
+
+      if (b.pts !== a.pts) {
+        return b.pts - a.pts;
+      }
+
+      if (b.dg !== a.dg) {
+        return b.dg - a.dg;
+      }
+
+      if (b.gf !== a.gf) {
+        return b.gf - a.gf;
+      }
+
+      return a.equipo.localeCompare(
+        b.equipo
+      );
+
+    });
+
+    html += `
+
+      <div class="tabla-grupo-card">
+
+        <h3 class="tabla-title">
+          Grupo ${grupo}
+        </h3>
+
+        <table class="tabla-posiciones">
+
+          <thead>
+
+            <tr>
+
+              <th>#</th>
+              <th>Equipo</th>
+              <th>PTS</th>
+              <th>PJ</th>
+              <th>DG</th>
+
+            </tr>
+
+          </thead>
+
+          <tbody>
+
+    `;
+
+    tabla.forEach((team, index) => {
+
+      html += `
+
+        <tr>
+
+          <td>
+            ${index + 1}
+          </td>
+
+          <td>
+
+            <div
+              style="
+                display:flex;
+                align-items:center;
+                gap:8px;
+              "
+            >
+
+              <img
+                src="https://flagcdn.com/${obtenerCodigoPais(team.equipo)}.svg"
+                width="22"
+              >
+
+              ${team.equipo}
+
+            </div>
+
+          </td>
+
+          <td>
+            <strong>
+              ${team.pts}
+            </strong>
+          </td>
+
+          <td>
+            ${team.pj}
+          </td>
+
+          <td>
+            ${team.dg}
+          </td>
+
+        </tr>
+
+      `;
+
+    });
+
+    html += `
+
+          </tbody>
+
+        </table>
+
+      </div>
+
+    `;
+
+  });
+
+  tablaContainer.innerHTML =
+    html;
+
 }
 // ======================================================
 // LOGIN, REGISTRO, LOGOUT
