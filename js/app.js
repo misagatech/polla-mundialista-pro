@@ -719,6 +719,16 @@ ${match.estado === "resultado_cargado" ? `
   </button>
 
 ` : ""}
+${match.estado === "finalizado" ? `
+
+  <button
+    class="admin-btn reabrir-btn"
+    onclick="window.reabrirPartido('${match.id}')">
+    Reabrir
+  </button>
+
+` : ""}
+
       </div>
     `;
   });
@@ -867,6 +877,146 @@ window.finalizarPartido = async (matchId) => {
 
     alert(
       "Error al finalizar partido"
+    );
+
+  }
+
+};
+// ======================================================
+// REABRIR PARTIDO (ADMIN)
+// ======================================================
+
+window.reabrirPartido = async (matchId) => {
+
+  try {
+
+    const matchRef =
+      doc(db, "matches", matchId);
+
+    const matchSnap =
+      await getDoc(matchRef);
+
+    if (!matchSnap.exists()) {
+
+      return alert(
+        "Partido no encontrado"
+      );
+
+    }
+
+    const match =
+      matchSnap.data();
+
+    // =====================================
+    // VALIDAR FINALIZADO
+    // =====================================
+
+    if (match.estado !== "finalizado") {
+
+      return alert(
+        "Este partido no está finalizado"
+      );
+
+    }
+
+    // =====================================
+    // BUSCAR PREDICCIONES
+    // =====================================
+
+    const predictionsQuery =
+      query(
+        collection(db, "predictions_groups"),
+        where("match_id", "==", matchId)
+      );
+
+    const predictionsSnap =
+      await getDocs(predictionsQuery);
+
+    // =====================================
+    // RECORRER PREDICCIONES
+    // =====================================
+
+    for (const predDoc of predictionsSnap.docs) {
+
+      const pred =
+        predDoc.data();
+
+      if (pred.points_assigned === true) {
+
+        const puntosARestar =
+          Number(pred.points || 0);
+
+        // =================================
+        // ACTUALIZAR RANKING
+        // =================================
+
+        const rankingRef =
+          doc(db, "ranking", pred.uid);
+
+        const rankingSnap =
+          await getDoc(rankingRef);
+
+        if (rankingSnap.exists()) {
+
+          const rankingData =
+            rankingSnap.data();
+
+          await updateDoc(rankingRef, {
+
+            puntos:
+              Math.max(
+                0,
+                (rankingData.puntos || 0)
+                - puntosARestar
+              ),
+
+            updated_at:
+              serverTimestamp()
+
+          });
+
+        }
+
+        // =================================
+        // LIMPIAR PREDICCIÓN
+        // =================================
+
+        await updateDoc(predDoc.ref, {
+
+          points_assigned: false,
+
+          points: 0
+
+        });
+
+      }
+
+    }
+
+    // =====================================
+    // REABRIR PARTIDO
+    // =====================================
+
+    await updateDoc(matchRef, {
+
+      estado: "resultado_cargado",
+
+      puntos_calculados: false
+
+    });
+
+    alert(
+      "✅ Partido reabierto correctamente"
+    );
+
+    loadAdminMatches();
+
+  } catch (error) {
+
+    console.error(error);
+
+    alert(
+      "Error al reabrir partido"
     );
 
   }
