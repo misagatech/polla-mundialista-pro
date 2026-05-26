@@ -1206,6 +1206,8 @@ async function calcularPuntos(matchId) {
 
       await updateDoc(rankingRef, {
 
+        user_id: pred.uid,
+
         puntos:
           (rankingData.puntos || 0)
           + puntos,
