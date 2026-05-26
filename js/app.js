@@ -635,7 +635,8 @@ async function loadAdminMatches() {
     where("estado", "in", [
       "pendiente",
       "en_juego",
-      "resultado_cargado"
+      "resultado_cargado",
+      "finalizado"
     ])
   );
   const snapshot = await getDocs(q);
