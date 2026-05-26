@@ -150,7 +150,11 @@ function mostrarTodosLosGrupos() {
     const matchId = match.id;
     const predLocal = match.userPred ? match.userPred.pred_local : "";
     const predVisit = match.userPred ? match.userPred.pred_visitante : "";
-    const isBlocked = match.bloqueado;
+    const now = new Date();
+    const start = match.hora_partido.toDate();
+
+    const isStarted = now >= start;
+    const hasPrediction = match.userPred !== null;
     const fechaLocal = match.hora_partido.toDate().toLocaleString("es-CO", { timeZone: "America/Bogota" });
 
     html += `
@@ -167,13 +171,49 @@ function mostrarTodosLosGrupos() {
           </div>
         </div>
         <div class="prediction-area">
-          <input type="number" id="local_${matchId}" value="${predLocal}" placeholder="0" class="prediction-input" ${isBlocked ? "disabled" : ""}>
-          <span class="score-separator">-</span>
-          <input type="number" id="visit_${matchId}" value="${predVisit}" placeholder="0" class="prediction-input" ${isBlocked ? "disabled" : ""}>
-        </div>
-        <button class="btn-guardar" onclick="window.savePrediction('${matchId}')" ${isBlocked ? "disabled" : ""}>
-          Guardar
-        </button>
+
+  <input
+    type="number"
+    id="local_${matchId}"
+    value="${predLocal}"
+    placeholder="0"
+    class="prediction-input"
+    ${isStarted ? "disabled" : ""}
+  >
+
+  <span class="score-separator">-</span>
+
+  <input
+    type="number"
+    id="visit_${matchId}"
+    value="${predVisit}"
+    placeholder="0"
+    class="prediction-input"
+    ${isStarted ? "disabled" : ""}
+  >
+
+</div>
+
+${!isStarted ? `
+
+  <button
+    class="btn-guardar"
+    onclick="window.savePrediction('${matchId}')"
+  >
+    ${hasPrediction ? "Actualizar" : "Guardar"}
+  </button>
+
+` : `
+
+  <button
+    class="btn-guardar"
+    disabled
+  >
+    🔒 Partido iniciado
+  </button>
+
+`}
+        
         <div class="match-date">📅 ${fechaLocal}</div>
       </div>
     `;
