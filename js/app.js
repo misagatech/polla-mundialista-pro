@@ -1090,10 +1090,10 @@ async function calcularPuntos(matchId) {
   }
 
   const local =
-    match.resultado_local;
+    Number(match.resultado_local);
 
   const visit =
-    match.resultado_visitante;
+    Number(match.resultado_visitante);
 
   const predictionsQuery =
     query(
@@ -1124,8 +1124,8 @@ async function calcularPuntos(matchId) {
     // =====================================
 
     if (
-      pred.pred_local === local &&
-      pred.pred_visitante === visit
+      Number(pred.pred_local) === local &&
+      Number(pred.pred_visitante) === visit
     ) {
 
       puntos = 3;
@@ -1146,9 +1146,11 @@ async function calcularPuntos(matchId) {
             : "E";
 
       const usuario =
-        pred.pred_local > pred.pred_visitante
+        Number(pred.pred_local) >
+          Number(pred.pred_visitante)
           ? "L"
-          : pred.pred_local < pred.pred_visitante
+          : Number(pred.pred_local) <
+            Number(pred.pred_visitante)
             ? "V"
             : "E";
 
