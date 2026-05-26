@@ -1152,6 +1152,84 @@ ADMIN BOTTOM
   transform: translateY(-2px);
 }
 
+.bracket-container {
+  margin-top: 40px;
+  overflow-x: auto;
+  padding-bottom: 20px;
+}
+
+.bracket-wrapper {
+  display: flex;
+  gap: 30px;
+  min-width: 1400px;
+  align-items: flex-start;
+}
+
+.bracket-round {
+  min-width: 220px;
+}
+
+.bracket-round-title {
+  color: #facc15;
+  font-size: 18px;
+  font-weight: 700;
+  margin-bottom: 20px;
+  text-align: center;
+}
+
+.bracket-match {
+  background: #111827;
+  border: 1px solid rgba(255, 255, 255, 0.08);
+  border-radius: 14px;
+  padding: 12px;
+  margin-bottom: 18px;
+}
+
+.bracket-team {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 10px;
+  padding: 8px;
+  border-radius: 10px;
+  background: rgba(255, 255, 255, 0.03);
+  margin-bottom: 8px;
+}
+
+.bracket-team-info {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.bracket-flag {
+  width: 22px;
+  height: 16px;
+  object-fit: cover;
+  border-radius: 2px;
+}
+
+.bracket-code {
+  font-weight: 700;
+  color: white;
+}
+
+.bracket-score {
+  width: 45px;
+  background: #0f172a;
+  border: none;
+  border-radius: 8px;
+  color: white;
+  text-align: center;
+  padding: 6px;
+}
+
+.bracket-vs {
+  text-align: center;
+  font-size: 12px;
+  opacity: 0.6;
+  margin: 6px 0;
+}
 
 /* =====================================================
 FOOTER
@@ -1329,7 +1407,7 @@ EXTRA LARGE SCREENS
 
 }
 
- .premios-box {
+.premios-box {
   display: flex;
   flex-direction: column;
   gap: 12px;
