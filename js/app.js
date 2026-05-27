@@ -1649,9 +1649,9 @@ async function generarTablaGrupos() {
 function generarDieciseisavos() {
 
   const container =
-    document.getElementById(
-      "dieciseisavosContainer"
-    );
+  document.getElementById(
+    "bracketContainer"
+  );
 
   if (!container) return;
 
@@ -2069,6 +2069,7 @@ window.saveKnockoutPrediction = async (
     alert(
       "✅ Predicción guardada"
     );
+    generarOctavos();
 
   }
 
@@ -2081,6 +2082,152 @@ window.saveKnockoutPrediction = async (
   }
 
 };
+// ======================================================
+// GENERAR OCTAVOS AUTOMÁTICOS
+// ======================================================
+
+async function generarOctavos() {
+
+  const container =
+    document.getElementById(
+      "octavosContainer"
+    );
+
+  if (!container) return;
+
+  // =====================================
+  // OBTENER PREDICCIONES
+  // =====================================
+
+  const snapshot =
+    await getDocs(
+      collection(
+        db,
+        "predictions_knockout"
+      )
+    );
+
+  const clasificados = {};
+
+  snapshot.forEach(docSnap => {
+
+    const data =
+      docSnap.data();
+
+    clasificados[
+      data.partido
+    ] = data.clasificado;
+
+  });
+
+  // =====================================
+  // PARTIDOS OCTAVOS
+  // =====================================
+
+  const partidos = [
+
+    {
+      numero: 90,
+      local: clasificados[73],
+      visitante: clasificados[75]
+    },
+
+    {
+      numero: 91,
+      local: clasificados[76],
+      visitante: clasificados[78]
+    },
+
+    {
+      numero: 93,
+      local: clasificados[83],
+      visitante: clasificados[84]
+    },
+
+    {
+      numero: 95,
+      local: clasificados[86],
+      visitante: clasificados[88]
+    }
+
+  ];
+
+  // =====================================
+  // HTML
+  // =====================================
+
+  let html = `
+
+    <div class="tabla-grupo-card">
+
+      <h3 class="tabla-title">
+        Octavos de Final
+      </h3>
+
+      <div class="dieciseisavos-grid">
+
+  `;
+
+  partidos.forEach(partido => {
+
+    if (
+      !partido.local
+      ||
+      !partido.visitante
+    ) return;
+
+    html += `
+
+      <div class="knockout-card">
+
+        <div class="knockout-match-number">
+          Partido ${partido.numero}
+        </div>
+
+        <div class="knockout-team">
+
+          <img
+            src="https://flagcdn.com/${obtenerCodigoPais(partido.local)}.svg"
+            width="24"
+          >
+
+          <span>
+            ${fifaCodes[partido.local]}
+          </span>
+
+        </div>
+
+        <div class="knockout-vs">
+          VS
+        </div>
+
+        <div class="knockout-team">
+
+          <img
+            src="https://flagcdn.com/${obtenerCodigoPais(partido.visitante)}.svg"
+            width="24"
+          >
+
+          <span>
+            ${fifaCodes[partido.visitante]}
+          </span>
+
+        </div>
+
+      </div>
+
+    `;
+
+  });
+
+  html += `
+      </div>
+    </div>
+  `;
+
+  container.innerHTML = html;
+
+}
 // ======================================================
 // LOGIN, REGISTRO, LOGOUT
 // ======================================================
