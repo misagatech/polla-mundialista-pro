@@ -1801,12 +1801,12 @@ async function generarTablaGrupos() {
 // GENERAR DIECISEISAVOS
 // ======================================================
 
-function generarDieciseisavos() {
+async function generarDieciseisavos() {
 
   const container =
-  document.getElementById(
-    "bracketContainer"
-  );
+    document.getElementById(
+      "bracketContainer"
+    );
 
   if (!container) return;
 
@@ -1887,6 +1887,42 @@ function generarDieciseisavos() {
     if (!partido.local || !partido.visitante) {
       return;
     }
+    // =====================================
+    // BUSCAR PREDICCIÓN GUARDADA
+    // =====================================
+
+    const predictionId =
+      `${currentUser.uid}_KO_${partido.numero}`;
+
+    const predictionRef =
+      doc(
+        db,
+        "predictions_knockout",
+        predictionId
+      );
+
+    const predictionSnap =
+      await getDoc(predictionRef);
+
+    let predLocal = "";
+    let predVisit = "";
+    let clasificadoGuardado = "";
+
+    if (predictionSnap.exists()) {
+
+      const data =
+        predictionSnap.data();
+
+      predLocal =
+        data.pred_local ?? "";
+
+      predVisit =
+        data.pred_visitante ?? "";
+
+      clasificadoGuardado =
+        data.clasificado ?? "";
+
+    }
 
     html += `
 
@@ -1929,24 +1965,34 @@ function generarDieciseisavos() {
     >
 
       <input
-        type="number"
-        id="ko_local_${partido.numero}"
-        class="prediction-input"
-        placeholder="0"
-        min="0"
-        style="width:65px;"
-      >
+  type="number"
+  id="ko_local_${partido.numero}"
+  class="prediction-input"
+  placeholder="0"
+  min="0"
+  max="20"
+  inputmode="numeric"
+  style="
+    width:65px;
+    text-align:center;
+  "
+>
 
       <span>-</span>
 
       <input
-        type="number"
-        id="ko_visit_${partido.numero}"
-        class="prediction-input"
-        placeholder="0"
-        min="0"
-        style="width:65px;"
-      >
+  type="number"
+  id="ko_visit_${partido.numero}"
+  class="prediction-input"
+  placeholder="0"
+  min="0"
+  max="20"
+  inputmode="numeric"
+  style="
+    width:65px;
+    text-align:center;
+  "
+>
 
     </div>
 
