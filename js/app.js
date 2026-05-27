@@ -299,7 +299,7 @@ async function loadMatchesAndPredictions() {
       );
       const predSnap = await getDocs(predQuery);
       match.userPred = predSnap.empty ? null : predSnap.docs[0].data();
-      
+
       matches.push(match);
     }
     const partidosGrupos = matches.filter(esFaseGrupos);
@@ -1638,8 +1638,8 @@ async function generarTablaGrupos() {
   tablaContainer.innerHTML =
     html;
   if (Object.keys(clasificadosGlobales).length >= 24) {
-  generarDieciseisavos();
-}
+    generarDieciseisavos();
+  }
 
 }
 // ======================================================
@@ -1656,66 +1656,66 @@ function generarDieciseisavos() {
   if (!container) return;
 
   // =====================================
-// PARTIDOS OFICIALES FIFA
-// =====================================
+  // PARTIDOS OFICIALES FIFA
+  // =====================================
 
-const partidos = [
+  const partidos = [
 
-  {
-    numero: 73,
-    local: clasificadosGlobales["2A"],
-    visitante: clasificadosGlobales["2B"]
-  },
+    {
+      numero: 73,
+      local: clasificadosGlobales["2A"],
+      visitante: clasificadosGlobales["2B"]
+    },
 
-  {
-    numero: 75,
-    local: clasificadosGlobales["1F"],
-    visitante: clasificadosGlobales["2C"]
-  },
+    {
+      numero: 75,
+      local: clasificadosGlobales["1F"],
+      visitante: clasificadosGlobales["2C"]
+    },
 
-  {
-    numero: 76,
-    local: clasificadosGlobales["1C"],
-    visitante: clasificadosGlobales["2F"]
-  },
+    {
+      numero: 76,
+      local: clasificadosGlobales["1C"],
+      visitante: clasificadosGlobales["2F"]
+    },
 
-  {
-    numero: 78,
-    local: clasificadosGlobales["2E"],
-    visitante: clasificadosGlobales["2I"]
-  },
+    {
+      numero: 78,
+      local: clasificadosGlobales["2E"],
+      visitante: clasificadosGlobales["2I"]
+    },
 
-  {
-    numero: 83,
-    local: clasificadosGlobales["2K"],
-    visitante: clasificadosGlobales["2L"]
-  },
+    {
+      numero: 83,
+      local: clasificadosGlobales["2K"],
+      visitante: clasificadosGlobales["2L"]
+    },
 
-  {
-    numero: 84,
-    local: clasificadosGlobales["1H"],
-    visitante: clasificadosGlobales["2J"]
-  },
+    {
+      numero: 84,
+      local: clasificadosGlobales["1H"],
+      visitante: clasificadosGlobales["2J"]
+    },
 
-  {
-    numero: 86,
-    local: clasificadosGlobales["1J"],
-    visitante: clasificadosGlobales["2H"]
-  },
+    {
+      numero: 86,
+      local: clasificadosGlobales["1J"],
+      visitante: clasificadosGlobales["2H"]
+    },
 
-  {
-    numero: 88,
-    local: clasificadosGlobales["2D"],
-    visitante: clasificadosGlobales["2G"]
-  }
+    {
+      numero: 88,
+      local: clasificadosGlobales["2D"],
+      visitante: clasificadosGlobales["2G"]
+    }
 
-];
+  ];
 
-// =====================================
-// HTML
-// =====================================
+  // =====================================
+  // HTML
+  // =====================================
 
-let html = `
+  let html = `
 
   <div class="tabla-grupo-card">
 
@@ -1727,57 +1727,160 @@ let html = `
 
 `;
 
-partidos.forEach(partido => {
+  partidos.forEach(partido => {
 
-  if (!partido.local || !partido.visitante) {
-    return;
-  }
+    if (!partido.local || !partido.visitante) {
+      return;
+    }
 
-  html += `
+    html += `
 
-    <div class="knockout-card">
+  <div
+    class="knockout-card"
+    data-partido="${partido.numero}"
+    data-local="${partido.local}"
+    data-visitante="${partido.visitante}"
+  >
 
-      <div class="knockout-match-number">
-        Partido ${partido.numero}
-      </div>
+    <div class="knockout-match-number">
+      Partido ${partido.numero}
+    </div>
 
-      <div class="knockout-team">
+    <!-- LOCAL -->
 
-        <img
-          src="https://flagcdn.com/${obtenerCodigoPais(partido.local)}.svg"
-          width="24"
-        >
+    <div class="knockout-team">
 
-        <span>
-          ${fifaCodes[partido.local]}
-        </span>
+      <img
+        src="https://flagcdn.com/${obtenerCodigoPais(partido.local)}.svg"
+        width="24"
+      >
 
-      </div>
-
-      <div class="knockout-vs">
-        VS
-      </div>
-
-      <div class="knockout-team">
-
-        <img
-          src="https://flagcdn.com/${obtenerCodigoPais(partido.visitante)}.svg"
-          width="24"
-        >
-
-        <span>
-          ${fifaCodes[partido.visitante]}
-        </span>
-
-      </div>
+      <span>
+        ${fifaCodes[partido.local]}
+      </span>
 
     </div>
 
-  `;
+    <!-- INPUTS -->
 
-});
+    <div
+      style="
+        display:flex;
+        justify-content:center;
+        align-items:center;
+        gap:10px;
+        margin-top:14px;
+      "
+    >
 
-html += `
+      <input
+        type="number"
+        id="ko_local_${partido.numero}"
+        class="prediction-input"
+        placeholder="0"
+        min="0"
+        style="width:65px;"
+      >
+
+      <span>-</span>
+
+      <input
+        type="number"
+        id="ko_visit_${partido.numero}"
+        class="prediction-input"
+        placeholder="0"
+        min="0"
+        style="width:65px;"
+      >
+
+    </div>
+
+    <!-- VISITANTE -->
+
+    <div
+      class="knockout-team"
+      style="margin-top:14px;"
+    >
+
+      <img
+        src="https://flagcdn.com/${obtenerCodigoPais(partido.visitante)}.svg"
+        width="24"
+      >
+
+      <span>
+        ${fifaCodes[partido.visitante]}
+      </span>
+
+    </div>
+
+    <!-- EMPATE -->
+
+    <div
+      style="
+        margin-top:16px;
+        font-size:13px;
+      "
+    >
+
+      Si empatan:
+
+    </div>
+
+    <div
+      style="
+        display:flex;
+        justify-content:center;
+        gap:14px;
+        margin-top:10px;
+        flex-wrap:wrap;
+      "
+    >
+
+      <label>
+
+        <input
+          type="radio"
+          name="clasificado_${partido.numero}"
+          value="${partido.local}"
+        >
+
+        ${fifaCodes[partido.local]}
+
+      </label>
+
+      <label>
+
+        <input
+          type="radio"
+          name="clasificado_${partido.numero}"
+          value="${partido.visitante}"
+        >
+
+        ${fifaCodes[partido.visitante]}
+
+      </label>
+
+    </div>
+
+    <!-- BOTÓN -->
+
+    <button
+      class="btn-guardar"
+      style="margin-top:18px;"
+      onclick="window.saveKnockoutPrediction('${partido.numero}')"
+    >
+
+      Guardar
+
+    </button>
+
+  </div>
+
+`;
+
+  });
+
+  html += `
 
     </div>
 
@@ -1785,7 +1888,7 @@ html += `
 
 `;
 
-container.innerHTML = html;
+  container.innerHTML = html;
 }
 // ======================================================
 // GUARDAR PREDICCIÓN ELIMINATORIAS
