@@ -2270,6 +2270,7 @@ window.saveKnockoutPrediction = async (
       "✅ Predicción guardada"
     );
     generarOctavos();
+    generarSkeletonBracket();
 
   }
 
@@ -2426,6 +2427,158 @@ async function generarOctavos() {
   `;
 
   container.innerHTML = html;
+
+}
+// ======================================================
+// ESQUELETO RESTO DEL BRACKET
+// ======================================================
+
+function generarSkeletonBracket() {
+
+  // =====================================
+  // CONTENEDORES
+  // =====================================
+
+  const cuartosContainer =
+    document.getElementById(
+      "cuartosContainer"
+    );
+
+  const semifinalContainer =
+    document.getElementById(
+      "semifinalContainer"
+    );
+
+  const finalContainer =
+    document.getElementById(
+      "finalContainer"
+    );
+
+  // =====================================
+  // CUARTOS
+  // =====================================
+
+  if (cuartosContainer) {
+
+    cuartosContainer.innerHTML = `
+
+      <div class="tabla-grupo-card">
+
+        <h3 class="tabla-title">
+          Cuartos de Final
+        </h3>
+
+        <div class="dieciseisavos-grid">
+
+          ${crearPlaceholder(97)}
+          ${crearPlaceholder(98)}
+
+        </div>
+
+      </div>
+
+    `;
+
+  }
+
+  // =====================================
+  // SEMIFINAL
+  // =====================================
+
+  if (semifinalContainer) {
+
+    semifinalContainer.innerHTML = `
+
+      <div class="tabla-grupo-card">
+
+        <h3 class="tabla-title">
+          Semifinal
+        </h3>
+
+        <div class="dieciseisavos-grid">
+
+          ${crearPlaceholder(101)}
+
+        </div>
+
+      </div>
+
+    `;
+
+  }
+
+  // =====================================
+  // FINAL
+  // =====================================
+
+  if (finalContainer) {
+
+    finalContainer.innerHTML = `
+
+      <div class="tabla-grupo-card">
+
+        <h3 class="tabla-title">
+          GRAN FINAL
+        </h3>
+
+        <div class="dieciseisavos-grid">
+
+          ${crearPlaceholder(103)}
+
+        </div>
+
+      </div>
+
+    `;
+
+  }
+
+}
+
+// ======================================================
+// PLACEHOLDER
+// ======================================================
+
+function crearPlaceholder(numero) {
+
+  return `
+
+    <div class="knockout-card">
+
+      <div class="knockout-match-number">
+        Partido ${numero}
+      </div>
+
+      <div
+        style="
+          height:42px;
+          background:rgba(255,255,255,0.08);
+          border-radius:10px;
+          margin-top:14px;
+        "
+      ></div>
+
+      <div
+        style="
+          text-align:center;
+          margin:14px 0;
+          opacity:0.5;
+        "
+      >
+        VS
+      </div>
+
+      <div
+        style="
+          height:42px;
+          background:rgba(255,255,255,0.08);
+          border-radius:10px;
+        "
+      ></div>
+
+    </div>
+
+  `;
 
 }
 // ======================================================
