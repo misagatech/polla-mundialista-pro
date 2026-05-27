@@ -268,7 +268,7 @@ window.cambiarGrupo = (grupo) => {
   grupoActivo = grupo;
   mostrarTodosLosGrupos();
   generarTablaGrupos();
-  generarSkeletonBracket();
+
 };
 
 // ======================================================
@@ -306,7 +306,8 @@ async function loadMatchesAndPredictions() {
     const partidosGrupos = matches.filter(esFaseGrupos);
     gruposData = agruparPartidos(partidosGrupos);
     mostrarTodosLosGrupos();
-    generarTablaGrupos();
+    await generarTablaGrupos();
+    generarSkeletonBracket();
 
     // Próximo partido (el más cercano en el futuro)
     const ahora = new Date();
