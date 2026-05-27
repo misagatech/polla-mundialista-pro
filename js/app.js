@@ -1882,7 +1882,7 @@ async function generarDieciseisavos() {
 
 `;
 
-  partidos.forEach(partido => {
+  for (const partido of partidos) {
 
     if (!partido.local || !partido.visitante) {
       return;
@@ -2076,10 +2076,9 @@ async function generarDieciseisavos() {
     </button>
 
   </div>
-
 `;
 
-  });
+  }
 
   html += `
 
