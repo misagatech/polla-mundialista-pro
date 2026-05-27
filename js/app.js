@@ -268,6 +268,7 @@ window.cambiarGrupo = (grupo) => {
   grupoActivo = grupo;
   mostrarTodosLosGrupos();
   generarTablaGrupos();
+  generarSkeletonBracket();
 };
 
 // ======================================================
