@@ -526,6 +526,161 @@ window.savePrediction = async (matchId) => {
 
 };
 
+
+// ======================================================
+// GUARDAR PREDICCIÓN DIECISEISAVOS
+// ======================================================
+
+window.saveKnockoutPrediction = async (numeroPartido) => {
+
+  try {
+
+    if (!currentUser) {
+      return alert("Debes iniciar sesión");
+    }
+
+    // =====================================
+    // INPUTS
+    // =====================================
+
+    const localInput =
+      document.getElementById(
+        `ko_local_${numeroPartido}`
+      );
+
+    const visitInput =
+      document.getElementById(
+        `ko_visit_${numeroPartido}`
+      );
+
+    if (!localInput || !visitInput) {
+
+      return alert(
+        "Inputs no encontrados"
+      );
+
+    }
+
+    const local =
+      parseInt(localInput.value);
+
+    const visit =
+      parseInt(visitInput.value);
+
+    if (isNaN(local) || isNaN(visit)) {
+
+      return alert(
+        "Ingresa marcadores válidos"
+      );
+
+    }
+
+    // =====================================
+    // OBTENER RADIO
+    // =====================================
+
+    const clasificadoSeleccionado =
+      document.querySelector(
+        `input[name="clasificado_${numeroPartido}"]:checked`
+      );
+
+    // =====================================
+    // VALIDAR EMPATE
+    // =====================================
+
+    if (
+      local === visit &&
+      !clasificadoSeleccionado
+    ) {
+
+      return alert(
+        "Debes elegir quién clasifica"
+      );
+
+    }
+
+    // =====================================
+    // CLASIFICADO
+    // =====================================
+
+    let clasificado = null;
+
+    if (local > visit) {
+
+      clasificado = "local";
+
+    }
+
+    else if (visit > local) {
+
+      clasificado = "visitante";
+
+    }
+
+    else {
+
+      clasificado =
+        clasificadoSeleccionado.value;
+
+    }
+
+    // =====================================
+    // ID
+    // =====================================
+
+    const predictionId =
+      `${currentUser.uid}_KO_${numeroPartido}`;
+
+    // =====================================
+    // GUARDAR
+    // =====================================
+
+    await setDoc(
+
+      doc(
+        db,
+        "predictions_knockout",
+        predictionId
+      ),
+
+      {
+
+        uid: currentUser.uid,
+
+        partido: numeroPartido,
+
+        pred_local: local,
+
+        pred_visitante: visit,
+
+        clasificado: clasificado,
+
+        fase: "dieciseisavos",
+
+        updated_at: serverTimestamp()
+
+      },
+
+      {
+        merge: true
+      }
+
+    );
+
+    alert(
+      "✅ Predicción guardada"
+    );
+
+  } catch (error) {
+
+    console.error(error);
+
+    alert(error.message);
+
+  }
+
+};
+
 // ======================================================
 // RANKING EN TIEMPO REAL
 // ======================================================
