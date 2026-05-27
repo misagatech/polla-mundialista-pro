@@ -1624,4 +1624,60 @@ RESPONSIVE ADMIN PARTICIPANTES
 
   }
 
+  /* ===================================================== */
+/* SCROLL HORIZONTAL BRACKET */
+/* ===================================================== */
+
+.bracket-container {
+
+  overflow-x: auto;
+
+  padding-bottom: 12px;
+
+  margin-top: 20px;
+
+}
+
+/* GRID MÁS ANCHO */
+
+.dieciseisavos-grid {
+
+  display: flex;
+
+  gap: 16px;
+
+  min-width: max-content;
+
+}
+
+/* CARDS */
+
+.knockout-card {
+
+  min-width: 260px;
+
+}
+
+/* SCROLL BONITO */
+
+.bracket-container::-webkit-scrollbar {
+
+  height: 10px;
+
+}
+
+.bracket-container::-webkit-scrollbar-thumb {
+
+  background: #facc15;
+
+  border-radius: 20px;
+
+}
+
+.bracket-container::-webkit-scrollbar-track {
+
+  background: rgba(255,255,255,0.08);
+
+}
+
 }
