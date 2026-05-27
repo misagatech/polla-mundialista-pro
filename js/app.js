@@ -1788,6 +1788,197 @@ html += `
 container.innerHTML = html;
 }
 // ======================================================
+// GUARDAR PREDICCIÓN ELIMINATORIAS
+// ======================================================
+
+window.saveKnockoutPrediction = async (
+  partidoNumero
+) => {
+
+  try {
+
+    if (!currentUser) {
+
+      return alert(
+        "Debes iniciar sesión"
+      );
+
+    }
+
+    // =====================================
+    // INPUTS
+    // =====================================
+
+    const localInput =
+      document.getElementById(
+        `ko_local_${partidoNumero}`
+      );
+
+    const visitInput =
+      document.getElementById(
+        `ko_visit_${partidoNumero}`
+      );
+
+    if (!localInput || !visitInput) {
+
+      return alert(
+        "Inputs no encontrados"
+      );
+
+    }
+
+    const local =
+      parseInt(localInput.value);
+
+    const visit =
+      parseInt(visitInput.value);
+
+    if (
+      isNaN(local)
+      ||
+      isNaN(visit)
+    ) {
+
+      return alert(
+        "Ingresa marcadores válidos"
+      );
+
+    }
+
+    // =====================================
+    // OBTENER PARTIDO
+    // =====================================
+
+    const card =
+      document.querySelector(
+        `[data-partido="${partidoNumero}"]`
+      );
+
+    if (!card) {
+
+      return alert(
+        "Partido no encontrado"
+      );
+
+    }
+
+    const equipoLocal =
+      card.dataset.local;
+
+    const equipoVisit =
+      card.dataset.visitante;
+
+    // =====================================
+    // CLASIFICADO
+    // =====================================
+
+    let clasificado = null;
+
+    // GANA LOCAL
+
+    if (local > visit) {
+
+      clasificado =
+        equipoLocal;
+
+    }
+
+    // GANA VISITA
+
+    else if (visit > local) {
+
+      clasificado =
+        equipoVisit;
+
+    }
+
+    // EMPATE
+
+    else {
+
+      const selected =
+        document.querySelector(
+          `input[name="clasificado_${partidoNumero}"]:checked`
+        );
+
+      if (!selected) {
+
+        return alert(
+          "Debes elegir quién clasifica"
+        );
+
+      }
+
+      clasificado =
+        selected.value;
+
+    }
+
+    // =====================================
+    // ID
+    // =====================================
+
+    const predictionId =
+      `${currentUser.uid}_${partidoNumero}`;
+
+    // =====================================
+    // GUARDAR
+    // =====================================
+
+    await setDoc(
+
+      doc(
+        db,
+        "predictions_knockout",
+        predictionId
+      ),
+
+      {
+
+        uid:
+          currentUser.uid,
+
+        partido:
+          partidoNumero,
+
+        pred_local:
+          local,
+
+        pred_visit:
+          visit,
+
+        clasificado,
+
+        fase:
+          "dieciseisavos",
+
+        updated_at:
+          serverTimestamp()
+
+      },
+
+      {
+        merge: true
+      }
+
+    );
+
+    alert(
+      "✅ Predicción guardada"
+    );
+
+  }
+
+  catch (error) {
+
+    console.error(error);
+
+    alert(error.message);
+
+  }
+
+};
+// ======================================================
 // LOGIN, REGISTRO, LOGOUT
 // ======================================================
 document.getElementById("btnLogin").onclick = async () => {
