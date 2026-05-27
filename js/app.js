@@ -2378,48 +2378,150 @@ async function generarOctavos() {
       ||
       !partido.visitante
     ) return;
-
     html += `
 
-      <div class="knockout-card">
+  <div
+    class="knockout-card"
+    data-partido="${partido.numero}"
+    data-local="${partido.local}"
+    data-visitante="${partido.visitante}"
+  >
 
-        <div class="knockout-match-number">
-          Partido ${partido.numero}
-        </div>
+    <div class="knockout-match-number">
+      Partido ${partido.numero}
+    </div>
 
-        <div class="knockout-team">
+    <!-- LOCAL -->
 
-          <img
-            src="https://flagcdn.com/${obtenerCodigoPais(partido.local)}.svg"
-            width="24"
-          >
+    <div class="knockout-team">
 
-          <span>
-            ${fifaCodes[partido.local]}
-          </span>
+      <img
+        src="https://flagcdn.com/${obtenerCodigoPais(partido.local)}.svg"
+        width="24"
+      >
 
-        </div>
+      <span>
+        ${fifaCodes[partido.local]}
+      </span>
 
-        <div class="knockout-vs">
-          VS
-        </div>
+    </div>
 
-        <div class="knockout-team">
+    <!-- INPUTS -->
 
-          <img
-            src="https://flagcdn.com/${obtenerCodigoPais(partido.visitante)}.svg"
-            width="24"
-          >
+    <div
+      style="
+        display:flex;
+        justify-content:center;
+        align-items:center;
+        gap:10px;
+        margin-top:14px;
+      "
+    >
 
-          <span>
-            ${fifaCodes[partido.visitante]}
-          </span>
+      <input
+        type="number"
+        id="oct_local_${partido.numero}"
+        class="prediction-input"
+        placeholder="0"
+        min="0"
+        style="width:65px;"
+      >
 
-        </div>
+      <span>-</span>
 
-      </div>
+      <input
+        type="number"
+        id="oct_visit_${partido.numero}"
+        class="prediction-input"
+        placeholder="0"
+        min="0"
+        style="width:65px;"
+      >
 
-    `;
+    </div>
+
+    <!-- VISITANTE -->
+
+    <div
+      class="knockout-team"
+      style="margin-top:14px;"
+    >
+
+      <img
+        src="https://flagcdn.com/${obtenerCodigoPais(partido.visitante)}.svg"
+        width="24"
+      >
+
+      <span>
+        ${fifaCodes[partido.visitante]}
+      </span>
+
+    </div>
+
+    <!-- EMPATE -->
+
+    <div
+      style="
+        margin-top:16px;
+        font-size:13px;
+      "
+    >
+
+      Si empatan:
+
+    </div>
+
+    <div
+      style="
+        display:flex;
+        justify-content:center;
+        gap:14px;
+        margin-top:10px;
+        flex-wrap:wrap;
+      "
+    >
+
+      <label>
+
+        <input
+          type="radio"
+          name="oct_clasificado_${partido.numero}"
+          value="${partido.local}"
+        >
+
+        ${fifaCodes[partido.local]}
+
+      </label>
+
+      <label>
+
+        <input
+          type="radio"
+          name="oct_clasificado_${partido.numero}"
+          value="${partido.visitante}"
+        >
+
+        ${fifaCodes[partido.visitante]}
+
+      </label>
+
+    </div>
+
+    <!-- BOTÓN -->
+
+    <button
+      class="btn-guardar"
+      style="margin-top:18px;"
+      onclick="window.saveOctavosPrediction('${partido.numero}')"
+    >
+
+      Guardar
+
+    </button>
+
+  </div>
+
+`;
 
   });
 
