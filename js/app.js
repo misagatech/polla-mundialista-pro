@@ -2694,17 +2694,31 @@ function generarSkeletonBracket() {
     finalContainer.innerHTML = `
 
       <div class="tabla-grupo-card">
+      <h3 class="tabla-title">
+  GRAN FINAL
+</h3>
 
-        <h3 class="tabla-title">
-          Finales
-        </h3>
+<div class="dieciseisavos-grid">
 
-        <div class="dieciseisavos-grid">
+  ${crearPlaceholder(103)}
 
-          ${crearPlaceholder(103)}
-          ${crearPlaceholder(104)}
+</div>
 
-        </div>
+<h3
+  class="tabla-title"
+  style="
+    margin-top:35px;
+  "
+>
+  Tercer Puesto
+</h3>
+
+<div class="dieciseisavos-grid">
+
+  ${crearPlaceholder(104)}
+
+</div>
+
 
       </div>
 
