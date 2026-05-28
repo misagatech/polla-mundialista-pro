@@ -1907,5 +1907,40 @@ RESPONSIVE ADMIN PARTICIPANTES
   background: rgba(255,255,255,0.08);
 
 }
+/* =====================================================
+LOCAL VS VISITANTE
+===================================================== */
+
+.prediction-side {
+
+  display: flex;
+  align-items: center;
+  gap: 10px;
+
+  padding: 10px 14px;
+
+  border-radius: 14px;
+
+}
+
+.local-side {
+
+  background:
+    rgba(59, 130, 246, 0.14);
+
+  border:
+    1px solid rgba(59, 130, 246, 0.30);
+
+}
+
+.visit-side {
+
+  background:
+    rgba(34, 197, 94, 0.14);
+
+  border:
+    1px solid rgba(34, 197, 94, 0.30);
+
+}
 
 }
