@@ -1231,11 +1231,21 @@ ADMIN BOTTOM
   margin: 6px 0;
 }
 .tabla-grupo-card{
+
   background:#111827;
+
   border-radius:20px;
+
   padding:20px;
+
   margin-top:25px;
+
   border:1px solid rgba(255,255,255,0.08);
+
+  width:100%;
+
+  overflow:hidden;
+
 }
 
 .tabla-title{
