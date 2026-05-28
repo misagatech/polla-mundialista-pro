@@ -1252,7 +1252,7 @@ ADMIN BOTTOM
 
   width:100%;
 
-  overflow:hidden;
+  overflow:visible;
 
 }
 
@@ -1885,14 +1885,15 @@ RESPONSIVE ADMIN PARTICIPANTES
 }
 
 /* GRID MÁS ANCHO */
-
 .dieciseisavos-grid {
 
-  display: flex;
+  display:flex;
 
-  gap: 16px;
+  gap:16px;
 
-  min-width: max-content;
+  width:max-content;
+
+  min-width:max-content;
 
 }
 
