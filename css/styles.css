@@ -1276,6 +1276,234 @@ ADMIN BOTTOM
   border-radius:3px;
 }
 /* =====================================================
+BRACKET FIFA STYLE
+===================================================== */
+
+.bracket-container {
+
+  width: 100%;
+
+  overflow-x: auto;
+  overflow-y: hidden;
+
+  padding-bottom: 14px;
+
+  margin-top: 28px;
+
+  scroll-behavior: smooth;
+
+}
+
+/* SCROLL */
+
+.bracket-container::-webkit-scrollbar {
+  height: 10px;
+}
+
+.bracket-container::-webkit-scrollbar-thumb {
+
+  background:
+    linear-gradient(
+      90deg,
+      #facc15,
+      #eab308
+    );
+
+  border-radius: 20px;
+}
+
+.bracket-container::-webkit-scrollbar-track {
+
+  background:
+    rgba(255,255,255,0.06);
+
+  border-radius: 20px;
+}
+
+/* GRID HORIZONTAL */
+
+.dieciseisavos-grid {
+
+  display: flex;
+
+  gap: 18px;
+
+  width: max-content;
+
+  padding: 4px;
+
+}
+
+/* CARD */
+
+.knockout-card {
+
+  width: 290px;
+
+  flex-shrink: 0;
+
+  background:
+    linear-gradient(
+      180deg,
+      rgba(17,24,39,.98),
+      rgba(10,15,30,.98)
+    );
+
+  border-radius: 26px;
+
+  padding: 20px;
+
+  border:
+    1px solid rgba(255,255,255,.08);
+
+  box-shadow:
+    0 15px 35px rgba(0,0,0,.35);
+
+  transition: .3s ease;
+
+  position: relative;
+
+  overflow: hidden;
+
+}
+
+/* EFECTO PREMIUM */
+
+.knockout-card::before {
+
+  content: "";
+
+  position: absolute;
+
+  top: 0;
+  left: 0;
+  right: 0;
+
+  height: 4px;
+
+  background:
+    linear-gradient(
+      90deg,
+      #2563eb,
+      #facc15
+    );
+
+}
+
+/* HOVER */
+
+.knockout-card:hover {
+
+  transform:
+    translateY(-6px);
+
+  border-color:
+    rgba(250,204,21,.45);
+
+  box-shadow:
+    0 22px 45px rgba(0,0,0,.45);
+
+}
+
+/* NUMERO */
+
+.knockout-match-number {
+
+  text-align: center;
+
+  color: #facc15;
+
+  font-size: 13px;
+
+  font-weight: 800;
+
+  letter-spacing: 1px;
+
+  margin-bottom: 18px;
+
+  text-transform: uppercase;
+
+}
+
+/* TEAM */
+
+.knockout-team {
+
+  display: flex;
+
+  align-items: center;
+
+  justify-content: center;
+
+  gap: 10px;
+
+  font-size: 20px;
+
+  font-weight: 800;
+
+  color: white;
+
+}
+
+/* BANDERAS */
+
+.knockout-team img {
+
+  width: 34px;
+
+  height: 24px;
+
+  object-fit: cover;
+
+  border-radius: 4px;
+
+  background: white;
+
+}
+
+/* VS */
+
+.knockout-vs {
+
+  text-align: center;
+
+  margin: 16px 0;
+
+  color: #94a3b8;
+
+  font-size: 14px;
+
+  font-weight: 700;
+
+  letter-spacing: 2px;
+
+}
+
+/* INPUTS */
+
+.prediction-input {
+
+  background: #0f172a;
+
+  border:
+    1px solid rgba(255,255,255,.08);
+
+}
+
+/* TITULOS */
+
+.tabla-title {
+
+  font-size: 24px;
+
+  font-weight: 800;
+
+  color: white;
+
+  margin-bottom: 22px;
+
+}
+/* =====================================================
 FOOTER
 ===================================================== */
 
