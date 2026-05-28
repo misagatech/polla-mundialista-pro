@@ -2647,6 +2647,8 @@ function generarSkeletonBracket() {
 
           ${crearPlaceholder(97)}
           ${crearPlaceholder(98)}
+          ${crearPlaceholder(99)}
+          ${crearPlaceholder(100)}
 
         </div>
 
@@ -2657,7 +2659,7 @@ function generarSkeletonBracket() {
   }
 
   // =====================================
-  // SEMIFINAL
+  // SEMIFINALES
   // =====================================
 
   if (semifinalContainer) {
@@ -2667,12 +2669,13 @@ function generarSkeletonBracket() {
       <div class="tabla-grupo-card">
 
         <h3 class="tabla-title">
-          Semifinal
+          Semifinales
         </h3>
 
         <div class="dieciseisavos-grid">
 
           ${crearPlaceholder(101)}
+          ${crearPlaceholder(102)}
 
         </div>
 
@@ -2683,7 +2686,7 @@ function generarSkeletonBracket() {
   }
 
   // =====================================
-  // FINAL
+  // FINAL + TERCER PUESTO
   // =====================================
 
   if (finalContainer) {
@@ -2693,12 +2696,13 @@ function generarSkeletonBracket() {
       <div class="tabla-grupo-card">
 
         <h3 class="tabla-title">
-          GRAN FINAL
+          Finales
         </h3>
 
         <div class="dieciseisavos-grid">
 
           ${crearPlaceholder(103)}
+          ${crearPlaceholder(104)}
 
         </div>
 
