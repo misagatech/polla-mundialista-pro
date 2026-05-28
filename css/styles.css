@@ -1153,9 +1153,17 @@ ADMIN BOTTOM
 }
 
 .bracket-container {
+
   margin-top: 40px;
+
   overflow-x: auto;
+
+  overflow-y: hidden;
+
   padding-bottom: 20px;
+
+  width: 100%;
+
 }
 
 .bracket-wrapper {
