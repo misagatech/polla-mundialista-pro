@@ -2429,7 +2429,7 @@ async function generarOctavos() {
 
   partidos.forEach(partido => {
 
-    
+
     html += `
 
   <div
@@ -2461,34 +2461,53 @@ async function generarOctavos() {
     <!-- INPUTS -->
 
     <div
-      style="
-        display:flex;
-        justify-content:center;
-        align-items:center;
-        gap:10px;
-        margin-top:14px;
-      "
-    >
+  style="
+    display:flex;
+    justify-content:center;
+    align-items:center;
+    gap:14px;
+    margin-top:16px;
+    background:rgba(255,255,255,0.04);
+    border-radius:14px;
+    padding:12px;
+  "
+>
 
       <input
-        type="number"
-        id="oct_local_${partido.numero}"
-        class="prediction-input"
-        placeholder="0"
-        min="0"
-        style="width:65px;"
-      >
+  type="number"
+  id="oct_local_${partido.numero}"
+  class="prediction-input"
+  placeholder="↑"
+  min="0"
+  style="
+    width:70px;
+    border:2px solid #3b82f6;
+    background:#0f172a;
+  "
+>
 
-      <span>-</span>
+      <span
+  style="
+    font-size:22px;
+    font-weight:800;
+    color:#facc15;
+  "
+>
+  -
+</span>
 
       <input
-        type="number"
-        id="oct_visit_${partido.numero}"
-        class="prediction-input"
-        placeholder="0"
-        min="0"
-        style="width:65px;"
-      >
+  type="number"
+  id="oct_visit_${partido.numero}"
+  class="prediction-input"
+  placeholder="↓"
+  min="0"
+  style="
+    width:70px;
+    border:2px solid #22c55e;
+    background:#0f172a;
+  "
+>
 
     </div>
 
