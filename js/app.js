@@ -1987,7 +1987,7 @@ async function generarDieciseisavos() {
 
     <!-- LOCAL -->
 
-    <div class="knockout-team">
+    <div class="prediction-side local-side">
 
   ${fifaCodes[partido.local]
         ? `
@@ -2052,7 +2052,7 @@ async function generarDieciseisavos() {
     <!-- VISITANTE -->
 
     <div
-  class="knockout-team"
+  class="prediction-side visit-side"
   style="margin-top:14px;"
 >
 
@@ -2628,6 +2628,10 @@ function generarSkeletonBracket() {
     document.getElementById(
       "finalContainer"
     );
+    const thirdPlaceContainer =
+  document.getElementById(
+    "thirdPlaceContainer"
+  );
 
   // =====================================
   // CUARTOS
@@ -2686,45 +2690,55 @@ function generarSkeletonBracket() {
   }
 
   // =====================================
-  // FINAL + TERCER PUESTO
-  // =====================================
+// FINAL
+// =====================================
 
-  if (finalContainer) {
+if (finalContainer) {
 
-    finalContainer.innerHTML = `
+  finalContainer.innerHTML = `
 
-      <div class="tabla-grupo-card">
+    <div class="tabla-grupo-card">
+
       <h3 class="tabla-title">
-  GRAN FINAL
-</h3>
+        🏆 GRAN FINAL
+      </h3>
 
-<div class="dieciseisavos-grid">
+      <div class="dieciseisavos-grid">
 
-  ${crearPlaceholder(103)}
-
-</div>
-
-<h3
-  class="tabla-title"
-  style="
-    margin-top:35px;
-  "
->
-  Tercer Puesto
-</h3>
-
-<div class="dieciseisavos-grid">
-
-  ${crearPlaceholder(104)}
-
-</div>
-
+        ${crearPlaceholder(103)}
 
       </div>
 
-    `;
+    </div>
 
-  }
+  `;
+
+}
+
+// =====================================
+// TERCER PUESTO
+// =====================================
+
+if (thirdPlaceContainer) {
+
+  thirdPlaceContainer.innerHTML = `
+
+    <div class="tabla-grupo-card">
+
+      <h3 class="tabla-title">
+        🥉 Tercer Puesto
+      </h3>
+
+      <div class="dieciseisavos-grid">
+
+        ${crearPlaceholder(104)}
+
+      </div>
+
+    </div>
+
+  `;
+  } // ← ESTA LLAVE FALTABA
 
 }
 
