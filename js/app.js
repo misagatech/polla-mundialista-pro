@@ -1794,9 +1794,7 @@ async function generarTablaGrupos() {
 
   tablaContainer.innerHTML =
     html;
-  if (Object.keys(clasificadosGlobales).length >= 24) {
-    generarDieciseisavos();
-  }
+  generarDieciseisavos();
 
 }
 // ======================================================
@@ -1994,7 +1992,7 @@ async function generarDieciseisavos() {
   ${fifaCodes[partido.local]
         ? `
       <img
-        src="https://flagcdn.com/${obtenerCodigoPais(partido.local)}.svg"
+        src="https://flagcdn.com/${partido.local ? obtenerCodigoPais(partido.local) : "un"}.svg"
         width="24"
       >
     `
@@ -2061,7 +2059,7 @@ async function generarDieciseisavos() {
   ${fifaCodes[partido.visitante]
         ? `
       <img
-        src="https://flagcdn.com/${obtenerCodigoPais(partido.visitante)}.svg"
+        src="https://flagcdn.com/${partido.visitante ? obtenerCodigoPais(partido.visitante) : "un"}.svg"
         width="24"
       >
     `
@@ -2105,7 +2103,7 @@ async function generarDieciseisavos() {
           value="${partido.local}"
         >
 
-        ${fifaCodes[partido.local]}
+        ${fifaCodes[partido.local] || partido.local || "Pendiente"}
 
       </label>
 
@@ -2117,7 +2115,7 @@ async function generarDieciseisavos() {
           value="${partido.visitante}"
         >
 
-        ${fifaCodes[partido.visitante]}
+        ${fifaCodes[partido.visitante] || partido.visitante || "Pendiente"}
 
       </label>
 
@@ -2431,11 +2429,7 @@ async function generarOctavos() {
 
   partidos.forEach(partido => {
 
-    if (
-      !partido.local
-      ||
-      !partido.visitante
-    ) return;
+    
     html += `
 
   <div
