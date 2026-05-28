@@ -1820,50 +1820,98 @@ async function generarDieciseisavos() {
 
     {
       numero: 73,
-      local: clasificadosGlobales["2A"],
-      visitante: clasificadosGlobales["2B"]
+      local: clasificadosGlobales["2A"] || "2A",
+      visitante: clasificadosGlobales["2B"] || "2B"
+    },
+
+    {
+      numero: 74,
+      local: clasificadosGlobales["1E"] || "1E",
+      visitante: "3A/B/C/D/F"
     },
 
     {
       numero: 75,
-      local: clasificadosGlobales["1F"],
-      visitante: clasificadosGlobales["2C"]
+      local: clasificadosGlobales["1F"] || "1F",
+      visitante: clasificadosGlobales["2C"] || "2C"
     },
 
     {
       numero: 76,
-      local: clasificadosGlobales["1C"],
-      visitante: clasificadosGlobales["2F"]
+      local: clasificadosGlobales["1C"] || "1C",
+      visitante: clasificadosGlobales["2F"] || "2F"
+    },
+
+    {
+      numero: 77,
+      local: clasificadosGlobales["1I"] || "1I",
+      visitante: "3C/D/F/G/H"
     },
 
     {
       numero: 78,
-      local: clasificadosGlobales["2E"],
-      visitante: clasificadosGlobales["2I"]
+      local: clasificadosGlobales["2E"] || "2E",
+      visitante: clasificadosGlobales["2I"] || "2I"
+    },
+
+    {
+      numero: 79,
+      local: clasificadosGlobales["1A"] || "1A",
+      visitante: "3C/E/F/H/I"
+    },
+
+    {
+      numero: 80,
+      local: clasificadosGlobales["1L"] || "1L",
+      visitante: "3E/H/I/J/K"
+    },
+
+    {
+      numero: 81,
+      local: clasificadosGlobales["1D"] || "1D",
+      visitante: "3B/E/F/I/J"
+    },
+
+    {
+      numero: 82,
+      local: clasificadosGlobales["1G"] || "1G",
+      visitante: "3A/E/H/I/J"
     },
 
     {
       numero: 83,
-      local: clasificadosGlobales["2K"],
-      visitante: clasificadosGlobales["2L"]
+      local: clasificadosGlobales["2K"] || "2K",
+      visitante: clasificadosGlobales["2L"] || "2L"
     },
 
     {
       numero: 84,
-      local: clasificadosGlobales["1H"],
-      visitante: clasificadosGlobales["2J"]
+      local: clasificadosGlobales["1H"] || "1H",
+      visitante: clasificadosGlobales["2J"] || "2J"
+    },
+
+    {
+      numero: 85,
+      local: clasificadosGlobales["1B"] || "1B",
+      visitante: "3E/F/G/I/J"
     },
 
     {
       numero: 86,
-      local: clasificadosGlobales["1J"],
-      visitante: clasificadosGlobales["2H"]
+      local: clasificadosGlobales["1J"] || "1J",
+      visitante: clasificadosGlobales["2H"] || "2H"
+    },
+
+    {
+      numero: 87,
+      local: clasificadosGlobales["1K"] || "1K",
+      visitante: "3D/E/I/J/L"
     },
 
     {
       numero: 88,
-      local: clasificadosGlobales["2D"],
-      visitante: clasificadosGlobales["2G"]
+      local: clasificadosGlobales["2D"] || "2D",
+      visitante: clasificadosGlobales["2G"] || "2G"
     }
 
   ];
@@ -1943,16 +1991,21 @@ async function generarDieciseisavos() {
 
     <div class="knockout-team">
 
+  ${fifaCodes[partido.local]
+        ? `
       <img
         src="https://flagcdn.com/${obtenerCodigoPais(partido.local)}.svg"
         width="24"
       >
+    `
+        : ""
+      }
 
-      <span>
-        ${fifaCodes[partido.local]}
-      </span>
+  <span>
+    ${fifaCodes[partido.local] || partido.local}
+  </span>
 
-    </div>
+</div>
 
     <!-- INPUTS -->
 
@@ -2001,20 +2054,25 @@ async function generarDieciseisavos() {
     <!-- VISITANTE -->
 
     <div
-      class="knockout-team"
-      style="margin-top:14px;"
-    >
+  class="knockout-team"
+  style="margin-top:14px;"
+>
 
+  ${fifaCodes[partido.visitante]
+        ? `
       <img
         src="https://flagcdn.com/${obtenerCodigoPais(partido.visitante)}.svg"
         width="24"
       >
+    `
+        : ""
+      }
 
-      <span>
-        ${fifaCodes[partido.visitante]}
-      </span>
+  <span>
+    ${fifaCodes[partido.visitante] || partido.visitante}
+  </span>
 
-    </div>
+</div>
 
     <!-- EMPATE -->
 
