@@ -890,6 +890,68 @@ async function generarFinal() {
   html += `</div></div>`;
   container.innerHTML = html;
 }
+
+// ======================================================
+// GENERAR TERCER PUESTO
+// ======================================================
+async function generarTercerPuesto() {
+  const container = document.getElementById("thirdPlaceContainer");
+  if (!container) return;
+
+  const semisQuery = query(collection(db, "predictions_semifinales"), where("uid", "==", currentUser.uid));
+  const semisSnap = await getDocs(semisQuery);
+  const clasificados = {};
+  semisSnap.forEach(doc => {
+    const data = doc.data();
+    clasificados[data.partido] = data.clasificado;
+  });
+
+  const partido = { 
+    numero: 104, 
+    local: clasificados[101] ? `Perdedor ${clasificados[101]}` : "Perdedor 101", 
+    visitante: clasificados[102] ? `Perdedor ${clasificados[102]}` : "Perdedor 102" 
+  };
+
+  const thirdRef = doc(db, "predictions_third", `${currentUser.uid}_THIRD_104`);
+  const thirdSnap = await getDoc(thirdRef);
+  const pred = thirdSnap.exists() ? thirdSnap.data() : {};
+  const predLocal = pred.pred_local ?? "";
+  const predVisit = pred.pred_visitante ?? "";
+  const clasifGuardado = pred.clasificado ?? "";
+
+  let html = `<div class="tabla-grupo-card"><h3 class="tabla-title">🥉 Tercer Puesto</h3><div class="dieciseisavos-grid">`;
+  html += `
+    <div class="knockout-card" data-partido-third="${partido.numero}" data-local="${partido.local}" data-visitante="${partido.visitante}">
+      <div class="knockout-match-number">Partido ${partido.numero}</div>
+      <div class="prediction-side local-side">
+        ${fifaCodes[partido.local] ? `<img src="https://flagcdn.com/${obtenerCodigoPais(partido.local)}.svg" width="24">` : '<div style="width:24px; height:24px; background:#1e293b; border-radius:50%;"></div>'}
+        <span>${fifaCodes[partido.local] || partido.local}</span>
+      </div>
+      <div style="display:flex; justify-content:center; gap:14px; margin-top:16px; background:rgba(255,255,255,0.04); border-radius:14px; padding:12px;">
+        <input type="number" id="third_local_${partido.numero}" class="prediction-input local-score" value="${predLocal}" placeholder="↑" min="0" style="width:70px; border:2px solid #3b82f6;">
+        <span style="font-size:22px; font-weight:800; color:#facc15;">-</span>
+        <input type="number" id="third_visit_${partido.numero}" class="prediction-input visitor-score" value="${predVisit}" placeholder="↓" min="0" style="width:70px; border:2px solid #22c55e;">
+      </div>
+      <div class="prediction-side visit-side" style="margin-top:14px;">
+        ${fifaCodes[partido.visitante] ? `<img src="https://flagcdn.com/${obtenerCodigoPais(partido.visitante)}.svg" width="24">` : '<div style="width:24px; height:24px; background:#1e293b; border-radius:50%;"></div>'}
+        <span>${fifaCodes[partido.visitante] || partido.visitante}</span>
+      </div>
+      <div style="margin-top:16px; font-size:13px;">Si eliges empate, también debes elegir quién avanza:</div>
+      <div style="font-size:12px; opacity:0.7; margin-top:6px; line-height:1.4;">
+        ✔ Se valida el marcador en los 90 minutos<br>
+        ✔ Puedes ganar puntos por marcador exacto<br>
+        ✔ Y puntos extra por acertar el clasificado
+      </div>
+      <div style="display:flex; justify-content:center; gap:14px; margin-top:10px; flex-wrap:wrap;">
+        <label><input type="radio" name="third_clasificado_${partido.numero}" value="${partido.local}" ${clasifGuardado === partido.local ? 'checked' : ''}> ${fifaCodes[partido.local] || partido.local}</label>
+        <label><input type="radio" name="third_clasificado_${partido.numero}" value="${partido.visitante}" ${clasifGuardado === partido.visitante ? 'checked' : ''}> ${fifaCodes[partido.visitante] || partido.visitante}</label>
+      </div>
+      <button class="btn-guardar" style="margin-top:18px;" onclick="window.saveThirdPlacePrediction('${partido.numero}')">Guardar</button>
+    </div>
+  `;
+  html += `</div></div>`;
+  container.innerHTML = html;
+}
 // ======================================================
 // RANKING EN TIEMPO REAL
 // ======================================================
