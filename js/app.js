@@ -2770,36 +2770,7 @@ function generarSkeletonBracket() {
     document.getElementById(
       "thirdPlaceContainer"
     );
-
-
-
-  // =====================================
-  // SEMIFINALES (SKELETON)
-  // =====================================
-
-  if (semifinalContainer) {
-
-    semifinalContainer.innerHTML = `
-
-      <div class="tabla-grupo-card">
-
-        <h3 class="tabla-title">
-          Semifinales
-        </h3>
-
-        <div class="dieciseisavos-grid">
-
-          ${crearPlaceholder(101)}
-          ${crearPlaceholder(102)}
-
-        </div>
-
-      </div>
-
-    `;
-
-  }
-
+  
   // =====================================
   // FINAL
   // =====================================
