@@ -2800,11 +2800,6 @@ async function generarSemifinales() {
   html += `</div></div>`;
   container.innerHTML = html;
 }
-// ======================================================
-// ESQUELETO RESTO DEL BRACKET
-// ======================================================
-
-function generarSkeletonBracket() {
 
   // =====================================
   // CONTENEDORES
