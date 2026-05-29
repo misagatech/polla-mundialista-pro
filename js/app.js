@@ -2732,14 +2732,14 @@ async function generarCuartos() {
   if (!container) return;
 
   // =====================================
-  // OBTENER CLASIFICADOS
+  // OBTENER CLASIFICADOS OCTAVOS
   // =====================================
 
   const snapshot =
     await getDocs(
       collection(
         db,
-        "predictions_knockout"
+        "predictions_octavos"
       )
     );
 
@@ -2764,26 +2764,46 @@ async function generarCuartos() {
 
     {
       numero: 97,
-      local: clasificados[90],
-      visitante: clasificados[91]
+      local:
+        clasificados[89]
+        || "Ganador Partido 89",
+
+      visitante:
+        clasificados[90]
+        || "Ganador Partido 90"
     },
 
     {
       numero: 98,
-      local: clasificados[92],
-      visitante: clasificados[93]
+      local:
+        clasificados[91]
+        || "Ganador Partido 91",
+
+      visitante:
+        clasificados[92]
+        || "Ganador Partido 92"
     },
 
     {
       numero: 99,
-      local: clasificados[94],
-      visitante: clasificados[95]
+      local:
+        clasificados[93]
+        || "Ganador Partido 93",
+
+      visitante:
+        clasificados[94]
+        || "Ganador Partido 94"
     },
 
     {
       numero: 100,
-      local: clasificados[96],
-      visitante: clasificados[97]
+      local:
+        clasificados[95]
+        || "Ganador Partido 95",
+
+      visitante:
+        clasificados[96]
+        || "Ganador Partido 96"
     }
 
   ];
@@ -2814,31 +2834,156 @@ async function generarCuartos() {
           Partido ${partido.numero}
         </div>
 
+        <!-- LOCAL -->
+
         <div class="prediction-side local-side">
 
+          <img
+            src="https://flagcdn.com/${partido.local.includes('Ganador') ? 'un' : obtenerCodigoPais(partido.local)}.svg"
+            width="24"
+          >
+
           <span>
-            ${fifaCodes[partido.local] || "Pendiente"}
+            ${fifaCodes[partido.local] || partido.local}
           </span>
+
+        </div>
+
+        <!-- INPUTS -->
+
+        <div
+          style="
+            display:flex;
+            justify-content:center;
+            align-items:center;
+            gap:14px;
+            margin-top:16px;
+            background:rgba(255,255,255,0.04);
+            border-radius:14px;
+            padding:12px;
+          "
+        >
+
+          <input
+            type="number"
+            class="prediction-input local-score"
+            placeholder="↑"
+            min="0"
+            style="
+              width:70px;
+              border:2px solid #3b82f6;
+              background:#0f172a;
+            "
+          >
+
+          <span
+            style="
+              font-size:22px;
+              font-weight:800;
+              color:#facc15;
+            "
+          >
+            -
+          </span>
+
+          <input
+            type="number"
+            class="prediction-input visitor-score"
+            placeholder="↓"
+            min="0"
+            style="
+              width:70px;
+              border:2px solid #22c55e;
+              background:#0f172a;
+            "
+          >
+
+        </div>
+
+        <!-- VISITANTE -->
+
+        <div
+          class="prediction-side visit-side"
+          style="margin-top:14px;"
+        >
+
+          <img
+            src="https://flagcdn.com/${partido.visitante.includes('Ganador') ? 'un' : obtenerCodigoPais(partido.visitante)}.svg"
+            width="24"
+          >
+
+          <span>
+            ${fifaCodes[partido.visitante] || partido.visitante}
+          </span>
+
+        </div>
+
+        <!-- EMPATE -->
+
+        <div
+          style="
+            margin-top:16px;
+            font-size:13px;
+          "
+        >
+
+          Si eliges empate, también debes elegir quién avanza:
 
         </div>
 
         <div
           style="
-            text-align:center;
-            margin:12px 0;
-            opacity:.7;
+            font-size:12px;
+            opacity:0.7;
+            margin-top:6px;
+            line-height:1.4;
           "
         >
-          VS
+          ✔ Se valida el marcador en los 90 minutos<br>
+          ✔ Puedes ganar puntos por marcador exacto<br>
+          ✔ Y puntos extra por acertar el clasificado
         </div>
 
-        <div class="prediction-side visit-side">
+        <div
+          style="
+            display:flex;
+            justify-content:center;
+            gap:14px;
+            margin-top:10px;
+            flex-wrap:wrap;
+          "
+        >
 
-          <span>
-            ${fifaCodes[partido.visitante] || "Pendiente"}
-          </span>
+          <label>
+
+            <input
+              type="radio"
+              name="cuartos_${partido.numero}"
+            >
+
+            ${fifaCodes[partido.local] || partido.local}
+
+          </label>
+
+          <label>
+
+            <input
+              type="radio"
+              name="cuartos_${partido.numero}"
+            >
+
+            ${fifaCodes[partido.visitante] || partido.visitante}
+
+          </label>
 
         </div>
+
+        <button
+          class="btn-guardar"
+          style="margin-top:18px;"
+        >
+          Guardar
+        </button>
 
       </div>
 
