@@ -739,6 +739,100 @@ window.saveOctavosPrediction = async (partidoNumero) => {
   }
 };
 // ======================================================
+// GUARDAR PREDICCIÓN DE CUARTOS
+// ======================================================
+window.saveCuartosPrediction = async (partidoNumero) => {
+  try {
+    if (!currentUser) return alert("Debes iniciar sesión");
+
+    const localInput = document.getElementById(`cuartos_local_${partidoNumero}`);
+    const visitInput = document.getElementById(`cuartos_visit_${partidoNumero}`);
+    if (!localInput || !visitInput) return alert("Inputs no encontrados");
+
+    const local = parseInt(localInput.value);
+    const visit = parseInt(visitInput.value);
+    if (isNaN(local) || isNaN(visit)) return alert("Ingresa números válidos");
+
+    const card = document.querySelector(`[data-partido-cuartos="${partidoNumero}"]`);
+    if (!card) return alert("Partido no encontrado");
+    const equipoLocal = card.dataset.local;
+    const equipoVisit = card.dataset.visitante;
+
+    let clasificado = null;
+    if (local > visit) clasificado = equipoLocal;
+    else if (visit > local) clasificado = equipoVisit;
+    else {
+      const selected = document.querySelector(`input[name="cuartos_clasificado_${partidoNumero}"]:checked`);
+      if (!selected) return alert("Debes elegir quién clasifica");
+      clasificado = selected.value;
+    }
+
+    const predictionId = `${currentUser.uid}_CUARTOS_${partidoNumero}`;
+    await setDoc(doc(db, "predictions_cuartos", predictionId), {
+      uid: currentUser.uid,
+      partido: partidoNumero,
+      pred_local: local,
+      pred_visitante: visit,
+      clasificado: clasificado,
+      fase: "cuartos",
+      updated_at: serverTimestamp()
+    }, { merge: true });
+
+    alert("✅ Predicción guardada");
+    await generarSemifinales();
+  } catch (error) {
+    console.error(error);
+    alert(error.message);
+  }
+};
+// ======================================================
+// GUARDAR PREDICCIÓN DE SEMIFINALES
+// ======================================================
+window.saveSemifinalPrediction = async (partidoNumero) => {
+  try {
+    if (!currentUser) return alert("Debes iniciar sesión");
+
+    const localInput = document.getElementById(`semis_local_${partidoNumero}`);
+    const visitInput = document.getElementById(`semis_visit_${partidoNumero}`);
+    if (!localInput || !visitInput) return alert("Inputs no encontrados");
+
+    const local = parseInt(localInput.value);
+    const visit = parseInt(visitInput.value);
+    if (isNaN(local) || isNaN(visit)) return alert("Ingresa números válidos");
+
+    const card = document.querySelector(`[data-partido-semis="${partidoNumero}"]`);
+    if (!card) return alert("Partido no encontrado");
+    const equipoLocal = card.dataset.local;
+    const equipoVisit = card.dataset.visitante;
+
+    let clasificado = null;
+    if (local > visit) clasificado = equipoLocal;
+    else if (visit > local) clasificado = equipoVisit;
+    else {
+      const selected = document.querySelector(`input[name="semis_clasificado_${partidoNumero}"]:checked`);
+      if (!selected) return alert("Debes elegir quién clasifica");
+      clasificado = selected.value;
+    }
+
+    const predictionId = `${currentUser.uid}_SEMIS_${partidoNumero}`;
+    await setDoc(doc(db, "predictions_semifinales", predictionId), {
+      uid: currentUser.uid,
+      partido: partidoNumero,
+      pred_local: local,
+      pred_visitante: visit,
+      clasificado: clasificado,
+      fase: "semifinales",
+      updated_at: serverTimestamp()
+    }, { merge: true });
+
+    alert("✅ Predicción guardada");
+    // Aquí luego llamarás a generarFinal() cuando la tengas
+  } catch (error) {
+    console.error(error);
+    alert(error.message);
+  }
+};
+// ======================================================
 // RANKING EN TIEMPO REAL
 // ======================================================
 
