@@ -3858,6 +3858,7 @@ onAuthStateChanged(auth, async (user) => {
     loadPrizePoolRealtime();
     await generarOctavos();
     await generarCuartos();
+    await generarSemifinales();
     generarSkeletonBracket();
   } else {
     // Limpiar listeners
