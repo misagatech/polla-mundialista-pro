@@ -2428,15 +2428,78 @@ window.saveKnockoutPrediction = async (
 // ======================================================
 // GENERAR OCTAVOS AUTOMÁTICOS
 // ======================================================
-
 async function generarOctavos() {
-
-  const container =
-    document.getElementById(
-      "octavosContainer"
-    );
-
+  const container = document.getElementById("octavosContainer");
   if (!container) return;
+
+  // 1. Obtener clasificados de dieciseisavos (desde predictions_knockout)
+  const knockoutSnap = await getDocs(collection(db, "predictions_knockout"));
+  const clasificados = {};
+  knockoutSnap.forEach(doc => {
+    const data = doc.data();
+    if (data.uid === currentUser.uid) {
+      clasificados[data.partido] = data.clasificado;
+    }
+  });
+
+  // 2. Partidos de octavos (según tu bracket)
+  const partidos = [
+    { numero: 89, local: clasificados[74] || "Ganador 74", visitante: clasificados[77] || "Ganador 77" },
+    { numero: 90, local: clasificados[73] || "Ganador 73", visitante: clasificados[75] || "Ganador 75" },
+    { numero: 91, local: clasificados[76] || "Ganador 76", visitante: clasificados[78] || "Ganador 78" },
+    { numero: 92, local: clasificados[79] || "Ganador 79", visitante: clasificados[80] || "Ganador 80" },
+    { numero: 93, local: clasificados[83] || "Ganador 83", visitante: clasificados[84] || "Ganador 84" },
+    { numero: 94, local: clasificados[81] || "Ganador 81", visitante: clasificados[82] || "Ganador 82" },
+    { numero: 95, local: clasificados[86] || "Ganador 86", visitante: clasificados[88] || "Ganador 88" },
+    { numero: 96, local: clasificados[85] || "Ganador 85", visitante: clasificados[87] || "Ganador 87" }
+  ];
+
+  // 3. Obtener predicciones guardadas del usuario para octavos
+  const octavosQuery = query(collection(db, "predictions_octavos"), where("uid", "==", currentUser.uid));
+  const octavosSnap = await getDocs(octavosQuery);
+  const predicciones = {};
+  octavosSnap.forEach(doc => {
+    const data = doc.data();
+    predicciones[data.partido] = data;
+  });
+
+  // 4. Generar HTML
+  let html = `<div class="tabla-grupo-card"><h3 class="tabla-title">Octavos de Final</h3><div class="dieciseisavos-grid">`;
+
+  for (const partido of partidos) {
+    const pred = predicciones[partido.numero] || {};
+    const predLocal = pred.pred_local ?? "";
+    const predVisit = pred.pred_visitante ?? "";
+    const clasifGuardado = pred.clasificado ?? "";
+
+    html += `
+      <div class="knockout-card" data-partido-octavos="${partido.numero}" data-local="${partido.local}" data-visitante="${partido.visitante}">
+        <div class="knockout-match-number">Partido ${partido.numero}</div>
+        <div class="prediction-side local-side">
+          ${fifaCodes[partido.local] ? `<img src="https://flagcdn.com/${obtenerCodigoPais(partido.local)}.svg" width="24">` : '<div style="width:24px;"></div>'}
+          <span>${fifaCodes[partido.local] || partido.local}</span>
+        </div>
+        <div style="display:flex; justify-content:center; gap:14px; margin-top:16px; background:rgba(255,255,255,0.04); border-radius:14px; padding:12px;">
+          <input type="number" id="oct_local_${partido.numero}" class="prediction-input local-score" value="${predLocal}" placeholder="↑" min="0" style="width:70px; border:2px solid #3b82f6;">
+          <span style="font-size:22px; font-weight:800; color:#facc15;">-</span>
+          <input type="number" id="oct_visit_${partido.numero}" class="prediction-input visitor-score" value="${predVisit}" placeholder="↓" min="0" style="width:70px; border:2px solid #22c55e;">
+        </div>
+        <div class="prediction-side visit-side" style="margin-top:14px;">
+          ${fifaCodes[partido.visitante] ? `<img src="https://flagcdn.com/${obtenerCodigoPais(partido.visitante)}.svg" width="24">` : '<div style="width:24px;"></div>'}
+          <span>${fifaCodes[partido.visitante] || partido.visitante}</span>
+        </div>
+        <div style="margin-top:16px;">Si hay empate, elige quién avanza:</div>
+        <div style="display:flex; justify-content:center; gap:14px; margin-top:10px;">
+          <label><input type="radio" name="oct_clasificado_${partido.numero}" value="${partido.local}" ${clasifGuardado === partido.local ? 'checked' : ''}> ${fifaCodes[partido.local] || partido.local}</label>
+          <label><input type="radio" name="oct_clasificado_${partido.numero}" value="${partido.visitante}" ${clasifGuardado === partido.visitante ? 'checked' : ''}> ${fifaCodes[partido.visitante] || partido.visitante}</label>
+        </div>
+        <button class="btn-guardar" onclick="window.saveOctavosPrediction('${partido.numero}')">Guardar</button>
+      </div>
+    `;
+  }
+  html += `</div></div>`;
+  container.innerHTML = html;
+}
 
   // =====================================
   // OBTENER PREDICCIONES
