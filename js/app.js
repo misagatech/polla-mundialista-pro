@@ -2480,10 +2480,30 @@ async function generarOctavos() {
 
 <div class="prediction-side local-side">
 
-  <img
-    src="https://flagcdn.com/${obtenerCodigoPais(partido.local)}.svg"
-    width="24"
-  >
+ ${fifaCodes[partido.local]
+  ? `
+    <img
+      src="https://flagcdn.com/${obtenerCodigoPais(partido.local)}.svg"
+      width="24"
+    >
+  `
+  : `
+    <div
+      style="
+        width:24px;
+        height:24px;
+        border-radius:50%;
+        background:#1e293b;
+        display:flex;
+        align-items:center;
+        justify-content:center;
+        font-size:11px;
+      "
+    >
+      ?
+    </div>
+  `
+}
 
   <span>
     ${fifaCodes[partido.local]}
@@ -2551,10 +2571,30 @@ async function generarOctavos() {
   style="margin-top:14px;"
 >
 
-  <img
-    src="https://flagcdn.com/${obtenerCodigoPais(partido.visitante)}.svg"
-    width="24"
-  >
+ ${fifaCodes[partido.visitante]
+  ? `
+    <img
+      src="https://flagcdn.com/${obtenerCodigoPais(partido.visitante)}.svg"
+      width="24"
+    >
+  `
+  : `
+    <div
+      style="
+        width:24px;
+        height:24px;
+        border-radius:50%;
+        background:#1e293b;
+        display:flex;
+        align-items:center;
+        justify-content:center;
+        font-size:11px;
+      "
+    >
+      ?
+    </div>
+  `
+}
 
   <span>
     ${fifaCodes[partido.visitante]}
