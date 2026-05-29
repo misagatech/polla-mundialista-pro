@@ -3029,37 +3029,13 @@ function generarSkeletonBracket() {
     );
 
   // =====================================
-  // CUARTOS
-  // =====================================
+// CUARTOS (REAL)
+// =====================================
+generarCuartos();
 
-  if (cuartosContainer) {
-
-    cuartosContainer.innerHTML = `
-
-      <div class="tabla-grupo-card">
-
-        <h3 class="tabla-title">
-          Cuartos de Final
-        </h3>
-
-        <div class="dieciseisavos-grid">
-
-          ${crearPlaceholder(97)}
-          ${crearPlaceholder(98)}
-          ${crearPlaceholder(99)}
-          ${crearPlaceholder(100)}
-
-        </div>
-
-      </div>
-
-    `;
-
-  }
-
-  // =====================================
-  // SEMIFINALES
-  // =====================================
+// =====================================
+// SEMIFINALES (SKELETON)
+// =====================================
 
   if (semifinalContainer) {
 
@@ -3633,6 +3609,7 @@ onAuthStateChanged(auth, async (user) => {
     loadRanking();
     loadPrizePoolRealtime();
     generarOctavos();
+    generarCuartos();
     generarSkeletonBracket();
   } else {
     // Limpiar listeners
