@@ -2605,26 +2605,38 @@ async function generarOctavos() {
     
     <!-- EMPATE -->
 
-    <div
-      style="
-        margin-top:16px;
-        font-size:13px;
-      "
-    >
+<div
+  style="
+    margin-top:16px;
+    font-size:13px;
+  "
+>
 
-      Si eliges empate, selecciona el clasificado:
+  Si eliges empate, también debes elegir quién avanza:
 
-    </div>
+</div>
 
-    <div
-      style="
-        display:flex;
-        justify-content:center;
-        gap:14px;
-        margin-top:10px;
-        flex-wrap:wrap;
-      "
-    >
+<div
+  style="
+    font-size:12px;
+    opacity:0.7;
+    margin-top:6px;
+    line-height:1.4;
+  "
+>
+  ✔ Puedes ganar puntos por marcador exacto<br>
+  ✔ Y puntos extra por acertar el clasificado
+</div>
+
+<div
+  style="
+    display:flex;
+    justify-content:center;
+    gap:14px;
+    margin-top:10px;
+    flex-wrap:wrap;
+  "
+>
 
       <label>
 
