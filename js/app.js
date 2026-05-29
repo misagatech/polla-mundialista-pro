@@ -3028,10 +3028,7 @@ function generarSkeletonBracket() {
       "thirdPlaceContainer"
     );
 
-  // =====================================
-// CUARTOS (REAL)
-// =====================================
-generarCuartos();
+
 
 // =====================================
 // SEMIFINALES (SKELETON)
