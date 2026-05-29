@@ -2395,27 +2395,51 @@ async function generarOctavos() {
   const partidos = [
 
     {
+      numero: 89,
+      local: clasificados[74] || "Ganador 74",
+      visitante: clasificados[77] || "Ganador 77"
+    },
+
+    {
       numero: 90,
-      local: clasificados[73],
-      visitante: clasificados[75]
+      local: clasificados[73] || "Ganador 73",
+      visitante: clasificados[75] || "Ganador 75"
     },
 
     {
       numero: 91,
-      local: clasificados[76],
-      visitante: clasificados[78]
+      local: clasificados[76] || "Ganador 76",
+      visitante: clasificados[78] || "Ganador 78"
+    },
+
+    {
+      numero: 92,
+      local: clasificados[79] || "Ganador 79",
+      visitante: clasificados[80] || "Ganador 80"
     },
 
     {
       numero: 93,
-      local: clasificados[83],
-      visitante: clasificados[84]
+      local: clasificados[83] || "Ganador 83",
+      visitante: clasificados[84] || "Ganador 84"
+    },
+
+    {
+      numero: 94,
+      local: clasificados[81] || "Ganador 81",
+      visitante: clasificados[82] || "Ganador 82"
     },
 
     {
       numero: 95,
-      local: clasificados[86],
-      visitante: clasificados[88]
+      local: clasificados[86] || "Ganador 86",
+      visitante: clasificados[88] || "Ganador 88"
+    },
+
+    {
+      numero: 96,
+      local: clasificados[85] || "Ganador 85",
+      visitante: clasificados[87] || "Ganador 87"
     }
 
   ];
@@ -3383,6 +3407,8 @@ onAuthStateChanged(auth, async (user) => {
     loadMatchesAndPredictions();
     loadRanking();
     loadPrizePoolRealtime();
+    generarOctavos();
+    generarSkeletonBracket();
   } else {
     // Limpiar listeners
     if (matchesUnsubscribe) matchesUnsubscribe();
