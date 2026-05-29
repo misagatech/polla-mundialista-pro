@@ -3030,9 +3030,9 @@ function generarSkeletonBracket() {
 
 
 
-// =====================================
-// SEMIFINALES (SKELETON)
-// =====================================
+  // =====================================
+  // SEMIFINALES (SKELETON)
+  // =====================================
 
   if (semifinalContainer) {
 
@@ -3605,8 +3605,8 @@ onAuthStateChanged(auth, async (user) => {
     loadMatchesAndPredictions();
     loadRanking();
     loadPrizePoolRealtime();
-    generarOctavos();
-    generarCuartos();
+    await generarOctavos();
+    await generarCuartos();
     generarSkeletonBracket();
   } else {
     // Limpiar listeners
