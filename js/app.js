@@ -2020,7 +2020,7 @@ async function generarDieciseisavos() {
       <input
   type="number"
   id="ko_local_${partido.numero}"
-  class="prediction-input"
+  class="prediction-input local-score"
   placeholder="0"
   min="0"
   max="20"
@@ -2036,7 +2036,7 @@ async function generarDieciseisavos() {
       <input
   type="number"
   id="ko_visit_${partido.numero}"
-  class="prediction-input"
+  class="prediction-input visitor-score"
   placeholder="0"
   min="0"
   max="20"
