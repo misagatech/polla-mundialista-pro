@@ -3001,6 +3001,256 @@ async function generarCuartos() {
 
 }
 // ======================================================
+// GENERAR SEMIFINALES
+// ======================================================
+async function generarSemifinales() {
+
+  const container =
+    document.getElementById("semifinalContainer");
+
+  if (!container) return;
+
+  // =====================================
+  // OBTENER CLASIFICADOS CUARTOS
+  // =====================================
+
+  const snapshot =
+    await getDocs(
+      collection(db, "predictions_cuartos")
+    );
+
+  const clasificados = {};
+
+  snapshot.forEach(docSnap => {
+
+    const data = docSnap.data();
+
+    clasificados[data.partido] = data.clasificado;
+
+  });
+
+  // =====================================
+  // PARTIDOS SEMIFINALES
+  // =====================================
+
+  const partidos = [
+
+    {
+      numero: 101,
+      local:
+        clasificados[97]
+        || "Ganador Partido 97",
+
+      visitante:
+        clasificados[98]
+        || "Ganador Partido 98"
+    },
+
+    {
+      numero: 102,
+      local:
+        clasificados[99]
+        || "Ganador Partido 99",
+
+      visitante:
+        clasificados[100]
+        || "Ganador Partido 100"
+    }
+
+  ];
+
+  // =====================================
+  // HTML
+  // =====================================
+
+  let html = `
+
+    <div class="tabla-grupo-card">
+
+      <h3 class="tabla-title">
+        Semifinales
+      </h3>
+
+      <div class="dieciseisavos-grid">
+
+  `;
+
+  partidos.forEach(partido => {
+
+    html += `
+
+      <div class="knockout-card">
+
+        <div class="knockout-match-number">
+          Partido ${partido.numero}
+        </div>
+
+        <!-- LOCAL -->
+
+        <div class="prediction-side local-side">
+
+          <img
+            src="https://flagcdn.com/${partido.local.includes('Ganador') ? 'un' : obtenerCodigoPais(partido.local)}.svg"
+            width="24"
+          >
+
+          <span>
+            ${fifaCodes[partido.local] || partido.local}
+          </span>
+
+        </div>
+
+        <!-- INPUTS -->
+
+        <div
+          style="
+            display:flex;
+            justify-content:center;
+            align-items:center;
+            gap:14px;
+            margin-top:16px;
+            background:rgba(255,255,255,0.04);
+            border-radius:14px;
+            padding:12px;
+          "
+        >
+
+          <input
+            type="number"
+            class="prediction-input local-score"
+            placeholder="↑"
+            min="0"
+            style="
+              width:70px;
+              border:2px solid #3b82f6;
+              background:#0f172a;
+            "
+          >
+
+          <span
+            style="
+              font-size:22px;
+              font-weight:800;
+              color:#facc15;
+            "
+          >
+            -
+          </span>
+
+          <input
+            type="number"
+            class="prediction-input visitor-score"
+            placeholder="↓"
+            min="0"
+            style="
+              width:70px;
+              border:2px solid #22c55e;
+              background:#0f172a;
+            "
+          >
+
+        </div>
+
+        <!-- VISITANTE -->
+
+        <div
+          class="prediction-side visit-side"
+          style="margin-top:14px;"
+        >
+
+          <img
+            src="https://flagcdn.com/${partido.visitante.includes('Ganador') ? 'un' : obtenerCodigoPais(partido.visitante)}.svg"
+            width="24"
+          >
+
+          <span>
+            ${fifaCodes[partido.visitante] || partido.visitante}
+          </span>
+
+        </div>
+
+        <!-- EMPATE -->
+
+        <div
+          style="
+            margin-top:16px;
+            font-size:13px;
+          "
+        >
+
+          Si eliges empate, también debes elegir quién avanza:
+
+        </div>
+
+        <div
+          style="
+            font-size:12px;
+            opacity:0.7;
+            margin-top:6px;
+            line-height:1.4;
+          "
+        >
+          ✔ Se valida el marcador en los 90 minutos<br>
+          ✔ Puedes ganar puntos por marcador exacto<br>
+          ✔ Y puntos extra por acertar el clasificado
+        </div>
+
+        <div
+          style="
+            display:flex;
+            justify-content:center;
+            gap:14px;
+            margin-top:10px;
+            flex-wrap:wrap;
+          "
+        >
+
+          <label>
+
+            <input
+              type="radio"
+              name="semis_${partido.numero}"
+            >
+
+            ${fifaCodes[partido.local] || partido.local}
+
+          </label>
+
+          <label>
+
+            <input
+              type="radio"
+              name="semis_${partido.numero}"
+            >
+
+            ${fifaCodes[partido.visitante] || partido.visitante}
+
+          </label>
+
+        </div>
+
+        <button
+          class="btn-guardar"
+          style="margin-top:18px;"
+        >
+          Guardar
+        </button>
+
+      </div>
+
+    `;
+
+  });
+
+  html += `
+      </div>
+    </div>
+  `;
+
+  container.innerHTML = html;
+
+}
+// ======================================================
 // ESQUELETO RESTO DEL BRACKET
 // ======================================================
 
