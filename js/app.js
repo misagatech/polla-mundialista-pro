@@ -272,8 +272,6 @@ window.cambiarGrupo = (grupo) => {
 
   generarTablaGrupos();
 
-  generarSkeletonBracket();
-
   generarOctavos();
 
   generarCuartos();
@@ -316,7 +314,7 @@ async function loadMatchesAndPredictions() {
     gruposData = agruparPartidos(partidosGrupos);
     mostrarTodosLosGrupos();
     await generarTablaGrupos();
-    generarSkeletonBracket();
+    
 
     // Próximo partido (el más cercano en el futuro)
     const ahora = new Date();
@@ -2626,7 +2624,7 @@ window.saveKnockoutPrediction = async (
     );
     generarOctavos();
     generarCuartos();
-    generarSkeletonBracket();
+
 
   }
 
@@ -2863,128 +2861,7 @@ async function generarSemifinales() {
   container.innerHTML = html;
 }
 
-  // =====================================
-  // CONTENEDORES
-  // =====================================
 
-  const cuartosContainer =
-    document.getElementById(
-      "cuartosContainer"
-    );
-
-  const semifinalContainer =
-    document.getElementById(
-      "semifinalContainer"
-    );
-
-  const finalContainer =
-    document.getElementById(
-      "finalContainer"
-    );
-  const thirdPlaceContainer =
-    document.getElementById(
-      "thirdPlaceContainer"
-    );
-  
-  // =====================================
-  // FINAL
-  // =====================================
-
-  if (finalContainer) {
-
-    finalContainer.innerHTML = `
-
-    <div class="tabla-grupo-card">
-
-      <h3 class="tabla-title">
-        🏆 GRAN FINAL
-      </h3>
-
-      <div class="dieciseisavos-grid">
-
-        ${crearPlaceholder(103)}
-
-      </div>
-
-    </div>
-
-  `;
-
-  }
-
-  // =====================================
-  // TERCER PUESTO
-  // =====================================
-
-  if (thirdPlaceContainer) {
-
-    thirdPlaceContainer.innerHTML = `
-
-    <div class="tabla-grupo-card">
-
-      <h3 class="tabla-title">
-        🥉 Tercer Puesto
-      </h3>
-
-      <div class="dieciseisavos-grid">
-
-        ${crearPlaceholder(104)}
-
-      </div>
-
-    </div>
-
-  `;
-  } // ← ESTA LLAVE FALTABA
-
-}
-
-// ======================================================
-// PLACEHOLDER
-// ======================================================
-
-function crearPlaceholder(numero) {
-
-  return `
-
-    <div class="knockout-card">
-
-      <div class="knockout-match-number">
-        Partido ${numero}
-      </div>
-
-      <div
-        style="
-          height:42px;
-          background:rgba(255,255,255,0.08);
-          border-radius:10px;
-          margin-top:14px;
-        "
-      ></div>
-
-      <div
-        style="
-          text-align:center;
-          margin:14px 0;
-          opacity:0.5;
-        "
-      >
-        VS
-      </div>
-
-      <div
-        style="
-          height:42px;
-          background:rgba(255,255,255,0.08);
-          border-radius:10px;
-        "
-      ></div>
-
-    </div>
-
-  `;
-
-}
 // ======================================================
 // LOGIN, REGISTRO, LOGOUT
 // ======================================================
