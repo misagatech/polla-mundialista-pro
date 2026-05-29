@@ -265,9 +265,18 @@ ${!isStarted ? `
 // CAMBIAR GRUPO (desde carrusel)
 // ======================================================
 window.cambiarGrupo = (grupo) => {
+
   grupoActivo = grupo;
+
   mostrarTodosLosGrupos();
+
   generarTablaGrupos();
+
+  generarSkeletonBracket();
+
+  generarOctavos();
+
+  generarCuartos();
 
 };
 
@@ -2593,6 +2602,142 @@ async function generarOctavos() {
   </div>
 
 `;
+
+  });
+
+  html += `
+      </div>
+    </div>
+  `;
+
+  container.innerHTML = html;
+
+}
+// ======================================================
+// GENERAR CUARTOS AUTOMÁTICOS
+// ======================================================
+
+async function generarCuartos() {
+
+  const container =
+    document.getElementById(
+      "cuartosContainer"
+    );
+
+  if (!container) return;
+
+  // =====================================
+  // OBTENER CLASIFICADOS
+  // =====================================
+
+  const snapshot =
+    await getDocs(
+      collection(
+        db,
+        "predictions_knockout"
+      )
+    );
+
+  const clasificados = {};
+
+  snapshot.forEach(docSnap => {
+
+    const data =
+      docSnap.data();
+
+    clasificados[
+      data.partido
+    ] = data.clasificado;
+
+  });
+
+  // =====================================
+  // PARTIDOS CUARTOS
+  // =====================================
+
+  const partidos = [
+
+    {
+      numero: 97,
+      local: clasificados[90],
+      visitante: clasificados[91]
+    },
+
+    {
+      numero: 98,
+      local: clasificados[92],
+      visitante: clasificados[93]
+    },
+
+    {
+      numero: 99,
+      local: clasificados[94],
+      visitante: clasificados[95]
+    },
+
+    {
+      numero: 100,
+      local: clasificados[96],
+      visitante: clasificados[97]
+    }
+
+  ];
+
+  // =====================================
+  // HTML
+  // =====================================
+
+  let html = `
+
+    <div class="tabla-grupo-card">
+
+      <h3 class="tabla-title">
+        Cuartos de Final
+      </h3>
+
+      <div class="dieciseisavos-grid">
+
+  `;
+
+  partidos.forEach(partido => {
+
+    html += `
+
+      <div class="knockout-card">
+
+        <div class="knockout-match-number">
+          Partido ${partido.numero}
+        </div>
+
+        <div class="prediction-side local-side">
+
+          <span>
+            ${fifaCodes[partido.local] || "Pendiente"}
+          </span>
+
+        </div>
+
+        <div
+          style="
+            text-align:center;
+            margin:12px 0;
+            opacity:.7;
+          "
+        >
+          VS
+        </div>
+
+        <div class="prediction-side visit-side">
+
+          <span>
+            ${fifaCodes[partido.visitante] || "Pendiente"}
+          </span>
+
+        </div>
+
+      </div>
+
+    `;
 
   });
 
