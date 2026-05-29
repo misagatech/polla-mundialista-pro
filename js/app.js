@@ -2506,7 +2506,7 @@ async function generarOctavos() {
 }
 
   <span>
-    ${fifaCodes[partido.local]}
+    ${fifaCodes[partido.local] || partido.local}
   </span>
 
 </div>
@@ -2597,7 +2597,7 @@ async function generarOctavos() {
 }
 
   <span>
-    ${fifaCodes[partido.visitante]}
+    ${fifaCodes[partido.visitante] || partido.visitante}
   </span>
 
 </div>
