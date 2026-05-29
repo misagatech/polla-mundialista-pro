@@ -2509,533 +2509,144 @@ async function generarOctavos() {
  // ======================================================
 // GENERAR CUARTOS AUTOMÁTICOS
 // ======================================================
-
 async function generarCuartos() {
-
-  const container =
-    document.getElementById(
-      "cuartosContainer"
-    );
-
+  const container = document.getElementById("cuartosContainer");
   if (!container) return;
 
-  // =====================================
-  // OBTENER CLASIFICADOS OCTAVOS
-  // =====================================
-
-  const snapshot =
-    await getDocs(
-      collection(
-        db,
-        "predictions_octavos"
-      )
-    );
-
+  // Obtener clasificados de octavos (desde predictions_octavos del usuario)
+  const octavosQuery = query(collection(db, "predictions_octavos"), where("uid", "==", currentUser.uid));
+  const octavosSnap = await getDocs(octavosQuery);
   const clasificados = {};
-
-  snapshot.forEach(docSnap => {
-
-    const data =
-      docSnap.data();
-
-    clasificados[
-      data.partido
-    ] = data.clasificado;
-
+  octavosSnap.forEach(doc => {
+    const data = doc.data();
+    clasificados[data.partido] = data.clasificado;
   });
 
-  // =====================================
-  // PARTIDOS CUARTOS
-  // =====================================
-
   const partidos = [
-
-    {
-      numero: 97,
-      local:
-        clasificados[89]
-        || "Ganador Partido 89",
-
-      visitante:
-        clasificados[90]
-        || "Ganador Partido 90"
-    },
-
-    {
-      numero: 98,
-      local:
-        clasificados[91]
-        || "Ganador Partido 91",
-
-      visitante:
-        clasificados[92]
-        || "Ganador Partido 92"
-    },
-
-    {
-      numero: 99,
-      local:
-        clasificados[93]
-        || "Ganador Partido 93",
-
-      visitante:
-        clasificados[94]
-        || "Ganador Partido 94"
-    },
-
-    {
-      numero: 100,
-      local:
-        clasificados[95]
-        || "Ganador Partido 95",
-
-      visitante:
-        clasificados[96]
-        || "Ganador Partido 96"
-    }
-
+    { numero: 97, local: clasificados[89] || "Ganador 89", visitante: clasificados[90] || "Ganador 90" },
+    { numero: 98, local: clasificados[91] || "Ganador 91", visitante: clasificados[92] || "Ganador 92" },
+    { numero: 99, local: clasificados[93] || "Ganador 93", visitante: clasificados[94] || "Ganador 94" },
+    { numero: 100, local: clasificados[95] || "Ganador 95", visitante: clasificados[96] || "Ganador 96" }
   ];
 
-  // =====================================
-  // HTML
-  // =====================================
+  // Obtener predicciones guardadas del usuario para cuartos
+  const cuartosQuery = query(collection(db, "predictions_cuartos"), where("uid", "==", currentUser.uid));
+  const cuartosSnap = await getDocs(cuartosQuery);
+  const predicciones = {};
+  cuartosSnap.forEach(doc => {
+    const data = doc.data();
+    predicciones[data.partido] = data;
+  });
 
-  let html = `
+  let html = `<div class="tabla-grupo-card"><h3 class="tabla-title">Cuartos de Final</h3><div class="dieciseisavos-grid">`;
 
-    <div class="tabla-grupo-card">
-
-      <h3 class="tabla-title">
-        Cuartos de Final
-      </h3>
-
-      <div class="dieciseisavos-grid">
-
-  `;
-
-  partidos.forEach(partido => {
+  for (const partido of partidos) {
+    const pred = predicciones[partido.numero] || {};
+    const predLocal = pred.pred_local ?? "";
+    const predVisit = pred.pred_visitante ?? "";
+    const clasifGuardado = pred.clasificado ?? "";
 
     html += `
-
-      <div class="knockout-card">
-
-        <div class="knockout-match-number">
-          Partido ${partido.numero}
-        </div>
-
-        <!-- LOCAL -->
-
+      <div class="knockout-card" data-partido-cuartos="${partido.numero}" data-local="${partido.local}" data-visitante="${partido.visitante}">
+        <div class="knockout-match-number">Partido ${partido.numero}</div>
         <div class="prediction-side local-side">
-
-          <img
-            src="https://flagcdn.com/${partido.local.includes('Ganador') ? 'un' : obtenerCodigoPais(partido.local)}.svg"
-            width="24"
-          >
-
-          <span>
-            ${fifaCodes[partido.local] || partido.local}
-          </span>
-
+          ${fifaCodes[partido.local] ? `<img src="https://flagcdn.com/${obtenerCodigoPais(partido.local)}.svg" width="24">` : '<div style="width:24px; height:24px; background:#1e293b; border-radius:50%;"></div>'}
+          <span>${fifaCodes[partido.local] || partido.local}</span>
         </div>
-
-        <!-- INPUTS -->
-
-        <div
-          style="
-            display:flex;
-            justify-content:center;
-            align-items:center;
-            gap:14px;
-            margin-top:16px;
-            background:rgba(255,255,255,0.04);
-            border-radius:14px;
-            padding:12px;
-          "
-        >
-
-          <input
-            type="number"
-            class="prediction-input local-score"
-            placeholder="↑"
-            min="0"
-            style="
-              width:70px;
-              border:2px solid #3b82f6;
-              background:#0f172a;
-            "
-          >
-
-          <span
-            style="
-              font-size:22px;
-              font-weight:800;
-              color:#facc15;
-            "
-          >
-            -
-          </span>
-
-          <input
-            type="number"
-            class="prediction-input visitor-score"
-            placeholder="↓"
-            min="0"
-            style="
-              width:70px;
-              border:2px solid #22c55e;
-              background:#0f172a;
-            "
-          >
-
+        <div style="display:flex; justify-content:center; gap:14px; margin-top:16px; background:rgba(255,255,255,0.04); border-radius:14px; padding:12px;">
+          <input type="number" id="cuartos_local_${partido.numero}" class="prediction-input local-score" value="${predLocal}" placeholder="↑" min="0" style="width:70px; border:2px solid #3b82f6;">
+          <span style="font-size:22px; font-weight:800; color:#facc15;">-</span>
+          <input type="number" id="cuartos_visit_${partido.numero}" class="prediction-input visitor-score" value="${predVisit}" placeholder="↓" min="0" style="width:70px; border:2px solid #22c55e;">
         </div>
-
-        <!-- VISITANTE -->
-
-        <div
-          class="prediction-side visit-side"
-          style="margin-top:14px;"
-        >
-
-          <img
-            src="https://flagcdn.com/${partido.visitante.includes('Ganador') ? 'un' : obtenerCodigoPais(partido.visitante)}.svg"
-            width="24"
-          >
-
-          <span>
-            ${fifaCodes[partido.visitante] || partido.visitante}
-          </span>
-
+        <div class="prediction-side visit-side" style="margin-top:14px;">
+          ${fifaCodes[partido.visitante] ? `<img src="https://flagcdn.com/${obtenerCodigoPais(partido.visitante)}.svg" width="24">` : '<div style="width:24px; height:24px; background:#1e293b; border-radius:50%;"></div>'}
+          <span>${fifaCodes[partido.visitante] || partido.visitante}</span>
         </div>
-
-        <!-- EMPATE -->
-
-        <div
-          style="
-            margin-top:16px;
-            font-size:13px;
-          "
-        >
-
-          Si eliges empate, también debes elegir quién avanza:
-
-        </div>
-
-        <div
-          style="
-            font-size:12px;
-            opacity:0.7;
-            margin-top:6px;
-            line-height:1.4;
-          "
-        >
+        <div style="margin-top:16px; font-size:13px;">Si eliges empate, también debes elegir quién avanza:</div>
+        <div style="font-size:12px; opacity:0.7; margin-top:6px; line-height:1.4;">
           ✔ Se valida el marcador en los 90 minutos<br>
           ✔ Puedes ganar puntos por marcador exacto<br>
           ✔ Y puntos extra por acertar el clasificado
         </div>
-
-        <div
-          style="
-            display:flex;
-            justify-content:center;
-            gap:14px;
-            margin-top:10px;
-            flex-wrap:wrap;
-          "
-        >
-
-          <label>
-
-            <input
-              type="radio"
-              name="cuartos_${partido.numero}"
-            >
-
-            ${fifaCodes[partido.local] || partido.local}
-
-          </label>
-
-          <label>
-
-            <input
-              type="radio"
-              name="cuartos_${partido.numero}"
-            >
-
-            ${fifaCodes[partido.visitante] || partido.visitante}
-
-          </label>
-
+        <div style="display:flex; justify-content:center; gap:14px; margin-top:10px; flex-wrap:wrap;">
+          <label><input type="radio" name="cuartos_clasificado_${partido.numero}" value="${partido.local}" ${clasifGuardado === partido.local ? 'checked' : ''}> ${fifaCodes[partido.local] || partido.local}</label>
+          <label><input type="radio" name="cuartos_clasificado_${partido.numero}" value="${partido.visitante}" ${clasifGuardado === partido.visitante ? 'checked' : ''}> ${fifaCodes[partido.visitante] || partido.visitante}</label>
         </div>
-
-        <button
-          class="btn-guardar"
-          style="margin-top:18px;"
-        >
-          Guardar
-        </button>
-
+        <button class="btn-guardar" style="margin-top:18px;" onclick="window.saveCuartosPrediction('${partido.numero}')">Guardar</button>
       </div>
-
     `;
-
-  });
-
-  html += `
-      </div>
-    </div>
-  `;
-
+  }
+  html += `</div></div>`;
   container.innerHTML = html;
-
 }
 // ======================================================
 // GENERAR SEMIFINALES
 // ======================================================
 async function generarSemifinales() {
-
-  const container =
-    document.getElementById("semifinalContainer");
-
+  const container = document.getElementById("semifinalContainer");
   if (!container) return;
 
-  // =====================================
-  // OBTENER CLASIFICADOS CUARTOS
-  // =====================================
-
-  const snapshot =
-    await getDocs(
-      collection(db, "predictions_cuartos")
-    );
-
+  const cuartosQuery = query(collection(db, "predictions_cuartos"), where("uid", "==", currentUser.uid));
+  const cuartosSnap = await getDocs(cuartosQuery);
   const clasificados = {};
-
-  snapshot.forEach(docSnap => {
-
-    const data = docSnap.data();
-
+  cuartosSnap.forEach(doc => {
+    const data = doc.data();
     clasificados[data.partido] = data.clasificado;
-
   });
 
-  // =====================================
-  // PARTIDOS SEMIFINALES
-  // =====================================
-
   const partidos = [
-
-    {
-      numero: 101,
-      local:
-        clasificados[97]
-        || "Ganador Partido 97",
-
-      visitante:
-        clasificados[98]
-        || "Ganador Partido 98"
-    },
-
-    {
-      numero: 102,
-      local:
-        clasificados[99]
-        || "Ganador Partido 99",
-
-      visitante:
-        clasificados[100]
-        || "Ganador Partido 100"
-    }
-
+    { numero: 101, local: clasificados[97] || "Ganador 97", visitante: clasificados[98] || "Ganador 98" },
+    { numero: 102, local: clasificados[99] || "Ganador 99", visitante: clasificados[100] || "Ganador 100" }
   ];
 
-  // =====================================
-  // HTML
-  // =====================================
+  const semisQuery = query(collection(db, "predictions_semifinales"), where("uid", "==", currentUser.uid));
+  const semisSnap = await getDocs(semisQuery);
+  const predicciones = {};
+  semisSnap.forEach(doc => {
+    const data = doc.data();
+    predicciones[data.partido] = data;
+  });
 
-  let html = `
+  let html = `<div class="tabla-grupo-card"><h3 class="tabla-title">🏆 Semifinales</h3><div class="dieciseisavos-grid">`;
 
-    <div class="tabla-grupo-card">
-
-      <h3 class="tabla-title">
-        Semifinales
-      </h3>
-
-      <div class="dieciseisavos-grid">
-
-  `;
-
-  partidos.forEach(partido => {
+  for (const partido of partidos) {
+    const pred = predicciones[partido.numero] || {};
+    const predLocal = pred.pred_local ?? "";
+    const predVisit = pred.pred_visitante ?? "";
+    const clasifGuardado = pred.clasificado ?? "";
 
     html += `
-
-      <div class="knockout-card">
-
-        <div class="knockout-match-number">
-          Partido ${partido.numero}
-        </div>
-
-        <!-- LOCAL -->
-
+      <div class="knockout-card" data-partido-semis="${partido.numero}" data-local="${partido.local}" data-visitante="${partido.visitante}">
+        <div class="knockout-match-number">Semifinal ${partido.numero}</div>
         <div class="prediction-side local-side">
-
-          <img
-            src="https://flagcdn.com/${partido.local.includes('Ganador') ? 'un' : obtenerCodigoPais(partido.local)}.svg"
-            width="24"
-          >
-
-          <span>
-            ${fifaCodes[partido.local] || partido.local}
-          </span>
-
+          ${fifaCodes[partido.local] ? `<img src="https://flagcdn.com/${obtenerCodigoPais(partido.local)}.svg" width="24">` : '<div style="width:24px; height:24px; background:#1e293b; border-radius:50%;"></div>'}
+          <span>${fifaCodes[partido.local] || partido.local}</span>
         </div>
-
-        <!-- INPUTS -->
-
-        <div
-          style="
-            display:flex;
-            justify-content:center;
-            align-items:center;
-            gap:14px;
-            margin-top:16px;
-            background:rgba(255,255,255,0.04);
-            border-radius:14px;
-            padding:12px;
-          "
-        >
-
-          <input
-            type="number"
-            class="prediction-input local-score"
-            placeholder="↑"
-            min="0"
-            style="
-              width:70px;
-              border:2px solid #3b82f6;
-              background:#0f172a;
-            "
-          >
-
-          <span
-            style="
-              font-size:22px;
-              font-weight:800;
-              color:#facc15;
-            "
-          >
-            -
-          </span>
-
-          <input
-            type="number"
-            class="prediction-input visitor-score"
-            placeholder="↓"
-            min="0"
-            style="
-              width:70px;
-              border:2px solid #22c55e;
-              background:#0f172a;
-            "
-          >
-
+        <div style="display:flex; justify-content:center; gap:14px; margin-top:16px; background:rgba(255,255,255,0.04); border-radius:14px; padding:12px;">
+          <input type="number" id="semis_local_${partido.numero}" class="prediction-input local-score" value="${predLocal}" placeholder="↑" min="0" style="width:70px; border:2px solid #3b82f6;">
+          <span style="font-size:22px; font-weight:800; color:#facc15;">-</span>
+          <input type="number" id="semis_visit_${partido.numero}" class="prediction-input visitor-score" value="${predVisit}" placeholder="↓" min="0" style="width:70px; border:2px solid #22c55e;">
         </div>
-
-        <!-- VISITANTE -->
-
-        <div
-          class="prediction-side visit-side"
-          style="margin-top:14px;"
-        >
-
-          <img
-            src="https://flagcdn.com/${partido.visitante.includes('Ganador') ? 'un' : obtenerCodigoPais(partido.visitante)}.svg"
-            width="24"
-          >
-
-          <span>
-            ${fifaCodes[partido.visitante] || partido.visitante}
-          </span>
-
+        <div class="prediction-side visit-side" style="margin-top:14px;">
+          ${fifaCodes[partido.visitante] ? `<img src="https://flagcdn.com/${obtenerCodigoPais(partido.visitante)}.svg" width="24">` : '<div style="width:24px; height:24px; background:#1e293b; border-radius:50%;"></div>'}
+          <span>${fifaCodes[partido.visitante] || partido.visitante}</span>
         </div>
-
-        <!-- EMPATE -->
-
-        <div
-          style="
-            margin-top:16px;
-            font-size:13px;
-          "
-        >
-
-          Si eliges empate, también debes elegir quién avanza:
-
-        </div>
-
-        <div
-          style="
-            font-size:12px;
-            opacity:0.7;
-            margin-top:6px;
-            line-height:1.4;
-          "
-        >
+        <div style="margin-top:16px; font-size:13px;">Si eliges empate, también debes elegir quién avanza:</div>
+        <div style="font-size:12px; opacity:0.7; margin-top:6px; line-height:1.4;">
           ✔ Se valida el marcador en los 90 minutos<br>
           ✔ Puedes ganar puntos por marcador exacto<br>
           ✔ Y puntos extra por acertar el clasificado
         </div>
-
-        <div
-          style="
-            display:flex;
-            justify-content:center;
-            gap:14px;
-            margin-top:10px;
-            flex-wrap:wrap;
-          "
-        >
-
-          <label>
-
-            <input
-              type="radio"
-              name="semis_${partido.numero}"
-            >
-
-            ${fifaCodes[partido.local] || partido.local}
-
-          </label>
-
-          <label>
-
-            <input
-              type="radio"
-              name="semis_${partido.numero}"
-            >
-
-            ${fifaCodes[partido.visitante] || partido.visitante}
-
-          </label>
-
+        <div style="display:flex; justify-content:center; gap:14px; margin-top:10px; flex-wrap:wrap;">
+          <label><input type="radio" name="semis_clasificado_${partido.numero}" value="${partido.local}" ${clasifGuardado === partido.local ? 'checked' : ''}> ${fifaCodes[partido.local] || partido.local}</label>
+          <label><input type="radio" name="semis_clasificado_${partido.numero}" value="${partido.visitante}" ${clasifGuardado === partido.visitante ? 'checked' : ''}> ${fifaCodes[partido.visitante] || partido.visitante}</label>
         </div>
-
-        <button
-          class="btn-guardar"
-          style="margin-top:18px;"
-        >
-          Guardar
-        </button>
-
+        <button class="btn-guardar" style="margin-top:18px;" onclick="window.saveSemifinalPrediction('${partido.numero}')">Guardar</button>
       </div>
-
     `;
-
-  });
-
-  html += `
-      </div>
-    </div>
-  `;
-
+  }
+  html += `</div></div>`;
   container.innerHTML = html;
-
 }
 // ======================================================
 // ESQUELETO RESTO DEL BRACKET
