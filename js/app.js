@@ -2016,47 +2016,62 @@ async function generarDieciseisavos() {
 
     <!-- INPUTS -->
 
-    <div
-      style="
-        display:flex;
-        justify-content:center;
-        align-items:center;
-        gap:10px;
-        margin-top:14px;
-      "
-    >
-
-      <input
-  type="number"
-  id="ko_local_${partido.numero}"
-  class="prediction-input local-score"
-  placeholder="0"
-  min="0"
-  max="20"
-  inputmode="numeric"
+<div
   style="
-    width:65px;
-    text-align:center;
+    display:flex;
+    justify-content:center;
+    align-items:center;
+    gap:14px;
+    margin-top:16px;
+    background:rgba(255,255,255,0.04);
+    border-radius:14px;
+    padding:12px;
   "
 >
 
-      <span>-</span>
+  <input
+    type="number"
+    id="ko_local_${partido.numero}"
+    class="prediction-input local-score"
+    placeholder="↑"
+    min="0"
+    max="20"
+    inputmode="numeric"
+    style="
+      width:70px;
+      border:2px solid #3b82f6;
+      background:#0f172a;
+      text-align:center;
+    "
+  >
 
-      <input
-  type="number"
-  id="ko_visit_${partido.numero}"
-  class="prediction-input visitor-score"
-  placeholder="0"
-  min="0"
-  max="20"
-  inputmode="numeric"
-  style="
-    width:65px;
-    text-align:center;
-  "
->
+  <span
+    style="
+      font-size:22px;
+      font-weight:800;
+      color:#facc15;
+    "
+  >
+    -
+  </span>
 
-    </div>
+  <input
+    type="number"
+    id="ko_visit_${partido.numero}"
+    class="prediction-input visitor-score"
+    placeholder="↓"
+    min="0"
+    max="20"
+    inputmode="numeric"
+    style="
+      width:70px;
+      border:2px solid #22c55e;
+      background:#0f172a;
+      text-align:center;
+    "
+  >
+
+</div>
 
     <!-- VISITANTE -->
 
@@ -2083,52 +2098,65 @@ async function generarDieciseisavos() {
 
     <!-- EMPATE -->
 
-    <div
-      style="
-        margin-top:16px;
-        font-size:13px;
-      "
+<div
+  style="
+    margin-top:16px;
+    font-size:13px;
+  "
+>
+
+  Si eliges empate, también debes elegir quién avanza:
+
+</div>
+
+<div
+  style="
+    font-size:12px;
+    opacity:0.7;
+    margin-top:6px;
+    line-height:1.4;
+  "
+>
+  ✔ Se valida el marcador en los 90 minutos<br>
+  ✔ Puedes ganar puntos por marcador exacto<br>
+  ✔ Y puntos extra por acertar el clasificado
+</div>
+
+<div
+  style="
+    display:flex;
+    justify-content:center;
+    gap:14px;
+    margin-top:10px;
+    flex-wrap:wrap;
+  "
+>
+
+  <label>
+
+    <input
+      type="radio"
+      name="oct_clasificado_${partido.numero}"
+      value="${partido.local}"
     >
 
-      Si empatan:
+    ${fifaCodes[partido.local] || partido.local}
 
-    </div>
+  </label>
 
-    <div
-      style="
-        display:flex;
-        justify-content:center;
-        gap:14px;
-        margin-top:10px;
-        flex-wrap:wrap;
-      "
+  <label>
+
+    <input
+      type="radio"
+      name="oct_clasificado_${partido.numero}"
+      value="${partido.visitante}"
     >
 
-      <label>
+    ${fifaCodes[partido.visitante] || partido.visitante}
 
-        <input
-          type="radio"
-          name="clasificado_${partido.numero}"
-          value="${partido.local}"
-        >
+  </label>
 
-        ${fifaCodes[partido.local] || partido.local || "Pendiente"}
-
-      </label>
-
-      <label>
-
-        <input
-          type="radio"
-          name="clasificado_${partido.numero}"
-          value="${partido.visitante}"
-        >
-
-        ${fifaCodes[partido.visitante] || partido.visitante || "Pendiente"}
-
-      </label>
-
-    </div>
+</div>
 
     <!-- BOTÓN -->
 
