@@ -1871,61 +1871,65 @@ RESPONSIVE ADMIN PARTICIPANTES
   }
 
   /* ===================================================== */
-/* SCROLL HORIZONTAL BRACKET */
-/* ===================================================== */
+  /* SCROLL HORIZONTAL BRACKET */
+  /* ===================================================== */
 
-.bracket-container {
+  .bracket-container {
 
-  overflow-x: auto;
+    overflow-x: auto;
 
-  padding-bottom: 12px;
+    padding-bottom: 12px;
 
-  margin-top: 20px;
+    margin-top: 20px;
+
+  }
+
+  /* GRID MÁS ANCHO */
+
+  .dieciseisavos-grid {
+
+    display:flex;
+
+    gap:16px;
+
+    width:max-content;
+
+    min-width:max-content;
+
+  }
+
+  /* CARDS */
+
+  .knockout-card {
+
+    min-width: 260px;
+
+  }
+
+  /* SCROLL BONITO */
+
+  .bracket-container::-webkit-scrollbar {
+
+    height: 10px;
+
+  }
+
+  .bracket-container::-webkit-scrollbar-thumb {
+
+    background: #facc15;
+
+    border-radius: 20px;
+
+  }
+
+  .bracket-container::-webkit-scrollbar-track {
+
+    background: rgba(255,255,255,0.08);
+
+  }
 
 }
 
-/* GRID MÁS ANCHO */
-.dieciseisavos-grid {
-
-  display:flex;
-
-  gap:16px;
-
-  width:max-content;
-
-  min-width:max-content;
-
-}
-
-/* CARDS */
-
-.knockout-card {
-
-  min-width: 260px;
-
-}
-
-/* SCROLL BONITO */
-
-.bracket-container::-webkit-scrollbar {
-
-  height: 10px;
-
-}
-
-.bracket-container::-webkit-scrollbar-thumb {
-
-  background: #facc15;
-
-  border-radius: 20px;
-
-}
-
-.bracket-container::-webkit-scrollbar-track {
-
-  background: rgba(255,255,255,0.08);
-
-}
 /* =====================================================
 LOCAL VS VISITANTE
 ===================================================== */
@@ -1961,6 +1965,7 @@ LOCAL VS VISITANTE
     1px solid rgba(34, 197, 94, 0.30);
 
 }
+
 /* =====================================================
 COLORES MARCADORES LOCAL / VISITANTE
 ===================================================== */
@@ -1988,7 +1993,5 @@ COLORES MARCADORES LOCAL / VISITANTE
     );
 
   border: 1px solid rgba(248, 113, 113, 0.4);
-
-}
 
 }
