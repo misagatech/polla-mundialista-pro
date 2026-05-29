@@ -2454,18 +2454,18 @@ async function generarOctavos() {
 
     <!-- LOCAL -->
 
-    <div class="knockout-team">
+<div class="prediction-side local-side">
 
-      <img
-        src="https://flagcdn.com/${obtenerCodigoPais(partido.local)}.svg"
-        width="24"
-      >
+  <img
+    src="https://flagcdn.com/${obtenerCodigoPais(partido.local)}.svg"
+    width="24"
+  >
 
-      <span>
-        ${fifaCodes[partido.local]}
-      </span>
+  <span>
+    ${fifaCodes[partido.local]}
+  </span>
 
-    </div>
+</div>
 
     <!-- INPUTS -->
 
@@ -2485,7 +2485,7 @@ async function generarOctavos() {
       <input
   type="number"
   id="oct_local_${partido.numero}"
-  class="prediction-input"
+  class="prediction-input local-score"
   placeholder="↑"
   min="0"
   style="
@@ -2508,7 +2508,7 @@ async function generarOctavos() {
       <input
   type="number"
   id="oct_visit_${partido.numero}"
-  class="prediction-input"
+  class="prediction-input visitor-score"
   placeholder="↓"
   min="0"
   style="
@@ -2522,22 +2522,23 @@ async function generarOctavos() {
 
     <!-- VISITANTE -->
 
-    <div
-      class="knockout-team"
-      style="margin-top:14px;"
-    >
+<div
+  class="prediction-side visit-side"
+  style="margin-top:14px;"
+>
 
-      <img
-        src="https://flagcdn.com/${obtenerCodigoPais(partido.visitante)}.svg"
-        width="24"
-      >
+  <img
+    src="https://flagcdn.com/${obtenerCodigoPais(partido.visitante)}.svg"
+    width="24"
+  >
 
-      <span>
-        ${fifaCodes[partido.visitante]}
-      </span>
+  <span>
+    ${fifaCodes[partido.visitante]}
+  </span>
 
-    </div>
+</div>
 
+    
     <!-- EMPATE -->
 
     <div
@@ -2773,10 +2774,10 @@ function generarSkeletonBracket() {
     document.getElementById(
       "finalContainer"
     );
-    const thirdPlaceContainer =
-  document.getElementById(
-    "thirdPlaceContainer"
-  );
+  const thirdPlaceContainer =
+    document.getElementById(
+      "thirdPlaceContainer"
+    );
 
   // =====================================
   // CUARTOS
@@ -2835,12 +2836,12 @@ function generarSkeletonBracket() {
   }
 
   // =====================================
-// FINAL
-// =====================================
+  // FINAL
+  // =====================================
 
-if (finalContainer) {
+  if (finalContainer) {
 
-  finalContainer.innerHTML = `
+    finalContainer.innerHTML = `
 
     <div class="tabla-grupo-card">
 
@@ -2858,15 +2859,15 @@ if (finalContainer) {
 
   `;
 
-}
+  }
 
-// =====================================
-// TERCER PUESTO
-// =====================================
+  // =====================================
+  // TERCER PUESTO
+  // =====================================
 
-if (thirdPlaceContainer) {
+  if (thirdPlaceContainer) {
 
-  thirdPlaceContainer.innerHTML = `
+    thirdPlaceContainer.innerHTML = `
 
     <div class="tabla-grupo-card">
 
