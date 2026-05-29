@@ -2481,13 +2481,13 @@ async function generarOctavos() {
 <div class="prediction-side local-side">
 
  ${fifaCodes[partido.local]
-  ? `
+        ? `
     <img
       src="https://flagcdn.com/${obtenerCodigoPais(partido.local)}.svg"
       width="24"
     >
   `
-  : `
+        : `
     <div
       style="
         width:24px;
@@ -2503,7 +2503,7 @@ async function generarOctavos() {
       ?
     </div>
   `
-}
+      }
 
   <span>
     ${fifaCodes[partido.local] || partido.local}
@@ -2572,13 +2572,13 @@ async function generarOctavos() {
 >
 
  ${fifaCodes[partido.visitante]
-  ? `
+        ? `
     <img
       src="https://flagcdn.com/${obtenerCodigoPais(partido.visitante)}.svg"
       width="24"
     >
   `
-  : `
+        : `
     <div
       style="
         width:24px;
@@ -2594,7 +2594,7 @@ async function generarOctavos() {
       ?
     </div>
   `
-}
+      }
 
   <span>
     ${fifaCodes[partido.visitante] || partido.visitante}
@@ -2612,7 +2612,7 @@ async function generarOctavos() {
       "
     >
 
-      Si empatan:
+      Si eliges empate, selecciona el clasificado:
 
     </div>
 
@@ -2628,27 +2628,27 @@ async function generarOctavos() {
 
       <label>
 
-        <input
-          type="radio"
-          name="oct_clasificado_${partido.numero}"
-          value="${partido.local}"
-        >
+  <input
+    type="radio"
+    name="oct_clasificado_${partido.numero}"
+    value="${partido.local}"
+  >
 
-        ${fifaCodes[partido.local]}
+  ${fifaCodes[partido.local] || partido.local}
 
-      </label>
+</label>
 
       <label>
 
-        <input
-          type="radio"
-          name="oct_clasificado_${partido.numero}"
-          value="${partido.visitante}"
-        >
+  <input
+    type="radio"
+    name="oct_clasificado_${partido.numero}"
+    value="${partido.visitante}"
+  >
 
-        ${fifaCodes[partido.visitante]}
+  ${fifaCodes[partido.visitante] || partido.visitante}
 
-      </label>
+</label>
 
     </div>
 
