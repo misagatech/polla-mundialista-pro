@@ -2365,6 +2365,7 @@ window.saveKnockoutPrediction = async (
       "✅ Predicción guardada"
     );
     generarOctavos();
+    generarCuartos();
     generarSkeletonBracket();
 
   }
