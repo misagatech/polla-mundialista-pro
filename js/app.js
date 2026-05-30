@@ -2255,7 +2255,6 @@ async function generarDieciseisavos() {
   html += `</div></div>`;
   container.innerHTML = html;
 }
-}
 // ======================================================
 // GUARDAR PREDICCIÓN ELIMINATORIAS
 // ======================================================
@@ -2467,7 +2466,7 @@ async function generarOctavos() {
     }
   });
 
-  // 2. Partidos de octavos (según tu bracket)
+  // 2. Partidos de octavos
   const partidos = [
     { numero: 89, local: clasificados[74] || "Ganador 74", visitante: clasificados[77] || "Ganador 77" },
     { numero: 90, local: clasificados[73] || "Ganador 73", visitante: clasificados[75] || "Ganador 75" },
@@ -2492,6 +2491,12 @@ async function generarOctavos() {
   let html = `<div class="tabla-grupo-card"><h3 class="tabla-title">Octavos de Final</h3><div class="dieciseisavos-grid">`;
 
   for (const partido of partidos) {
+    // Obtener hora del partido desde la función de fechas
+    const horaPartido = obtenerHoraPartidoKnockout(partido.numero);
+    const cierreApuestas = new Date(horaPartido.getTime() - 60 * 60 * 1000);
+    const isClosed = new Date() >= cierreApuestas;
+    const disabled = isClosed; // Si el partido ya empezó, también deberías bloquear, pero aquí solo usamos cierre
+
     const pred = predicciones[partido.numero] || {};
     const predLocal = pred.pred_local ?? "";
     const predVisit = pred.pred_visitante ?? "";
@@ -2501,36 +2506,38 @@ async function generarOctavos() {
       <div class="knockout-card" data-partido-octavos="${partido.numero}" data-local="${partido.local}" data-visitante="${partido.visitante}">
         <div class="knockout-match-number">Partido ${partido.numero}</div>
         <div class="prediction-side local-side">
-          ${fifaCodes[partido.local] ? `<img src="https://flagcdn.com/${obtenerCodigoPais(partido.local)}.svg" width="24">` : '<div style="width:24px;"></div>'}
+          ${fifaCodes[partido.local] ? `<img src="https://flagcdn.com/${obtenerCodigoPais(partido.local)}.svg" width="24">` : '<div style="width:24px; height:24px; background:#1e293b; border-radius:50%;"></div>'}
           <span>${fifaCodes[partido.local] || partido.local}</span>
         </div>
         <div style="display:flex; justify-content:center; gap:14px; margin-top:16px; background:rgba(255,255,255,0.04); border-radius:14px; padding:12px;">
-          <input type="number" id="oct_local_${partido.numero}" class="prediction-input local-score" value="${predLocal}" placeholder="↑" min="0" style="width:70px; border:2px solid #3b82f6;">
+          <input type="number" id="oct_local_${partido.numero}" class="prediction-input local-score" value="${predLocal}" placeholder="↑" min="0" style="width:70px; border:2px solid #3b82f6;" ${disabled ? "disabled" : ""}>
           <span style="font-size:22px; font-weight:800; color:#facc15;">-</span>
-          <input type="number" id="oct_visit_${partido.numero}" class="prediction-input visitor-score" value="${predVisit}" placeholder="↓" min="0" style="width:70px; border:2px solid #22c55e;">
+          <input type="number" id="oct_visit_${partido.numero}" class="prediction-input visitor-score" value="${predVisit}" placeholder="↓" min="0" style="width:70px; border:2px solid #22c55e;" ${disabled ? "disabled" : ""}>
         </div>
         <div class="prediction-side visit-side" style="margin-top:14px;">
-          ${fifaCodes[partido.visitante] ? `<img src="https://flagcdn.com/${obtenerCodigoPais(partido.visitante)}.svg" width="24">` : '<div style="width:24px;"></div>'}
+          ${fifaCodes[partido.visitante] ? `<img src="https://flagcdn.com/${obtenerCodigoPais(partido.visitante)}.svg" width="24">` : '<div style="width:24px; height:24px; background:#1e293b; border-radius:50%;"></div>'}
           <span>${fifaCodes[partido.visitante] || partido.visitante}</span>
         </div>
         <div style="margin-top:16px; font-size:13px;">Si eliges empate, también debes elegir quién avanza:</div>
-<div style="font-size:12px; opacity:0.7; margin-top:6px; line-height:1.4;">
-  ✔ Se valida el marcador en los 90 minutos<br>
-  ✔ Puedes ganar puntos por marcador exacto<br>
-  ✔ Y puntos extra por acertar el clasificado
-</div>
-<div style="display:flex; justify-content:center; gap:14px; margin-top:10px; flex-wrap:wrap;">
-  <label><input type="radio" name="oct_clasificado_${partido.numero}" value="${partido.local}" ${clasifGuardado === partido.local ? 'checked' : ''}> ${fifaCodes[partido.local] || partido.local}</label>
-  <label><input type="radio" name="oct_clasificado_${partido.numero}" value="${partido.visitante}" ${clasifGuardado === partido.visitante ? 'checked' : ''}> ${fifaCodes[partido.visitante] || partido.visitante}</label>
-</div>
-        <button class="btn-guardar" onclick="window.saveOctavosPrediction('${partido.numero}')">Guardar</button>
+        <div style="font-size:12px; opacity:0.7; margin-top:6px; line-height:1.4;">
+          ✔ Se valida el marcador en los 90 minutos<br>
+          ✔ Puedes ganar puntos por marcador exacto<br>
+          ✔ Y puntos extra por acertar el clasificado
+        </div>
+        <div style="display:flex; justify-content:center; gap:14px; margin-top:10px; flex-wrap:wrap;">
+          <label><input type="radio" name="oct_clasificado_${partido.numero}" value="${partido.local}" ${clasifGuardado === partido.local ? 'checked' : ''} ${disabled ? "disabled" : ""}> ${fifaCodes[partido.local] || partido.local}</label>
+          <label><input type="radio" name="oct_clasificado_${partido.numero}" value="${partido.visitante}" ${clasifGuardado === partido.visitante ? 'checked' : ''} ${disabled ? "disabled" : ""}> ${fifaCodes[partido.visitante] || partido.visitante}</label>
+        </div>
+        <div class="match-timer" data-cierre="${cierreApuestas.toISOString()}" style="margin-top:12px; text-align:center; font-size:13px; background:#00000040; padding:6px; border-radius:20px;">
+          ⏰ Resultados se bloquean en: ${formatearTiempoRestante(cierreApuestas)}
+        </div>
+        <button class="btn-guardar" style="margin-top:18px;" onclick="window.saveOctavosPrediction('${partido.numero}')" ${disabled ? "disabled" : ""}>Guardar</button>
       </div>
     `;
   }
   html += `</div></div>`;
   container.innerHTML = html;
 }
-
  // ======================================================
 // GENERAR CUARTOS AUTOMÁTICOS
 // ======================================================
