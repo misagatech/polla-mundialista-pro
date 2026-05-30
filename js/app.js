@@ -273,9 +273,7 @@ function mostrarTodosLosGrupos() {
       </button>
     `;
   });
-  gruposCarousel.innerHTML = tabsHTML;
-  console.log("Temporizador grupo:", cierreApuestas.toISOString(), formatearTiempoRestante(cierreApuestas));
-
+  
   // Mostrar solo el grupo activo
   let html = "";
   const partidosGrupo = gruposData[grupoActivo] || [];
