@@ -375,7 +375,7 @@ ${!disabled ? `
     🔒 ${isStarted ? "Partido iniciado" : "Apuestas cerradas"}
   </button>
 `}
-      <div class="match-timer" data-cierre="${cierreApuestas.toISOString()}" style="margin-top:8px; text-align:center; font-size:13px; background: rgba(0,0,0,0.7); color: #facc15; padding:6px; border-radius:20px;">
+      <div class="match-timer" data-cierre="${cierreApuestas.toISOString()}" style="margin-top:8px; text-align:center; font-size:13px; background: rgba(0,0,0,0.7); color: #facc15; padding:6px; border-radius:20px; white-space: normal; word-break: break-word;">
   ⏰ Resultados se bloquean en: <span class="timer-value">${formatearTiempoRestante(cierreApuestas)}</span>
 </div>
         <div class="match-date">📅 ${fechaLocal}</div>
