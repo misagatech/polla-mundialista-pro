@@ -342,9 +342,9 @@ ${!disabled ? `
     🔒 ${isStarted ? "Partido iniciado" : "Apuestas cerradas"}
   </button>
 `}
-        <div class="match-timer" id="${timerId}" data-cierre="${cierreApuestas.toISOString()}">
-          ${formatearTiempoRestante(cierreApuestas)}
-        </div>
+        <div class="match-timer" id="${timerId}" data-cierre="${cierreApuestas.toISOString()}" style="margin-top:8px; text-align:center; font-size:13px; background:#00000040; padding:6px; border-radius:20px;">
+  ⏰ Resultados se bloquean en: ${formatearTiempoRestante(cierreApuestas)}
+</div>
         <div class="match-date">📅 ${fechaLocal}</div>
       </div>
     `;
@@ -2245,9 +2245,9 @@ async function generarDieciseisavos() {
           <label><input type="radio" name="clasificado_${partido.numero}" value="${partido.local}" ${clasificadoGuardado === partido.local ? 'checked' : ''} ${disabled ? "disabled" : ""}> ${fifaCodes[partido.local] || partido.local}</label>
           <label><input type="radio" name="clasificado_${partido.numero}" value="${partido.visitante}" ${clasificadoGuardado === partido.visitante ? 'checked' : ''} ${disabled ? "disabled" : ""}> ${fifaCodes[partido.visitante] || partido.visitante}</label>
         </div>
-        <div class="match-timer" data-cierre="${cierreApuestas.toISOString()}" style="margin-top:12px; text-align:center; font-size:13px; background:#00000040; padding:6px; border-radius:20px;">
-          ⏰ Resultados se bloquean en: ${formatearTiempoRestante(cierreApuestas)}
-        </div>
+        <div class="match-timer" id="${timerId}" data-cierre="${cierreApuestas.toISOString()}" style="margin-top:8px; text-align:center; font-size:13px; background:#00000040; padding:6px; border-radius:20px;">
+  ⏰ Resultados se bloquean en: ${formatearTiempoRestante(cierreApuestas)}
+</div>
         <button class="btn-guardar" style="margin-top:18px;" onclick="window.saveKnockoutPrediction('${partido.numero}')" ${disabled ? "disabled" : ""}>Guardar</button>
       </div>
     `;
@@ -2528,9 +2528,9 @@ async function generarOctavos() {
           <label><input type="radio" name="oct_clasificado_${partido.numero}" value="${partido.local}" ${clasifGuardado === partido.local ? 'checked' : ''} ${disabled ? "disabled" : ""}> ${fifaCodes[partido.local] || partido.local}</label>
           <label><input type="radio" name="oct_clasificado_${partido.numero}" value="${partido.visitante}" ${clasifGuardado === partido.visitante ? 'checked' : ''} ${disabled ? "disabled" : ""}> ${fifaCodes[partido.visitante] || partido.visitante}</label>
         </div>
-        <div class="match-timer" data-cierre="${cierreApuestas.toISOString()}" style="margin-top:12px; text-align:center; font-size:13px; background:#00000040; padding:6px; border-radius:20px;">
-          ⏰ Resultados se bloquean en: ${formatearTiempoRestante(cierreApuestas)}
-        </div>
+        <div class="match-timer" id="${timerId}" data-cierre="${cierreApuestas.toISOString()}" style="margin-top:8px; text-align:center; font-size:13px; background:#00000040; padding:6px; border-radius:20px;">
+  ⏰ Resultados se bloquean en: ${formatearTiempoRestante(cierreApuestas)}
+</div>
         <button class="btn-guardar" style="margin-top:18px;" onclick="window.saveOctavosPrediction('${partido.numero}')" ${disabled ? "disabled" : ""}>Guardar</button>
       </div>
     `;
