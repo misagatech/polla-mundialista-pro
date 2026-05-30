@@ -97,64 +97,80 @@ let adminGrupoActivo = "A";
 // ======================================================
 // BANDERAS (códigos de país para flagcdn)
 // ======================================================
-function obtenerCodigoPais(nombre) {
-  const paises = {
-    "México": "mx", "Sudáfrica": "za", "Corea del Sur": "kr", "República Checa": "cz",
-    "Canadá": "ca", "Bosnia y Herzegovina": "ba", "Qatar": "qa", "Suiza": "ch",
-    "Brasil": "br", "Marruecos": "ma", "Haití": "ht", "Escocia": "gb-sct",
-    "Estados Unidos": "us", "Paraguay": "py", "Australia": "au", "Turquía": "tr",
-    "Alemania": "de", "Curazao": "cw", "Costa de Marfil": "ci", "Ecuador": "ec",
-    "Países Bajos": "nl", "Japón": "jp", "Suecia": "se", "Túnez": "tn",
-    "Bélgica": "be", "Egipto": "eg", "Irán": "ir", "Nueva Zelanda": "nz",
-    "España": "es", "Cabo Verde": "cv", "Arabia Saudita": "sa", "Uruguay": "uy",
-    "Francia": "fr", "Senegal": "sn", "Noruega": "no", "Irak": "iq",
-    "Argentina": "ar", "Argelia": "dz", "Austria": "at", "Jordania": "jo",
-    "Portugal": "pt", "RD Congo": "cd", "Uzbekistán": "uz", "Colombia": "co",
-    "Inglaterra": "gb-eng", "Croacia": "hr", "Panamá": "pa", "Ghana": "gh"
-  };
-  return paises[nombre] || "un";
-}
-// ======================================================
-// FECHAS Y HORAS DE PARTIDOS DE ELIMINATORIAS (hora Colombia UTC-5)
-// ======================================================
 function obtenerHoraPartidoKnockout(numeroPartido) {
-  // Todas las horas son 15:00 (3:00 PM) hora Colombia (UTC-5)
-  // Ajusta si algún partido tiene horario diferente
-  const horaLocal = "15:00:00"; // puedes cambiar partido por partido si es necesario
-
+  // Fechas (YYYY-MM-DD)
   const fechas = {
-    // Dieciseisavos (73 al 88)
+    // Dieciseisavos
     73: "2026-06-28", 74: "2026-06-29", 75: "2026-06-29", 76: "2026-06-29",
     77: "2026-06-30", 78: "2026-06-30", 79: "2026-06-30",
     80: "2026-07-01", 81: "2026-07-01", 82: "2026-07-01",
     83: "2026-07-02", 84: "2026-07-02", 85: "2026-07-02",
     86: "2026-07-03", 87: "2026-07-03", 88: "2026-07-03",
-    // Octavos (89 al 96)
+    // Octavos
     89: "2026-07-04", 90: "2026-07-04",
     91: "2026-07-05", 92: "2026-07-05",
     93: "2026-07-06", 94: "2026-07-06",
     95: "2026-07-07", 96: "2026-07-07",
-    // Cuartos (97 al 100)
+    // Cuartos
     97: "2026-07-09", 98: "2026-07-10", 99: "2026-07-11", 100: "2026-07-11",
-    // Semifinales (101,102)
+    // Semifinales
     101: "2026-07-14", 102: "2026-07-15",
-    // Tercer puesto (104) y Final (103)
-    103: "2026-07-19", 104: "2026-07-18"
+    // Tercer puesto y final
+    103: "2026-07-18", 104: "2026-07-19"
+  };
+
+  // Horarios en hora Colombia (UTC-5) en formato "HH:MM:SS"
+  const horarios = {
+    // Dieciseisavos
+    73: "14:00:00",  // Domingo 28/6, 14:00 COL
+    74: "15:30:00",  // Lunes 29/6, 15:30 COL
+    75: "20:00:00",  // Lunes 29/6, 20:00 COL
+    76: "12:00:00",  // Lunes 29/6, 12:00 COL (según tu tabla, partido 76 a las 12:00 COL)
+    77: "16:00:00",  // Martes 30/6, 16:00 COL
+    78: "12:00:00",  // Martes 30/6, 12:00 COL
+    79: "20:00:00",  // Martes 30/6, 20:00 COL
+    80: "11:00:00",  // Miércoles 1/7, 11:00 COL
+    81: "19:00:00",  // Miércoles 1/7, 19:00 COL
+    82: "15:00:00",  // Miércoles 1/7, 15:00 COL
+    83: "18:00:00",  // Jueves 2/7, 18:00 COL
+    84: "14:00:00",  // Jueves 2/7, 14:00 COL
+    85: "22:00:00",  // Jueves 2/7, 22:00 COL
+    86: "17:00:00",  // Viernes 3/7, 17:00 COL
+    87: "20:30:00",  // Viernes 3/7, 20:30 COL
+    88: "13:00:00",  // Viernes 3/7, 13:00 COL
+    // Octavos
+    89: "16:00:00",  // Sábado 4/7, 16:00 COL
+    90: "12:00:00",  // Sábado 4/7, 12:00 COL
+    91: "15:00:00",  // Domingo 5/7, 15:00 COL
+    92: "19:00:00",  // Domingo 5/7, 19:00 COL
+    93: "14:00:00",  // Lunes 6/7, 14:00 COL
+    94: "19:00:00",  // Lunes 6/7, 19:00 COL
+    95: "11:00:00",  // Martes 7/7, 11:00 COL
+    96: "15:00:00",  // Martes 7/7, 15:00 COL
+    // Cuartos
+    97: "15:00:00",  // Jueves 9/7, 15:00 COL
+    98: "14:00:00",  // Viernes 10/7, 14:00 COL
+    99: "16:00:00",  // Sábado 11/7, 16:00 COL
+    100: "20:00:00", // Sábado 11/7, 20:00 COL
+    // Semifinales
+    101: "14:00:00", // Martes 14/7, 14:00 COL
+    102: "14:00:00", // Miércoles 15/7, 14:00 COL
+    // Tercer puesto
+    103: "16:00:00", // Sábado 18/7, 16:00 COL (tercer puesto)
+    // Final
+    104: "14:00:00"  // Domingo 19/7, 14:00 COL (final)
   };
 
   const fechaStr = fechas[numeroPartido];
-  if (!fechaStr) return new Date(); // fallback: ahora
+  const horaStr = horarios[numeroPartido] || "12:00:00"; // fallback
+  if (!fechaStr) return new Date();
 
-  // Crear fecha en UTC pero interpretando la hora local como Colombia (UTC-5)
-  // Para que al mostrar en Colombia no se desplace
-  const fechaLocal = new Date(`${fechaStr}T${horaLocal}`);
-  // Firestore espera UTC, pero nosotros usaremos este objeto Date para comparar con new Date() que es UTC
-  // Como la fecha está en UTC pero representa la hora local, necesitamos ajustarla a UTC real
-  // Lo más sencillo: restar 5 horas (porque la hora local en Colombia es UTC-5)
-  const fechaUTC = new Date(fechaLocal.getTime() + (5 * 60 * 60 * 1000));
+  // Crear fecha local en Colombia (UTC-5) a partir de fecha y hora
+  const fechaLocal = new Date(`${fechaStr}T${horaStr}`);
+  // Convertir a UTC restando 5 horas (porque Colombia está 5 horas detrás de UTC)
+  const fechaUTC = new Date(fechaLocal.getTime() + 5 * 60 * 60 * 1000);
   return fechaUTC;
 }
-
 // ======================================================
 // CÓDIGOS FIFA (3 letras)
 // ======================================================
@@ -258,6 +274,7 @@ function mostrarTodosLosGrupos() {
     `;
   });
   gruposCarousel.innerHTML = tabsHTML;
+  console.log("Temporizador grupo:", cierreApuestas.toISOString(), formatearTiempoRestante(cierreApuestas));
 
   // Mostrar solo el grupo activo
   let html = "";
@@ -293,15 +310,15 @@ function mostrarTodosLosGrupos() {
     html += `
       <div class="match-card">
         <div class="match-teams">
-          <div class="team-row">
-            <img class="flag-icon" src="https://flagcdn.com/${obtenerCodigoPais(match.equipo_local)}.svg">
-            <span>${match.equipo_local}</span>
-          </div>
-          <div class="vs-text">VS</div>
-          <div class="team-row">
-            <img class="flag-icon" src="https://flagcdn.com/${obtenerCodigoPais(match.equipo_visitante)}.svg">
-            <span>${match.equipo_visitante}</span>
-          </div>
+         <div class="team-row">
+  <img class="flag-icon" src="https://flagcdn.com/${obtenerCodigoPais(match.equipo_local)}.svg">
+  <span>${fifaCodes[match.equipo_local] || match.equipo_local}</span>
+</div>
+...
+<div class="team-row">
+  <img class="flag-icon" src="https://flagcdn.com/${obtenerCodigoPais(match.equipo_visitante)}.svg">
+  <span>${fifaCodes[match.equipo_visitante] || match.equipo_visitante}</span>
+</div>
         </div>
         <div class="prediction-area">
 
@@ -342,8 +359,8 @@ ${!disabled ? `
     🔒 ${isStarted ? "Partido iniciado" : "Apuestas cerradas"}
   </button>
 `}
-      <div class="match-timer" data-cierre="${cierreApuestas.toISOString()}" style="margin-top:8px; text-align:center; font-size:13px; background:#00000040; color: white; padding:6px; border-radius:20px;">
-  ⏰ Resultados se bloquean en: ${formatearTiempoRestante(cierreApuestas)}
+      <div class="match-timer" data-cierre="${cierreApuestas.toISOString()}" style="margin-top:8px; text-align:center; font-size:13px; background: rgba(0,0,0,0.7); color: #facc15; padding:6px; border-radius:20px;">
+  ⏰ Resultados se bloquean en: <span class="timer-value">${formatearTiempoRestante(cierreApuestas)}</span>
 </div>
         <div class="match-date">📅 ${fechaLocal}</div>
       </div>
