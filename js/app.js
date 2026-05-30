@@ -308,16 +308,16 @@ function mostrarTodosLosGrupos() {
     html += `
       <div class="match-card">
         <div class="match-teams">
-         <div class="team-row">
-  <img class="flag-icon" src="https://flagcdn.com/${obtenerCodigoPais(match.equipo_local)}.svg">
-  <span>${fifaCodes[match.equipo_local] || match.equipo_local}</span>
+  <div class="team-row">
+    <img class="flag-icon" src="https://flagcdn.com/${obtenerCodigoPais(match.equipo_local)}.svg">
+    <span>${fifaCodes[match.equipo_local] || match.equipo_local}</span>
+  </div>
+  <div class="vs-text">VS</div>
+  <div class="team-row">
+    <img class="flag-icon" src="https://flagcdn.com/${obtenerCodigoPais(match.equipo_visitante)}.svg">
+    <span>${fifaCodes[match.equipo_visitante] || match.equipo_visitante}</span>
+  </div>
 </div>
-...
-<div class="team-row">
-  <img class="flag-icon" src="https://flagcdn.com/${obtenerCodigoPais(match.equipo_visitante)}.svg">
-  <span>${fifaCodes[match.equipo_visitante] || match.equipo_visitante}</span>
-</div>
-        </div>
         <div class="prediction-area">
 
   <input
