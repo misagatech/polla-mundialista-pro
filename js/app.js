@@ -97,6 +97,24 @@ let adminGrupoActivo = "A";
 // ======================================================
 // BANDERAS (códigos de país para flagcdn)
 // ======================================================
+function obtenerCodigoPais(nombre) {
+  const paises = {
+    "México": "mx", "Sudáfrica": "za", "Corea del Sur": "kr", "República Checa": "cz",
+    "Canadá": "ca", "Bosnia y Herzegovina": "ba", "Qatar": "qa", "Suiza": "ch",
+    "Brasil": "br", "Marruecos": "ma", "Haití": "ht", "Escocia": "gb-sct",
+    "Estados Unidos": "us", "Paraguay": "py", "Australia": "au", "Turquía": "tr",
+    "Alemania": "de", "Curazao": "cw", "Costa de Marfil": "ci", "Ecuador": "ec",
+    "Países Bajos": "nl", "Japón": "jp", "Suecia": "se", "Túnez": "tn",
+    "Bélgica": "be", "Egipto": "eg", "Irán": "ir", "Nueva Zelanda": "nz",
+    "España": "es", "Cabo Verde": "cv", "Arabia Saudita": "sa", "Uruguay": "uy",
+    "Francia": "fr", "Senegal": "sn", "Noruega": "no", "Irak": "iq",
+    "Argentina": "ar", "Argelia": "dz", "Austria": "at", "Jordania": "jo",
+    "Portugal": "pt", "RD Congo": "cd", "Uzbekistán": "uz", "Colombia": "co",
+    "Inglaterra": "gb-eng", "Croacia": "hr", "Panamá": "pa", "Ghana": "gh"
+  };
+  return paises[nombre] || "un";
+}
+
 function obtenerHoraPartidoKnockout(numeroPartido) {
   // Fechas (YYYY-MM-DD)
   const fechas = {
