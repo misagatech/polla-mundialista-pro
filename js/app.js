@@ -134,6 +134,48 @@ const fifaCodes = {
 };
 
 // ======================================================
+// ZONA HORARIA COLOMBIA (UTC-5)
+// ======================================================
+function ajustarHoraColombia(fechaUTC) {
+  // fechaUTC es un objeto Date (ya convertido desde Firestore)
+  // Retorna un Date con la misma hora pero en zona horaria Colombia
+  return new Date(fechaUTC.toLocaleString("en-US", { timeZone: "America/Bogota" }));
+}
+
+// ======================================================
+// CALCULAR TIEMPO RESTANTE PARA CIERRE DE APUESTAS
+// ======================================================
+function formatearTiempoRestante(fechaCierre) {
+  const ahora = new Date();
+  const diff = fechaCierre - ahora; // milisegundos
+  if (diff <= 0) return "🔒 Cerrado";
+  const horas = Math.floor(diff / (1000 * 60 * 60));
+  const minutos = Math.floor((diff % (3600000)) / 60000);
+  const segundos = Math.floor((diff % 60000) / 1000);
+  return `⏳ ${horas}h ${minutos}m ${segundos}s`;
+}
+
+// ======================================================
+// ACTUALIZAR TODOS LOS TEMPORIZADORES EN LA PÁGINA
+// ======================================================
+function actualizarTodosLosTimers() {
+  document.querySelectorAll('[data-cierre]').forEach(el => {
+    const cierre = new Date(el.dataset.cierre);
+    el.innerText = formatearTiempoRestante(cierre);
+    // Si el tiempo expiró y el botón no está deshabilitado, deshabilitamos inputs y botón
+    if (cierre <= new Date()) {
+      const card = el.closest('.knockout-card, .match-card');
+      if (card) {
+        const inputs = card.querySelectorAll('input.prediction-input');
+        const buttons = card.querySelectorAll('.btn-guardar');
+        inputs.forEach(inp => inp.disabled = true);
+        buttons.forEach(btn => btn.disabled = true);
+        if (el.innerText !== "🔒 Cerrado") el.innerText = "🔒 Cerrado";
+      }
+    }
+  });
+}
+// ======================================================
 // UTILIDADES
 // ======================================================
 function esFaseGrupos(match) {
@@ -195,6 +237,11 @@ function mostrarTodosLosGrupos() {
     const isStarted = now >= start;
     const hasPrediction = !!match.userPred;
     const fechaLocal = match.hora_partido.toDate().toLocaleString("es-CO", { timeZone: "America/Bogota" });
+    // Cierre de apuestas: 1 hora antes del partido
+    const cierreApuestas = new Date(start.getTime() - 60 * 60 * 1000);
+    const timerId = `timer_${matchId}`;
+    const isClosed = new Date() >= cierreApuestas;
+    const disabled = isStarted || isClosed;
 
     html += `
       <div class="match-card">
@@ -217,7 +264,7 @@ function mostrarTodosLosGrupos() {
     value="${predLocal}"
     placeholder="0"
     class="prediction-input"
-    ${isStarted ? "disabled" : ""}
+    ${disabled ? "disabled" : ""}
   >
 
   <span class="score-separator">-</span>
@@ -228,31 +275,29 @@ function mostrarTodosLosGrupos() {
     value="${predVisit}"
     placeholder="0"
     class="prediction-input"
-    ${isStarted ? "disabled" : ""}
+    ${disabled ? "disabled" : ""}
   >
 
 </div>
 
-${!isStarted ? `
-
+${!disabled ? `
   <button
     class="btn-guardar"
     onclick="window.savePrediction('${matchId}')"
   >
     ${hasPrediction ? "Actualizar" : "Guardar"}
   </button>
-
 ` : `
-
   <button
     class="btn-guardar"
     disabled
   >
-    🔒 Partido iniciado
+    🔒 ${isStarted ? "Partido iniciado" : "Apuestas cerradas"}
   </button>
-
 `}
-        
+        <div class="match-timer" id="${timerId}" data-cierre="${cierreApuestas.toISOString()}">
+          ${formatearTiempoRestante(cierreApuestas)}
+        </div>
         <div class="match-date">📅 ${fechaLocal}</div>
       </div>
     `;
@@ -3309,6 +3354,12 @@ onAuthStateChanged(auth, async (user) => {
       adminPanel.classList.add("hidden");
     }
     loadMatchesAndPredictions();
+     // ======================================================
+    // INICIAR TEMPORIZADORES GLOBALES (UNA SOLA VEZ)
+    // ======================================================
+    if (!window.timerInterval) {
+      window.timerInterval = setInterval(actualizarTodosLosTimers, 1000);
+    }
     loadRanking();
     loadPrizePoolRealtime();
     await generarOctavos();
