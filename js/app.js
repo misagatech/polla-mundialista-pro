@@ -114,6 +114,46 @@ function obtenerCodigoPais(nombre) {
   };
   return paises[nombre] || "un";
 }
+// ======================================================
+// FECHAS Y HORAS DE PARTIDOS DE ELIMINATORIAS (hora Colombia UTC-5)
+// ======================================================
+function obtenerHoraPartidoKnockout(numeroPartido) {
+  // Todas las horas son 15:00 (3:00 PM) hora Colombia (UTC-5)
+  // Ajusta si algún partido tiene horario diferente
+  const horaLocal = "15:00:00"; // puedes cambiar partido por partido si es necesario
+
+  const fechas = {
+    // Dieciseisavos (73 al 88)
+    73: "2026-06-28", 74: "2026-06-29", 75: "2026-06-29", 76: "2026-06-29",
+    77: "2026-06-30", 78: "2026-06-30", 79: "2026-06-30",
+    80: "2026-07-01", 81: "2026-07-01", 82: "2026-07-01",
+    83: "2026-07-02", 84: "2026-07-02", 85: "2026-07-02",
+    86: "2026-07-03", 87: "2026-07-03", 88: "2026-07-03",
+    // Octavos (89 al 96)
+    89: "2026-07-04", 90: "2026-07-04",
+    91: "2026-07-05", 92: "2026-07-05",
+    93: "2026-07-06", 94: "2026-07-06",
+    95: "2026-07-07", 96: "2026-07-07",
+    // Cuartos (97 al 100)
+    97: "2026-07-09", 98: "2026-07-10", 99: "2026-07-11", 100: "2026-07-11",
+    // Semifinales (101,102)
+    101: "2026-07-14", 102: "2026-07-15",
+    // Tercer puesto (104) y Final (103)
+    103: "2026-07-19", 104: "2026-07-18"
+  };
+
+  const fechaStr = fechas[numeroPartido];
+  if (!fechaStr) return new Date(); // fallback: ahora
+
+  // Crear fecha en UTC pero interpretando la hora local como Colombia (UTC-5)
+  // Para que al mostrar en Colombia no se desplace
+  const fechaLocal = new Date(`${fechaStr}T${horaLocal}`);
+  // Firestore espera UTC, pero nosotros usaremos este objeto Date para comparar con new Date() que es UTC
+  // Como la fecha está en UTC pero representa la hora local, necesitamos ajustarla a UTC real
+  // Lo más sencillo: restar 5 horas (porque la hora local en Colombia es UTC-5)
+  const fechaUTC = new Date(fechaLocal.getTime() + (5 * 60 * 60 * 1000));
+  return fechaUTC;
+}
 
 // ======================================================
 // CÓDIGOS FIFA (3 letras)
@@ -149,10 +189,17 @@ function formatearTiempoRestante(fechaCierre) {
   const ahora = new Date();
   const diff = fechaCierre - ahora; // milisegundos
   if (diff <= 0) return "🔒 Cerrado";
-  const horas = Math.floor(diff / (1000 * 60 * 60));
-  const minutos = Math.floor((diff % (3600000)) / 60000);
-  const segundos = Math.floor((diff % 60000) / 1000);
-  return `⏳ ${horas}h ${minutos}m ${segundos}s`;
+  const segundosTotales = Math.floor(diff / 1000);
+  const dias = Math.floor(segundosTotales / 86400);
+  const horas = Math.floor((segundosTotales % 86400) / 3600);
+  const minutos = Math.floor((segundosTotales % 3600) / 60);
+  const segundos = segundosTotales % 60;
+
+  let resultado = "";
+  if (dias > 0) resultado += `${dias}d `;
+  if (horas > 0 || dias > 0) resultado += `${horas}h `;
+  resultado += `${minutos}m ${segundos}s`;
+  return `⏳ ${resultado}`;
 }
 
 // ======================================================
@@ -2127,366 +2174,87 @@ async function generarDieciseisavos() {
   // =====================================
 
   const partidos = [
-
-    {
-      numero: 73,
-      local: clasificadosGlobales["2A"] || "2A",
-      visitante: clasificadosGlobales["2B"] || "2B"
-    },
-
-    {
-      numero: 74,
-      local: clasificadosGlobales["1E"] || "1E",
-      visitante: "3A/B/C/D/F"
-    },
-
-    {
-      numero: 75,
-      local: clasificadosGlobales["1F"] || "1F",
-      visitante: clasificadosGlobales["2C"] || "2C"
-    },
-
-    {
-      numero: 76,
-      local: clasificadosGlobales["1C"] || "1C",
-      visitante: clasificadosGlobales["2F"] || "2F"
-    },
-
-    {
-      numero: 77,
-      local: clasificadosGlobales["1I"] || "1I",
-      visitante: "3C/D/F/G/H"
-    },
-
-    {
-      numero: 78,
-      local: clasificadosGlobales["2E"] || "2E",
-      visitante: clasificadosGlobales["2I"] || "2I"
-    },
-
-    {
-      numero: 79,
-      local: clasificadosGlobales["1A"] || "1A",
-      visitante: "3C/E/F/H/I"
-    },
-
-    {
-      numero: 80,
-      local: clasificadosGlobales["1L"] || "1L",
-      visitante: "3E/H/I/J/K"
-    },
-
-    {
-      numero: 81,
-      local: clasificadosGlobales["1D"] || "1D",
-      visitante: "3B/E/F/I/J"
-    },
-
-    {
-      numero: 82,
-      local: clasificadosGlobales["1G"] || "1G",
-      visitante: "3A/E/H/I/J"
-    },
-
-    {
-      numero: 83,
-      local: clasificadosGlobales["2K"] || "2K",
-      visitante: clasificadosGlobales["2L"] || "2L"
-    },
-
-    {
-      numero: 84,
-      local: clasificadosGlobales["1H"] || "1H",
-      visitante: clasificadosGlobales["2J"] || "2J"
-    },
-
-    {
-      numero: 85,
-      local: clasificadosGlobales["1B"] || "1B",
-      visitante: "3E/F/G/I/J"
-    },
-
-    {
-      numero: 86,
-      local: clasificadosGlobales["1J"] || "1J",
-      visitante: clasificadosGlobales["2H"] || "2H"
-    },
-
-    {
-      numero: 87,
-      local: clasificadosGlobales["1K"] || "1K",
-      visitante: "3D/E/I/J/L"
-    },
-
-    {
-      numero: 88,
-      local: clasificadosGlobales["2D"] || "2D",
-      visitante: clasificadosGlobales["2G"] || "2G"
-    }
-
+    { numero: 73, local: clasificadosGlobales["2A"] || "2A", visitante: clasificadosGlobales["2B"] || "2B" },
+    { numero: 74, local: clasificadosGlobales["1E"] || "1E", visitante: "3A/B/C/D/F" },
+    { numero: 75, local: clasificadosGlobales["1F"] || "1F", visitante: clasificadosGlobales["2C"] || "2C" },
+    { numero: 76, local: clasificadosGlobales["1C"] || "1C", visitante: clasificadosGlobales["2F"] || "2F" },
+    { numero: 77, local: clasificadosGlobales["1I"] || "1I", visitante: "3C/D/F/G/H" },
+    { numero: 78, local: clasificadosGlobales["2E"] || "2E", visitante: clasificadosGlobales["2I"] || "2I" },
+    { numero: 79, local: clasificadosGlobales["1A"] || "1A", visitante: "3C/E/F/H/I" },
+    { numero: 80, local: clasificadosGlobales["1L"] || "1L", visitante: "3E/H/I/J/K" },
+    { numero: 81, local: clasificadosGlobales["1D"] || "1D", visitante: "3B/E/F/I/J" },
+    { numero: 82, local: clasificadosGlobales["1G"] || "1G", visitante: "3A/E/H/I/J" },
+    { numero: 83, local: clasificadosGlobales["2K"] || "2K", visitante: clasificadosGlobales["2L"] || "2L" },
+    { numero: 84, local: clasificadosGlobales["1H"] || "1H", visitante: clasificadosGlobales["2J"] || "2J" },
+    { numero: 85, local: clasificadosGlobales["1B"] || "1B", visitante: "3E/F/G/I/J" },
+    { numero: 86, local: clasificadosGlobales["1J"] || "1J", visitante: clasificadosGlobales["2H"] || "2H" },
+    { numero: 87, local: clasificadosGlobales["1K"] || "1K", visitante: "3D/E/I/J/L" },
+    { numero: 88, local: clasificadosGlobales["2D"] || "2D", visitante: clasificadosGlobales["2G"] || "2G" }
   ];
 
   // =====================================
   // HTML
   // =====================================
 
-  let html = `
-
-  <div class="tabla-grupo-card">
-
-    <h3 class="tabla-title">
-      Dieciseisavos de Final
-    </h3>
-
-    <div class="dieciseisavos-grid">
-
-`;
+  let html = `<div class="tabla-grupo-card"><h3 class="tabla-title">Dieciseisavos de Final</h3><div class="dieciseisavos-grid">`;
 
   for (const partido of partidos) {
+    if (!partido.local || !partido.visitante) continue;
 
-    if (!partido.local || !partido.visitante) {
-      return;
-    }
-    // =====================================
-    // BUSCAR PREDICCIÓN GUARDADA
-    // =====================================
+    // Obtener hora del partido desde la función de fechas
+    const horaPartido = obtenerHoraPartidoKnockout(partido.numero);
+    const cierreApuestas = new Date(horaPartido.getTime() - 60 * 60 * 1000);
+    const isClosed = new Date() >= cierreApuestas;
+    const disabled = isClosed;
 
-    const predictionId =
-      `${currentUser.uid}_KO_${partido.numero}`;
-
-    const predictionRef =
-      doc(
-        db,
-        "predictions_knockout",
-        predictionId
-      );
-
-    const predictionSnap =
-      await getDoc(predictionRef);
-
-    let predLocal = "";
-    let predVisit = "";
-    let clasificadoGuardado = "";
-
+    // Cargar predicción guardada
+    const predictionId = `${currentUser.uid}_KO_${partido.numero}`;
+    const predictionRef = doc(db, "predictions_knockout", predictionId);
+    const predictionSnap = await getDoc(predictionRef);
+    let predLocal = "", predVisit = "", clasificadoGuardado = "";
     if (predictionSnap.exists()) {
-
-      const data =
-        predictionSnap.data();
-
-      predLocal =
-        data.pred_local ?? "";
-
-      predVisit =
-        data.pred_visitante ?? "";
-
-      clasificadoGuardado =
-        data.clasificado ?? "";
-
+      const data = predictionSnap.data();
+      predLocal = data.pred_local ?? "";
+      predVisit = data.pred_visitante ?? "";
+      clasificadoGuardado = data.clasificado ?? "";
     }
 
     html += `
-
-  <div
-    class="knockout-card"
-    data-partido="${partido.numero}"
-    data-local="${partido.local}"
-    data-visitante="${partido.visitante}"
-  >
-
-    <div class="knockout-match-number">
-      Partido ${partido.numero}
-    </div>
-
-    <!-- LOCAL -->
-
-    <div class="prediction-side local-side">
-
-  ${fifaCodes[partido.local]
-        ? `
-      <img
-        src="https://flagcdn.com/${partido.local ? obtenerCodigoPais(partido.local) : "un"}.svg"
-        width="24"
-      >
-    `
-        : ""
-      }
-
-  <span>
-    ${fifaCodes[partido.local] || partido.local}
-  </span>
-
-</div>
-
-    <!-- INPUTS -->
-
-<div
-  style="
-    display:flex;
-    justify-content:center;
-    align-items:center;
-    gap:14px;
-    margin-top:16px;
-    background:rgba(255,255,255,0.04);
-    border-radius:14px;
-    padding:12px;
-  "
->
-
-  <input
-    type="number"
-    id="ko_local_${partido.numero}"
-    class="prediction-input local-score"
-    placeholder="↑"
-    min="0"
-    max="20"
-    inputmode="numeric"
-    style="
-      width:70px;
-      border:2px solid #3b82f6;
-      background:#0f172a;
-      text-align:center;
-    "
-  >
-
-  <span
-    style="
-      font-size:22px;
-      font-weight:800;
-      color:#facc15;
-    "
-  >
-    -
-  </span>
-
-  <input
-    type="number"
-    id="ko_visit_${partido.numero}"
-    class="prediction-input visitor-score"
-    placeholder="↓"
-    min="0"
-    max="20"
-    inputmode="numeric"
-    style="
-      width:70px;
-      border:2px solid #22c55e;
-      background:#0f172a;
-      text-align:center;
-    "
-  >
-
-</div>
-
-    <!-- VISITANTE -->
-
-    <div
-  class="prediction-side visit-side"
-  style="margin-top:14px;"
->
-
-  ${fifaCodes[partido.visitante]
-        ? `
-      <img
-        src="https://flagcdn.com/${partido.visitante ? obtenerCodigoPais(partido.visitante) : "un"}.svg"
-        width="24"
-      >
-    `
-        : ""
-      }
-
-  <span>
-    ${fifaCodes[partido.visitante] || partido.visitante}
-  </span>
-
-</div>
-
-    <!-- EMPATE -->
-
-<div
-  style="
-    margin-top:16px;
-    font-size:13px;
-  "
->
-
-  Si eliges empate, también debes elegir quién avanza:
-
-</div>
-
-<div
-  style="
-    font-size:12px;
-    opacity:0.7;
-    margin-top:6px;
-    line-height:1.4;
-  "
->
-  ✔ Se valida el marcador en los 90 minutos<br>
-  ✔ Puedes ganar puntos por marcador exacto<br>
-  ✔ Y puntos extra por acertar el clasificado
-</div>
-
-<div
-  style="
-    display:flex;
-    justify-content:center;
-    gap:14px;
-    margin-top:10px;
-    flex-wrap:wrap;
-  "
->
-
-  <label>
-
-    <input
-      type="radio"
-      name="oct_clasificado_${partido.numero}"
-      value="${partido.local}"
-    >
-
-    ${fifaCodes[partido.local] || partido.local}
-
-  </label>
-
-  <label>
-
-    <input
-      type="radio"
-      name="oct_clasificado_${partido.numero}"
-      value="${partido.visitante}"
-    >
-
-    ${fifaCodes[partido.visitante] || partido.visitante}
-
-  </label>
-
-</div>
-
-    <!-- BOTÓN -->
-
-    <button
-      class="btn-guardar"
-      style="margin-top:18px;"
-      onclick="window.saveKnockoutPrediction('${partido.numero}')"
-    >
-
-      Guardar
-
-    </button>
-
-  </div>
-`;
-
+      <div class="knockout-card" data-partido="${partido.numero}" data-local="${partido.local}" data-visitante="${partido.visitante}">
+        <div class="knockout-match-number">Partido ${partido.numero}</div>
+        <div class="prediction-side local-side">
+          ${fifaCodes[partido.local] ? `<img src="https://flagcdn.com/${obtenerCodigoPais(partido.local)}.svg" width="24">` : ''}
+          <span>${fifaCodes[partido.local] || partido.local}</span>
+        </div>
+        <div style="display:flex; justify-content:center; gap:14px; margin-top:16px; background:rgba(255,255,255,0.04); border-radius:14px; padding:12px;">
+          <input type="number" id="ko_local_${partido.numero}" class="prediction-input local-score" value="${predLocal}" placeholder="↑" min="0" style="width:70px; border:2px solid #3b82f6;" ${disabled ? "disabled" : ""}>
+          <span style="font-size:22px; font-weight:800; color:#facc15;">-</span>
+          <input type="number" id="ko_visit_${partido.numero}" class="prediction-input visitor-score" value="${predVisit}" placeholder="↓" min="0" style="width:70px; border:2px solid #22c55e;" ${disabled ? "disabled" : ""}>
+        </div>
+        <div class="prediction-side visit-side" style="margin-top:14px;">
+          ${fifaCodes[partido.visitante] ? `<img src="https://flagcdn.com/${obtenerCodigoPais(partido.visitante)}.svg" width="24">` : ''}
+          <span>${fifaCodes[partido.visitante] || partido.visitante}</span>
+        </div>
+        <div style="margin-top:16px; font-size:13px;">Si eliges empate, también debes elegir quién avanza:</div>
+        <div style="font-size:12px; opacity:0.7; margin-top:6px; line-height:1.4;">
+          ✔ Se valida el marcador en los 90 minutos<br>
+          ✔ Puedes ganar puntos por marcador exacto<br>
+          ✔ Y puntos extra por acertar el clasificado
+        </div>
+        <div style="display:flex; justify-content:center; gap:14px; margin-top:10px; flex-wrap:wrap;">
+          <label><input type="radio" name="clasificado_${partido.numero}" value="${partido.local}" ${clasificadoGuardado === partido.local ? 'checked' : ''} ${disabled ? "disabled" : ""}> ${fifaCodes[partido.local] || partido.local}</label>
+          <label><input type="radio" name="clasificado_${partido.numero}" value="${partido.visitante}" ${clasificadoGuardado === partido.visitante ? 'checked' : ''} ${disabled ? "disabled" : ""}> ${fifaCodes[partido.visitante] || partido.visitante}</label>
+        </div>
+        <div class="match-timer" data-cierre="${cierreApuestas.toISOString()}" style="margin-top:12px; text-align:center; font-size:13px; background:#00000040; padding:6px; border-radius:20px;">
+          ⏰ Resultados se bloquean en: ${formatearTiempoRestante(cierreApuestas)}
+        </div>
+        <button class="btn-guardar" style="margin-top:18px;" onclick="window.saveKnockoutPrediction('${partido.numero}')" ${disabled ? "disabled" : ""}>Guardar</button>
+      </div>
+    `;
   }
-
-  html += `
-
-    </div>
-
-  </div>
-
-`;
-
+  html += `</div></div>`;
   container.innerHTML = html;
+}
 }
 // ======================================================
 // GUARDAR PREDICCIÓN ELIMINATORIAS
