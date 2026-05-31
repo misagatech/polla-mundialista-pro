@@ -1972,4 +1972,86 @@ COLORES MARCADORES LOCAL / VISITANTE
   border:
     1px solid rgba(74, 222, 128, 0.4);
 
+    
+}
+/* Nuevo diseño knockout compacto */
+.knockout-card {
+  width: 380px;
+  padding: 16px;
+}
+
+.knockout-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 16px;
+}
+
+.knockout-match-number {
+  margin-bottom: 0;
+  font-size: 14px;
+}
+
+.knockout-teams-row {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  gap: 12px;
+  margin-bottom: 16px;
+}
+
+.knockout-team {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 6px;
+  text-align: center;
+}
+
+.knockout-team .flag-icon {
+  width: 36px;
+  height: 24px;
+  border-radius: 4px;
+}
+
+.score-inputs {
+  margin-top: 6px;
+}
+
+.score-inputs .prediction-input {
+  width: 60px;
+  height: 40px;
+  text-align: center;
+  font-size: 1.2rem;
+}
+
+.knockout-rules {
+  background: rgba(0,0,0,0.3);
+  border-radius: 20px;
+  padding: 6px 10px;
+  font-size: 11px;
+  text-align: center;
+  margin: 12px 0;
+}
+
+.knockout-footer {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  flex-wrap: wrap;
+  gap: 10px;
+  margin-top: 8px;
+}
+
+.knockout-radios {
+  display: flex;
+  gap: 16px;
+  font-size: 13px;
+}
+
+.btn-guardar {
+  width: auto;
+  padding: 8px 20px;
+  margin-top: 0;
 }
