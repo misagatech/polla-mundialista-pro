@@ -1331,175 +1331,133 @@ BRACKET FIFA STYLE
 
 /* CARD */
 
-/* Knockout card moderno */
+/* =====================================================
+KNOCKOUT CARDS (estilo idéntico a grupos)
+===================================================== */
+
 .knockout-card {
-  background: linear-gradient(145deg, #1a1f2e, #0f1320);
-  border-radius: 28px;
-  padding: 20px;
-  box-shadow: 0 20px 35px -10px rgba(0, 0, 0, 0.5);
-  border: 1px solid rgba(255, 255, 255, 0.08);
-  transition: transform 0.2s, box-shadow 0.2s;
-  width: 400px;
-  backdrop-filter: blur(2px);
+  width: 100%;
+  background: linear-gradient(180deg, rgba(20, 30, 60, .98), rgba(10, 20, 40, .98));
+  border: 1px solid rgba(255, 255, 255, .08);
+  border-radius: 22px;
+  padding: 18px;
+  display: flex;
+  flex-direction: column;
+  gap: 15px;
+  transition: .3s ease;
+  box-shadow: 0 10px 25px rgba(0, 0, 0, .25);
 }
 
 .knockout-card:hover {
   transform: translateY(-4px);
-  box-shadow: 0 25px 40px -12px rgba(0, 0, 0, 0.6);
-  border-color: rgba(250, 204, 21, 0.3);
-}
-
-.knockout-header {
-  display: flex;
-  justify-content: space-between;
-  align-items: baseline;
-  margin-bottom: 20px;
-  border-bottom: 1px dashed rgba(255, 255, 255, 0.15);
-  padding-bottom: 8px;
+  border-color: #3b82f6;
+  box-shadow: 0 18px 35px rgba(37, 99, 235, .18);
 }
 
 .knockout-match-number {
   font-size: 0.9rem;
   font-weight: 700;
   color: #facc15;
-  letter-spacing: 1px;
-}
-
-.match-timer {
-  font-size: 0.8rem;
-  background: rgba(0, 0, 0, 0.5);
-  padding: 4px 10px;
-  border-radius: 40px;
-  font-family: monospace;
-}
-
-.knockout-teams-row {
-  display: flex;
-  justify-content: space-between;
-  align-items: center;
-  gap: 15px;
-  margin-bottom: 20px;
-}
-
-.knockout-team {
-  flex: 1;
-  display: flex;
-  flex-direction: column;
-  align-items: center;
-  gap: 10px;
-  background: rgba(0, 0, 0, 0.25);
-  border-radius: 24px;
-  padding: 15px 8px;
-  transition: background 0.2s;
-}
-
-.local-side {
-  background: linear-gradient(145deg, rgba(37, 99, 235, 0.2), rgba(30, 64, 175, 0.1));
-  border: 1px solid rgba(59, 130, 246, 0.3);
-}
-
-.visit-side {
-  background: linear-gradient(145deg, rgba(34, 197, 94, 0.2), rgba(21, 128, 61, 0.1));
-  border: 1px solid rgba(74, 222, 128, 0.3);
-}
-
-.knockout-team .flag-icon {
-  width: 48px;
-  height: 32px;
-  border-radius: 8px;
-  box-shadow: 0 4px 8px rgba(0, 0, 0, 0.3);
-}
-
-.team-name {
-  font-weight: 800;
-  font-size: 1.1rem;
-  letter-spacing: 1px;
-}
-
-.score-inputs .prediction-input {
-  width: 70px;
-  height: 50px;
-  font-size: 1.4rem;
   text-align: center;
-  background: #0f172a;
-  border: 1px solid rgba(255, 255, 255, 0.2);
-  border-radius: 16px;
-  font-weight: 700;
+  margin-bottom: 4px;
 }
 
-.knockout-vs {
-  font-size: 1.2rem;
-  font-weight: 800;
-  color: #facc15;
-  background: rgba(0, 0, 0, 0.5);
-  width: 40px;
-  height: 40px;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  border-radius: 50%;
-  box-shadow: 0 0 0 2px rgba(250, 204, 21, 0.4);
+/* Usamos las mismas clases que grupos */
+.knockout-card .match-teams,
+.knockout-card .team-row,
+.knockout-card .vs-text,
+.knockout-card .prediction-area,
+.knockout-card .prediction-input,
+.knockout-card .score-separator {
+  /* Ya están definidas en tu CSS de grupos, no las duplicamos */
 }
 
-.knockout-rules {
+/* Reglas de puntuación (caja elegante) */
+.rules-box {
   background: rgba(0, 0, 0, 0.4);
   border-radius: 20px;
   padding: 8px 12px;
   font-size: 0.7rem;
   text-align: center;
-  margin: 16px 0;
   color: #cbd5e1;
+  margin: 8px 0 4px;
 }
 
+/* Contenedor de radios (solo aparece en empate) */
 .knockout-radios {
   display: flex;
   justify-content: center;
-  gap: 25px;
-  margin: 12px 0;
-  background: rgba(0, 0, 0, 0.3);
+  gap: 24px;
+  margin: 8px 0;
   padding: 8px;
-  border-radius: 40px;
+  background: rgba(0, 0, 0, 0.3);
+  border-radius: 30px;
 }
 
 .knockout-radios label {
   display: flex;
   align-items: center;
   gap: 8px;
-  font-size: 0.8rem;
-  font-weight: 600;
+  font-size: 0.85rem;
   cursor: pointer;
+  color: white;
 }
 
-.knockout-footer {
-  display: flex;
-  justify-content: center;
-  margin: 10px 0 8px;
-}
-
-.btn-guardar {
-  background: linear-gradient(90deg, #facc15, #eab308);
-  color: black;
-  font-weight: 800;
-  padding: 10px 28px;
-  border-radius: 40px;
-  border: none;
-  cursor: pointer;
-  transition: all 0.2s;
-  width: auto;
-}
-
-.btn-guardar:hover {
-  transform: scale(1.02);
-  box-shadow: 0 6px 14px rgba(250, 204, 21, 0.4);
-}
-
-.match-date {
-  font-size: 0.7rem;
+/* Temporizador igual que grupos */
+.knockout-card .match-timer {
+  margin-top: 8px;
   text-align: center;
-  margin-top: 12px;
+  font-size: 0.8rem;
+  background: rgba(0, 0, 0, 0.5);
+  padding: 6px;
+  border-radius: 20px;
+  color: #facc15;
+}
+
+/* Fecha igual que grupos */
+.knockout-card .match-date {
+  text-align: center;
+  font-size: 0.75rem;
   color: #94a3b8;
-  border-top: 1px solid rgba(255, 255, 255, 0.1);
-  padding-top: 10px;
+  margin: 4px 0;
+}
+
+/* Botón centrado y con mismo estilo que grupos */
+.knockout-card .btn-guardar {
+  width: 100%;
+  background: linear-gradient(135deg, #22c55e, #16a34a);
+  color: white;
+  font-weight: 700;
+  border: none;
+  padding: 10px;
+  border-radius: 40px;
+  cursor: pointer;
+  transition: 0.2s;
+  margin-top: 8px;
+}
+
+.knockout-card .btn-guardar:hover {
+  transform: translateY(-2px);
+  box-shadow: 0 6px 14px rgba(34, 197, 94, 0.3);
+}
+
+.knockout-card .btn-guardar:disabled {
+  opacity: 0.5;
+  cursor: not-allowed;
+  transform: none;
+}
+
+/* Ajuste de grid para que las tarjetas tengan un ancho flexible */
+.dieciseisavos-grid {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 20px;
+  justify-content: flex-start;
+}
+
+.knockout-card {
+  width: 320px;  /* o min-width: 300px si prefieres */
+  flex-shrink: 0;
 }
 
 /* INPUTS */
