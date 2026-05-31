@@ -291,6 +291,7 @@ function mostrarTodosLosGrupos() {
       </button>
     `;
   });
+  gruposCarousel.innerHTML = tabsHTML;
   
   // Mostrar solo el grupo activo
   let html = "";
