@@ -3458,16 +3458,7 @@ function formatearCOP(valor) {
     maximumFractionDigits: 0
   }).format(valor);
 }
-// ======================================================
-// FORMATEAR MONEDA COP
-// ======================================================
-function formatearCOP(valor) {
-  return new Intl.NumberFormat("es-CO", {
-    style: "currency",
-    currency: "COP",
-    maximumFractionDigits: 0
-  }).format(valor);
-}
+
 // ======================================================
 // ESTADO DE AUTENTICACIÓN (CORAZÓN DE LA APP)
 // ======================================================
