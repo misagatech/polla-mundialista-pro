@@ -3224,7 +3224,7 @@ function loadPrizePoolRealtime() {
 // ADMIN PARTICIPANTES (con filtro y dos pollas)
 // ======================================================
 
-// Función auxiliar para escapar HTML (evita inyección)
+// Función auxiliar para escapar HTML
 function escapeHtml(str) {
   return str.replace(/[&<>]/g, function(m) {
     if (m === '&') return '&amp;';
@@ -3271,7 +3271,7 @@ window.toggleExpulsado = async (uid) => {
 };
 
 // ======================================================
-// FUNCIONES ADMIN PARA KNOCKOUT (nuevas)
+// FUNCIONES ADMIN PARA KNOCKOUT
 // ======================================================
 window.togglePagoKO = async (uid) => {
   const participantRef = doc(db, "participants", uid);
@@ -3295,11 +3295,12 @@ window.toggleHabilitadoKO = async (uid) => {
     enabled_knockout: !data.enabled_knockout
   });
 };
+
 // ======================================================
 // BOTÓN DE RESET DE PRUEBAS (KNOCKOUT)
 // ======================================================
 window.resetearPruebasKnockout = async () => {
-  if (!confirm("⚠️ ¿Eliminar TODAS las predicciones de knockout y resultados reales? Esta acción no se puede deshacer.")) return;
+  if (!confirm("⚠️ ¿Eliminar TODAS las predicciones de knockout y reiniciar resultados reales? Esta acción no se puede deshacer.")) return;
   
   const colecciones = [
     "predictions_knockout",
@@ -3310,35 +3311,32 @@ window.resetearPruebasKnockout = async () => {
     "predictions_third"
   ];
   
-  // Eliminar predicciones
   for (const col of colecciones) {
     const snapshot = await getDocs(collection(db, col));
     const batch = writeBatch(db);
     snapshot.forEach(doc => batch.delete(doc.ref));
     await batch.commit();
-    console.log(`🗑️ Eliminados documentos de ${col}`);
   }
   
-  // Eliminar resultados reales (colección knockout_results)
+  // Reiniciar resultados reales (solo poner a null, no eliminar documentos)
   const resultadosSnapshot = await getDocs(collection(db, "knockout_results"));
   const batchResults = writeBatch(db);
-  resultadosSnapshot.forEach(doc => batchResults.delete(doc.ref));
+  resultadosSnapshot.forEach(doc => {
+    batchResults.update(doc.ref, {
+      resultado_local: null,
+      resultado_visitante: null,
+      finalizado: false
+    });
+  });
   await batchResults.commit();
-  console.log(`🗑️ Eliminados resultados reales de knockout_results`);
   
-  // También puedes reiniciar los resultados a null en knockout_results si prefieres mantener los documentos
-  // Pero como los eliminamos, luego el admin deberá volver a crearlos (con el script que te di antes).
-  // Si quieres solo poner a null los campos, dime y lo ajusto.
-  
-  alert("✅ Todas las predicciones de knockout y resultados han sido eliminadas.");
-  location.reload(); // Recargar para reflejar cambios
+  alert("✅ Predicciones de knockout eliminadas y resultados reales reiniciados.");
+  location.reload();
 };
 
-// Agregar el botón al panel admin (llamar esta función desde onAuthStateChanged cuando el usuario es admin)
 function agregarBotonResetKnockout() {
   const adminBottom = document.querySelector(".admin-bottom-actions");
   if (!adminBottom) return;
-  // Evitar duplicados
   if (document.getElementById("btnResetKnockout")) return;
   const btn = document.createElement("button");
   btn.id = "btnResetKnockout";
@@ -3349,6 +3347,7 @@ function agregarBotonResetKnockout() {
   btn.onclick = window.resetearPruebasKnockout;
   adminBottom.appendChild(btn);
 }
+
 // ======================================================
 // RENDERIZADO DE LISTA DE PARTICIPANTES (con buscador y dual)
 // ======================================================
@@ -3382,17 +3381,17 @@ function loadAdminParticipants() {
       });
     }
 
-    // Crear el input de búsqueda fuera del render (una sola vez)
+    // Crear input de búsqueda fijo y contenedor de la grid
     let searchHtml = `<div class="admin-search-bar" style="margin-bottom: 20px;">
       <input type="text" id="searchParticipante" placeholder="🔍 Buscar por nombre o email..." style="width: 100%; padding: 12px; border-radius: 30px; border: none; background: #1e293b; color: white;">
     </div>`;
-    adminList.innerHTML = searchHtml; // solo el input
+    adminList.innerHTML = searchHtml;
     const searchInput = document.getElementById("searchParticipante");
     const gridContainer = document.createElement("div");
     gridContainer.className = "admin-participants-grid";
     adminList.appendChild(gridContainer);
 
-    // Función para renderizar la grid
+    // Función para renderizar la grid según filtro
     const renderGrid = (filtro = "") => {
       const filtroLower = filtro.toLowerCase();
       const filtrados = participantes.filter(p =>
@@ -3447,6 +3446,17 @@ function loadAdminParticipants() {
       searchInput.addEventListener("input", (e) => renderGrid(e.target.value));
     }
   });
+}
+
+// ======================================================
+// FORMATEAR MONEDA COP
+// ======================================================
+function formatearCOP(valor) {
+  return new Intl.NumberFormat("es-CO", {
+    style: "currency",
+    currency: "COP",
+    maximumFractionDigits: 0
+  }).format(valor);
 }
 // ======================================================
 // FORMATEAR MONEDA COP
