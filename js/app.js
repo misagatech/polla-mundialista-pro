@@ -3349,18 +3349,80 @@ function agregarBotonResetKnockout() {
 }
 
 // ======================================================
-// RENDERIZADO DE LISTA DE PARTICIPANTES (con buscador y dual)
+// RENDERIZADO DE LISTA DE PARTICIPANTES (con buscador dual)
 // ======================================================
+let participantesGlobal = []; // almacenar participantes actualizados
+let gridContainer = null;
+let searchInput = null;
+
 function loadAdminParticipants() {
   if (adminParticipantsUnsubscribe) adminParticipantsUnsubscribe();
 
+  const adminList = document.getElementById("adminParticipantsList");
+  if (!adminList) return;
+
+  // Construir la estructura base solo una vez
+  if (!gridContainer) {
+    adminList.innerHTML = `<div class="admin-search-bar" style="margin-bottom: 20px;">
+      <input type="text" id="searchParticipante" placeholder="🔍 Buscar por nombre o email..." style="width: 100%; padding: 12px; border-radius: 30px; border: none; background: #1e293b; color: white;">
+    </div>`;
+    searchInput = document.getElementById("searchParticipante");
+    gridContainer = document.createElement("div");
+    gridContainer.className = "admin-participants-grid";
+    adminList.appendChild(gridContainer);
+  }
+
+  // Función para renderizar la grid según filtro
+  const renderGrid = (filtro = "") => {
+    const filtroLower = filtro.toLowerCase();
+    const filtrados = participantesGlobal.filter(p =>
+      p.nombre.toLowerCase().includes(filtroLower) ||
+      p.email.toLowerCase().includes(filtroLower)
+    );
+    let html = "";
+    for (const p of filtrados) {
+      const paidGroupsBadge = p.participant.paid_groups ? `<span class="admin-badge badge-paid">PAGÓ GRUPOS</span>` : `<span class="admin-badge badge-pending">NO PAGÓ GRUPOS</span>`;
+      const enabledGroupsBadge = p.participant.enabled_groups ? `<span class="admin-badge badge-enabled">HABILITADO GRUPOS</span>` : `<span class="admin-badge badge-disabled">BLOQUEADO GRUPOS</span>`;
+      const paidKOBadge = p.paid_knockout ? `<span class="admin-badge badge-paid">PAGÓ KO</span>` : `<span class="admin-badge badge-pending">NO PAGÓ KO</span>`;
+      const enabledKOBadge = p.enabled_knockout ? `<span class="admin-badge badge-enabled">HABILITADO KO</span>` : `<span class="admin-badge badge-disabled">BLOQUEADO KO</span>`;
+      const expulsadoBadge = p.expulsado ? `<span class="admin-badge badge-pending">EXPULSADO</span>` : "";
+
+      html += `
+        <div class="admin-user-card" data-uid="${p.uid}">
+          <div class="admin-user-top">
+            <div>
+              <div class="admin-user-name">${escapeHtml(p.nombre)}</div>
+              <div class="admin-user-email">${escapeHtml(p.email)}</div>
+            </div>
+          </div>
+          <div class="admin-user-status">
+            ${paidGroupsBadge}
+            ${enabledGroupsBadge}
+            ${paidKOBadge}
+            ${enabledKOBadge}
+            ${expulsadoBadge}
+          </div>
+          <div style="margin-top:14px;">💰 Pago Grupos: <strong>${formatearCOP(p.participant.amount_groups || 0)}</strong></div>
+          <div style="margin-top:8px;">📋 Estado Grupos: <strong>${p.participant.groups_status || "pending"}</strong></div>
+          <div style="margin-top:8px;">💰 Pago KO: <strong>${formatearCOP(p.amount_knockout)}</strong></div>
+          <div style="margin-top:8px;">📋 Estado KO: <strong>${p.knockout_status}</strong></div>
+          <div style="display:flex; gap:10px; flex-wrap:wrap; margin-top:16px;">
+            <button class="admin-action-btn" onclick="window.togglePago('${p.uid}')">💰 Pago Grupos</button>
+            <button class="admin-action-btn" onclick="window.toggleHabilitado('${p.uid}')">🔓 Acceso Grupos</button>
+            <button class="admin-action-btn" onclick="window.togglePagoKO('${p.uid}')">💰 Pago KO</button>
+            <button class="admin-action-btn" onclick="window.toggleHabilitadoKO('${p.uid}')">🔓 Acceso KO</button>
+            <button class="admin-action-btn danger" onclick="window.toggleExpulsado('${p.uid}')">🚫 Expulsar</button>
+          </div>
+        </div>
+      `;
+    }
+    gridContainer.innerHTML = html;
+  };
+
+  // Suscripción a cambios en participantes (solo actualiza participantesGlobal y vuelve a renderizar con el filtro actual)
   const participantsRef = collection(db, "participants");
   adminParticipantsUnsubscribe = onSnapshot(participantsRef, async (snapshot) => {
-    const adminList = document.getElementById("adminParticipantsList");
-    if (!adminList) return;
-
-    // Construir array de participantes
-    let participantes = [];
+    participantesGlobal = [];
     for (const docSnap of snapshot.docs) {
       const participant = docSnap.data();
       const uid = participant.uid;
@@ -3375,79 +3437,22 @@ function loadAdminParticipants() {
       const enabled_knockout = participant.enabled_knockout === true;
       const knockout_status = participant.knockout_status || "pending";
       const amount_knockout = participant.amount_knockout || 0;
-      participantes.push({
+      participantesGlobal.push({
         uid, participant, nombre, email, expulsado,
         paid_knockout, enabled_knockout, knockout_status, amount_knockout
       });
     }
-
-    // Crear input de búsqueda fijo y contenedor de la grid
-    let searchHtml = `<div class="admin-search-bar" style="margin-bottom: 20px;">
-      <input type="text" id="searchParticipante" placeholder="🔍 Buscar por nombre o email..." style="width: 100%; padding: 12px; border-radius: 30px; border: none; background: #1e293b; color: white;">
-    </div>`;
-    adminList.innerHTML = searchHtml;
-    const searchInput = document.getElementById("searchParticipante");
-    const gridContainer = document.createElement("div");
-    gridContainer.className = "admin-participants-grid";
-    adminList.appendChild(gridContainer);
-
-    // Función para renderizar la grid según filtro
-    const renderGrid = (filtro = "") => {
-      const filtroLower = filtro.toLowerCase();
-      const filtrados = participantes.filter(p =>
-        p.nombre.toLowerCase().includes(filtroLower) ||
-        p.email.toLowerCase().includes(filtroLower)
-      );
-      let html = "";
-      for (const p of filtrados) {
-        const paidGroupsBadge = p.participant.paid_groups ? `<span class="admin-badge badge-paid">PAGÓ GRUPOS</span>` : `<span class="admin-badge badge-pending">NO PAGÓ GRUPOS</span>`;
-        const enabledGroupsBadge = p.participant.enabled_groups ? `<span class="admin-badge badge-enabled">HABILITADO GRUPOS</span>` : `<span class="admin-badge badge-disabled">BLOQUEADO GRUPOS</span>`;
-        const paidKOBadge = p.paid_knockout ? `<span class="admin-badge badge-paid">PAGÓ KO</span>` : `<span class="admin-badge badge-pending">NO PAGÓ KO</span>`;
-        const enabledKOBadge = p.enabled_knockout ? `<span class="admin-badge badge-enabled">HABILITADO KO</span>` : `<span class="admin-badge badge-disabled">BLOQUEADO KO</span>`;
-        const expulsadoBadge = p.expulsado ? `<span class="admin-badge badge-pending">EXPULSADO</span>` : "";
-
-        html += `
-          <div class="admin-user-card" data-uid="${p.uid}">
-            <div class="admin-user-top">
-              <div>
-                <div class="admin-user-name">${escapeHtml(p.nombre)}</div>
-                <div class="admin-user-email">${escapeHtml(p.email)}</div>
-              </div>
-            </div>
-            <div class="admin-user-status">
-              ${paidGroupsBadge}
-              ${enabledGroupsBadge}
-              ${paidKOBadge}
-              ${enabledKOBadge}
-              ${expulsadoBadge}
-            </div>
-            <div style="margin-top:14px;">💰 Pago Grupos: <strong>${formatearCOP(p.participant.amount_groups || 0)}</strong></div>
-            <div style="margin-top:8px;">📋 Estado Grupos: <strong>${p.participant.groups_status || "pending"}</strong></div>
-            <div style="margin-top:8px;">💰 Pago KO: <strong>${formatearCOP(p.amount_knockout)}</strong></div>
-            <div style="margin-top:8px;">📋 Estado KO: <strong>${p.knockout_status}</strong></div>
-            <div style="display:flex; gap:10px; flex-wrap:wrap; margin-top:16px;">
-              <button class="admin-action-btn" onclick="window.togglePago('${p.uid}')">💰 Pago Grupos</button>
-              <button class="admin-action-btn" onclick="window.toggleHabilitado('${p.uid}')">🔓 Acceso Grupos</button>
-              <button class="admin-action-btn" onclick="window.togglePagoKO('${p.uid}')">💰 Pago KO</button>
-              <button class="admin-action-btn" onclick="window.toggleHabilitadoKO('${p.uid}')">🔓 Acceso KO</button>
-              <button class="admin-action-btn danger" onclick="window.toggleExpulsado('${p.uid}')">🚫 Expulsar</button>
-            </div>
-          </div>
-        `;
-      }
-      gridContainer.innerHTML = html;
-    };
-
-    // Render inicial
-    renderGrid();
-
-    // Evento del buscador
-    if (searchInput) {
-      searchInput.addEventListener("input", (e) => renderGrid(e.target.value));
-    }
+    // Re-renderizar con el filtro actual (si searchInput tiene valor, úsalo)
+    const filtroActual = searchInput ? searchInput.value : "";
+    renderGrid(filtroActual);
   });
-}
 
+  // Vincular evento del buscador una sola vez
+  if (searchInput && !searchInput.hasListener) {
+    searchInput.addEventListener("input", (e) => renderGrid(e.target.value));
+    searchInput.hasListener = true;
+  }
+}
 // ======================================================
 // FORMATEAR MONEDA COP
 // ======================================================
