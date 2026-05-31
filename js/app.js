@@ -1146,12 +1146,13 @@ if (!participantSnap.exists() || participantSnap.data().enabled_knockout !== tru
 
   let html = `<div class="tabla-grupo-card">
     <h3 class="tabla-title">🥉 Tercer Puesto</h3>
-    <div class="puntuacion-info">
-      ⚽ <strong>Reglas de puntuación:</strong> Se toma el marcador de los 90 minutos. 
-      Puntos: aciertas el marcador exacto → <strong>3 puntos</strong>. 
-      Aciertas solo quién gana → <strong>1 punto</strong>. 
-      En caso de <strong>empate</strong>, suma <strong>+1 punto</strong> si seleccionas correctamente el clasificado.
-    </div>
+   <div class="puntuacion-info">
+  ⚽ <strong>Reglas de puntuación:</strong> Se toma el marcador de los 90 minutos. 
+  Puntos: aciertas el marcador exacto → <strong>3 puntos</strong>. 
+  Aciertas solo quién gana → <strong>1 punto</strong>. 
+  En caso de <strong>empate</strong>, suma <strong>+1 punto</strong> si seleccionas correctamente el clasificado.
+  <span style="display:block; margin-top:6px; font-size:0.7rem; color:#facc15;">➡️ Cuando marques un empate, aparecerán las opciones para elegir quién avanza.</span>
+</div>
     <div class="grupos-tabs-wrapper" style="margin-bottom: 16px;">
       <button id="scrollThirdLeft" class="scroll-btn" style="visibility: hidden;"><i class="fas fa-chevron-left"></i></button>
       <div id="carouselThird" class="knockout-carousel" style="display: flex; overflow-x: auto; gap: 20px; scroll-behavior: smooth; padding-bottom: 10px; justify-content: center;"></div>
