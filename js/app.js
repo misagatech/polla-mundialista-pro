@@ -980,15 +980,24 @@ window.saveThirdPlacePrediction = async (partidoNumero) => {
     alert(error.message);
   }
 };
-// ======================================================
-// GENERAR FINAL
-// ======================================================
+
 // ======================================================
 // GENERAR FINAL (CARRUSEL HORIZONTAL)
 // ======================================================
 async function generarFinal() {
   const container = document.getElementById("finalContainer");
   if (!container) return;
+
+// ========== VALIDACIÓN DE ACCESO ==========
+const participantSnap = await getDoc(doc(db, "participants", currentUser.uid));
+if (!participantSnap.exists() || participantSnap.data().enabled_knockout !== true) {
+  container.innerHTML = `<div class="tabla-grupo-card" style="text-align:center; padding:30px;">
+    <h3>🔒 Acceso restringido</h3>
+    <p>No tienes habilitada la participación en la fase eliminatoria.<br>Contacta al administrador para obtener acceso.</p>
+  </div>`;
+  return;
+}
+// ==========================================
 
   const semisQuery = query(collection(db, "predictions_semifinales"), where("uid", "==", currentUser.uid));
   const semisSnap = await getDocs(semisQuery);
@@ -1086,15 +1095,24 @@ async function generarFinal() {
     }
   }
 }
-// ======================================================
-// GENERAR TERCER PUESTO
-// ======================================================
+
 // ======================================================
 // GENERAR TERCER PUESTO (CARRUSEL HORIZONTAL)
 // ======================================================
 async function generarTercerPuesto() {
   const container = document.getElementById("thirdPlaceContainer");
   if (!container) return;
+
+      // ========== VALIDACIÓN DE ACCESO ==========
+const participantSnap = await getDoc(doc(db, "participants", currentUser.uid));
+if (!participantSnap.exists() || participantSnap.data().enabled_knockout !== true) {
+  container.innerHTML = `<div class="tabla-grupo-card" style="text-align:center; padding:30px;">
+    <h3>🔒 Acceso restringido</h3>
+    <p>No tienes habilitada la participación en la fase eliminatoria.<br>Contacta al administrador para obtener acceso.</p>
+  </div>`;
+  return;
+}
+// ==========================================
 
   const semisQuery = query(collection(db, "predictions_semifinales"), where("uid", "==", currentUser.uid));
   const semisSnap = await getDocs(semisQuery);
@@ -2316,6 +2334,18 @@ async function generarDieciseisavos() {
   const container = document.getElementById("bracketContainer");
   if (!container) return;
 
+  // ========== VALIDACIÓN DE ACCESO ==========
+  const participantSnap = await getDoc(doc(db, "participants", currentUser.uid));
+  if (!participantSnap.exists() || participantSnap.data().enabled_knockout !== true) {
+    container.innerHTML = `<div class="tabla-grupo-card" style="text-align:center; padding:30px;">
+      <h3>🔒 Acceso restringido</h3>
+      <p>No tienes habilitada la participación en la fase eliminatoria.<br>Contacta al administrador para obtener acceso.</p>
+    </div>`;
+    return;
+  }
+  // ==========================================
+
+
   const partidos = [
     { numero: 73, local: clasificadosGlobales["2A"] || "2A", visitante: clasificadosGlobales["2B"] || "2B" },
     { numero: 74, local: clasificadosGlobales["1E"] || "1E", visitante: "3A/B/C/D/F" },
@@ -2644,6 +2674,17 @@ async function generarOctavos() {
   const container = document.getElementById("octavosContainer");
   if (!container) return;
 
+    // ========== VALIDACIÓN DE ACCESO ==========
+const participantSnap = await getDoc(doc(db, "participants", currentUser.uid));
+if (!participantSnap.exists() || participantSnap.data().enabled_knockout !== true) {
+  container.innerHTML = `<div class="tabla-grupo-card" style="text-align:center; padding:30px;">
+    <h3>🔒 Acceso restringido</h3>
+    <p>No tienes habilitada la participación en la fase eliminatoria.<br>Contacta al administrador para obtener acceso.</p>
+  </div>`;
+  return;
+}
+// ==========================================
+
   // Obtener clasificados de dieciseisavos (desde predictions_knockout)
   const knockoutSnap = await getDocs(collection(db, "predictions_knockout"));
   const clasificados = {};
@@ -2653,6 +2694,7 @@ async function generarOctavos() {
       clasificados[data.partido] = data.clasificado;
     }
   });
+
 
   const partidos = [
     { numero: 89, local: clasificados[74] || "Ganador 74", visitante: clasificados[77] || "Ganador 77" },
@@ -2780,15 +2822,24 @@ async function generarOctavos() {
     updateRadios();
   }
 }
- // ======================================================
-// GENERAR CUARTOS AUTOMÁTICOS
-// ======================================================
+
 // ======================================================
 // GENERAR CUARTOS AUTOMÁTICOS (CARRUSEL HORIZONTAL)
 // ======================================================
 async function generarCuartos() {
   const container = document.getElementById("cuartosContainer");
   if (!container) return;
+
+// ========== VALIDACIÓN DE ACCESO ==========
+const participantSnap = await getDoc(doc(db, "participants", currentUser.uid));
+if (!participantSnap.exists() || participantSnap.data().enabled_knockout !== true) {
+  container.innerHTML = `<div class="tabla-grupo-card" style="text-align:center; padding:30px;">
+    <h3>🔒 Acceso restringido</h3>
+    <p>No tienes habilitada la participación en la fase eliminatoria.<br>Contacta al administrador para obtener acceso.</p>
+  </div>`;
+  return;
+}
+// ==========================================
 
   // Obtener clasificados de octavos
   const octavosQuery = query(collection(db, "predictions_octavos"), where("uid", "==", currentUser.uid));
@@ -2915,15 +2966,24 @@ async function generarCuartos() {
     }
   }
 }
-// ======================================================
-// GENERAR SEMIFINALES
-// ======================================================
+
 // ======================================================
 // GENERAR SEMIFINALES (CARRUSEL HORIZONTAL)
 // ======================================================
 async function generarSemifinales() {
   const container = document.getElementById("semifinalContainer");
   if (!container) return;
+
+ // ========== VALIDACIÓN DE ACCESO ==========
+const participantSnap = await getDoc(doc(db, "participants", currentUser.uid));
+if (!participantSnap.exists() || participantSnap.data().enabled_knockout !== true) {
+  container.innerHTML = `<div class="tabla-grupo-card" style="text-align:center; padding:30px;">
+    <h3>🔒 Acceso restringido</h3>
+    <p>No tienes habilitada la participación en la fase eliminatoria.<br>Contacta al administrador para obtener acceso.</p>
+  </div>`;
+  return;
+}
+// ==========================================
 
   const cuartosQuery = query(collection(db, "predictions_cuartos"), where("uid", "==", currentUser.uid));
   const cuartosSnap = await getDocs(cuartosQuery);
