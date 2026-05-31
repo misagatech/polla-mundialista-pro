@@ -966,6 +966,53 @@ window.saveSemifinalPrediction = async (partidoNumero) => {
     alert(error.message);
   }
 };
+
+// ======================================================
+// GUARDAR PREDICCIÓN DE TERCER PUESTO
+// ======================================================
+window.saveThirdPlacePrediction = async (partidoNumero) => {
+  try {
+    if (!currentUser) return alert("Debes iniciar sesión");
+
+    const localInput = document.getElementById(`third_local_${partidoNumero}`);
+    const visitInput = document.getElementById(`third_visit_${partidoNumero}`);
+    if (!localInput || !visitInput) return alert("Inputs no encontrados");
+
+    const local = parseInt(localInput.value);
+    const visit = parseInt(visitInput.value);
+    if (isNaN(local) || isNaN(visit)) return alert("Ingresa números válidos");
+
+    const card = document.querySelector(`[data-partido-third="${partidoNumero}"]`);
+    if (!card) return alert("Partido no encontrado");
+    const equipoLocal = card.dataset.local;
+    const equipoVisit = card.dataset.visitante;
+
+    let clasificado = null;
+    if (local > visit) clasificado = equipoLocal;
+    else if (visit > local) clasificado = equipoVisit;
+    else {
+      const selected = document.querySelector(`input[name="third_clasificado_${partidoNumero}"]:checked`);
+      if (!selected) return alert("Debes elegir quién clasifica");
+      clasificado = selected.value;
+    }
+
+    const predictionId = `${currentUser.uid}_THIRD_${partidoNumero}`;
+    await setDoc(doc(db, "predictions_third", predictionId), {
+      uid: currentUser.uid,
+      partido: partidoNumero,
+      pred_local: local,
+      pred_visitante: visit,
+      clasificado: clasificado,
+      fase: "tercer_puesto",
+      updated_at: serverTimestamp()
+    }, { merge: true });
+
+    alert("✅ Predicción guardada");
+  } catch (error) {
+    console.error(error);
+    alert(error.message);
+  }
+};
 // ======================================================
 // GENERAR FINAL
 // ======================================================
@@ -2615,7 +2662,6 @@ async function generarCuartos() {
   const container = document.getElementById("cuartosContainer");
   if (!container) return;
 
-  // Obtener clasificados de octavos (desde predictions_octavos del usuario)
   const octavosQuery = query(collection(db, "predictions_octavos"), where("uid", "==", currentUser.uid));
   const octavosSnap = await getDocs(octavosQuery);
   const clasificados = {};
@@ -2631,7 +2677,6 @@ async function generarCuartos() {
     { numero: 100, local: clasificados[95] || "Ganador 95", visitante: clasificados[96] || "Ganador 96" }
   ];
 
-  // Obtener predicciones guardadas del usuario para cuartos
   const cuartosQuery = query(collection(db, "predictions_cuartos"), where("uid", "==", currentUser.uid));
   const cuartosSnap = await getDocs(cuartosQuery);
   const predicciones = {};
@@ -2686,7 +2731,11 @@ async function generarCuartos() {
         <button class="btn-guardar" style="margin-top:18px;" onclick="window.saveCuartosPrediction('${partido.numero}')" ${disabled ? "disabled" : ""}>Guardar</button>
       </div>
     `;
-}
+  } // ← CIERRE DEL for
+
+  html += `</div></div>`;
+  container.innerHTML = html;
+} // ← CIERRE DE LA FUNCIÓN
 // ======================================================
 // GENERAR SEMIFINALES
 // ======================================================
