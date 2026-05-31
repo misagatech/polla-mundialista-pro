@@ -242,8 +242,16 @@ function formatearTiempoRestante(fechaCierre) {
 function actualizarTodosLosTimers() {
   document.querySelectorAll('[data-cierre]').forEach(el => {
     const cierre = new Date(el.dataset.cierre);
-    el.innerText = formatearTiempoRestante(cierre);
-    // Si el tiempo expiró y el botón no está deshabilitado, deshabilitamos inputs y botón
+    // Buscar el span con clase timer-value dentro del mismo div
+    const timerSpan = el.querySelector('.timer-value');
+    if (timerSpan) {
+      timerSpan.innerText = formatearTiempoRestante(cierre);
+    } else {
+      // Si por alguna razón no existe, fallback (no debería pasar)
+      el.innerText = formatearTiempoRestante(cierre);
+    }
+
+    // Si el tiempo expiró, deshabilitar inputs y botón
     if (cierre <= new Date()) {
       const card = el.closest('.knockout-card, .match-card');
       if (card) {
@@ -251,7 +259,9 @@ function actualizarTodosLosTimers() {
         const buttons = card.querySelectorAll('.btn-guardar');
         inputs.forEach(inp => inp.disabled = true);
         buttons.forEach(btn => btn.disabled = true);
-        if (el.innerText !== "🔒 Cerrado") el.innerText = "🔒 Cerrado";
+        if (timerSpan && timerSpan.innerText !== "🔒 Cerrado") {
+          timerSpan.innerText = "🔒 Cerrado";
+        }
       }
     }
   });
