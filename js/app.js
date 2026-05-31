@@ -3295,7 +3295,60 @@ window.toggleHabilitadoKO = async (uid) => {
     enabled_knockout: !data.enabled_knockout
   });
 };
+// ======================================================
+// BOTÓN DE RESET DE PRUEBAS (KNOCKOUT)
+// ======================================================
+window.resetearPruebasKnockout = async () => {
+  if (!confirm("⚠️ ¿Eliminar TODAS las predicciones de knockout y resultados reales? Esta acción no se puede deshacer.")) return;
+  
+  const colecciones = [
+    "predictions_knockout",
+    "predictions_octavos",
+    "predictions_cuartos",
+    "predictions_semifinales",
+    "predictions_final",
+    "predictions_third"
+  ];
+  
+  // Eliminar predicciones
+  for (const col of colecciones) {
+    const snapshot = await getDocs(collection(db, col));
+    const batch = writeBatch(db);
+    snapshot.forEach(doc => batch.delete(doc.ref));
+    await batch.commit();
+    console.log(`🗑️ Eliminados documentos de ${col}`);
+  }
+  
+  // Eliminar resultados reales (colección knockout_results)
+  const resultadosSnapshot = await getDocs(collection(db, "knockout_results"));
+  const batchResults = writeBatch(db);
+  resultadosSnapshot.forEach(doc => batchResults.delete(doc.ref));
+  await batchResults.commit();
+  console.log(`🗑️ Eliminados resultados reales de knockout_results`);
+  
+  // También puedes reiniciar los resultados a null en knockout_results si prefieres mantener los documentos
+  // Pero como los eliminamos, luego el admin deberá volver a crearlos (con el script que te di antes).
+  // Si quieres solo poner a null los campos, dime y lo ajusto.
+  
+  alert("✅ Todas las predicciones de knockout y resultados han sido eliminadas.");
+  location.reload(); // Recargar para reflejar cambios
+};
 
+// Agregar el botón al panel admin (llamar esta función desde onAuthStateChanged cuando el usuario es admin)
+function agregarBotonResetKnockout() {
+  const adminBottom = document.querySelector(".admin-bottom-actions");
+  if (!adminBottom) return;
+  // Evitar duplicados
+  if (document.getElementById("btnResetKnockout")) return;
+  const btn = document.createElement("button");
+  btn.id = "btnResetKnockout";
+  btn.textContent = "🧹 Resetear pruebas KO";
+  btn.className = "admin-load-btn";
+  btn.style.background = "linear-gradient(90deg, #dc2626, #b91c1c)";
+  btn.style.marginLeft = "10px";
+  btn.onclick = window.resetearPruebasKnockout;
+  adminBottom.appendChild(btn);
+}
 // ======================================================
 // RENDERIZADO DE LISTA DE PARTICIPANTES (con buscador y dual)
 // ======================================================
@@ -3307,12 +3360,11 @@ function loadAdminParticipants() {
     const adminList = document.getElementById("adminParticipantsList");
     if (!adminList) return;
 
-    // 1. Construir array de participantes con datos de usuario
+    // Construir array de participantes
     let participantes = [];
     for (const docSnap of snapshot.docs) {
       const participant = docSnap.data();
       const uid = participant.uid;
-
       const userSnap = await getDoc(doc(db, "users", uid));
       let nombre = "Sin nombre", email = "Sin email", expulsado = false;
       if (userSnap.exists()) {
@@ -3320,49 +3372,39 @@ function loadAdminParticipants() {
         email = userSnap.data().email || "Sin email";
         expulsado = userSnap.data().expulsado || false;
       }
-
-      // Asegurar campos knockout (por si no existen)
       const paid_knockout = participant.paid_knockout === true;
       const enabled_knockout = participant.enabled_knockout === true;
       const knockout_status = participant.knockout_status || "pending";
       const amount_knockout = participant.amount_knockout || 0;
-
       participantes.push({
         uid, participant, nombre, email, expulsado,
         paid_knockout, enabled_knockout, knockout_status, amount_knockout
       });
     }
 
-    // Función para renderizar la lista según filtro
-    const render = (filtro = "") => {
+    // Crear el input de búsqueda fuera del render (una sola vez)
+    let searchHtml = `<div class="admin-search-bar" style="margin-bottom: 20px;">
+      <input type="text" id="searchParticipante" placeholder="🔍 Buscar por nombre o email..." style="width: 100%; padding: 12px; border-radius: 30px; border: none; background: #1e293b; color: white;">
+    </div>`;
+    adminList.innerHTML = searchHtml; // solo el input
+    const searchInput = document.getElementById("searchParticipante");
+    const gridContainer = document.createElement("div");
+    gridContainer.className = "admin-participants-grid";
+    adminList.appendChild(gridContainer);
+
+    // Función para renderizar la grid
+    const renderGrid = (filtro = "") => {
       const filtroLower = filtro.toLowerCase();
       const filtrados = participantes.filter(p =>
         p.nombre.toLowerCase().includes(filtroLower) ||
         p.email.toLowerCase().includes(filtroLower)
       );
-
-      let html = `<div class="admin-search-bar" style="margin-bottom: 20px;">
-        <input type="text" id="searchParticipante" placeholder="🔍 Buscar por nombre o email..." style="width: 100%; padding: 12px; border-radius: 30px; border: none; background: #1e293b; color: white;">
-      </div>`;
-      html += `<div class="admin-participants-grid">`;
-
+      let html = "";
       for (const p of filtrados) {
-        // Badges grupos
-        const paidGroupsBadge = p.participant.paid_groups
-          ? `<span class="admin-badge badge-paid">PAGÓ GRUPOS</span>`
-          : `<span class="admin-badge badge-pending">NO PAGÓ GRUPOS</span>`;
-        const enabledGroupsBadge = p.participant.enabled_groups
-          ? `<span class="admin-badge badge-enabled">HABILITADO GRUPOS</span>`
-          : `<span class="admin-badge badge-disabled">BLOQUEADO GRUPOS</span>`;
-
-        // Badges knockout
-        const paidKOBadge = p.paid_knockout
-          ? `<span class="admin-badge badge-paid">PAGÓ KO</span>`
-          : `<span class="admin-badge badge-pending">NO PAGÓ KO</span>`;
-        const enabledKOBadge = p.enabled_knockout
-          ? `<span class="admin-badge badge-enabled">HABILITADO KO</span>`
-          : `<span class="admin-badge badge-disabled">BLOQUEADO KO</span>`;
-
+        const paidGroupsBadge = p.participant.paid_groups ? `<span class="admin-badge badge-paid">PAGÓ GRUPOS</span>` : `<span class="admin-badge badge-pending">NO PAGÓ GRUPOS</span>`;
+        const enabledGroupsBadge = p.participant.enabled_groups ? `<span class="admin-badge badge-enabled">HABILITADO GRUPOS</span>` : `<span class="admin-badge badge-disabled">BLOQUEADO GRUPOS</span>`;
+        const paidKOBadge = p.paid_knockout ? `<span class="admin-badge badge-paid">PAGÓ KO</span>` : `<span class="admin-badge badge-pending">NO PAGÓ KO</span>`;
+        const enabledKOBadge = p.enabled_knockout ? `<span class="admin-badge badge-enabled">HABILITADO KO</span>` : `<span class="admin-badge badge-disabled">BLOQUEADO KO</span>`;
         const expulsadoBadge = p.expulsado ? `<span class="admin-badge badge-pending">EXPULSADO</span>` : "";
 
         html += `
@@ -3380,18 +3422,10 @@ function loadAdminParticipants() {
               ${enabledKOBadge}
               ${expulsadoBadge}
             </div>
-            <div style="margin-top:14px;">
-              💰 Pago Grupos: <strong>${formatearCOP(p.participant.amount_groups || 0)}</strong>
-            </div>
-            <div style="margin-top:8px;">
-              📋 Estado Grupos: <strong>${p.participant.groups_status || "pending"}</strong>
-            </div>
-            <div style="margin-top:8px;">
-              💰 Pago KO: <strong>${formatearCOP(p.amount_knockout)}</strong>
-            </div>
-            <div style="margin-top:8px;">
-              📋 Estado KO: <strong>${p.knockout_status}</strong>
-            </div>
+            <div style="margin-top:14px;">💰 Pago Grupos: <strong>${formatearCOP(p.participant.amount_groups || 0)}</strong></div>
+            <div style="margin-top:8px;">📋 Estado Grupos: <strong>${p.participant.groups_status || "pending"}</strong></div>
+            <div style="margin-top:8px;">💰 Pago KO: <strong>${formatearCOP(p.amount_knockout)}</strong></div>
+            <div style="margin-top:8px;">📋 Estado KO: <strong>${p.knockout_status}</strong></div>
             <div style="display:flex; gap:10px; flex-wrap:wrap; margin-top:16px;">
               <button class="admin-action-btn" onclick="window.togglePago('${p.uid}')">💰 Pago Grupos</button>
               <button class="admin-action-btn" onclick="window.toggleHabilitado('${p.uid}')">🔓 Acceso Grupos</button>
@@ -3402,20 +3436,18 @@ function loadAdminParticipants() {
           </div>
         `;
       }
-      html += `</div>`;
-      adminList.innerHTML = html;
-
-      // Conectar evento del buscador
-      const searchInput = document.getElementById("searchParticipante");
-      if (searchInput) {
-        searchInput.addEventListener("input", (e) => render(e.target.value));
-      }
+      gridContainer.innerHTML = html;
     };
 
-    render(); // primera renderización sin filtro
+    // Render inicial
+    renderGrid();
+
+    // Evento del buscador
+    if (searchInput) {
+      searchInput.addEventListener("input", (e) => renderGrid(e.target.value));
+    }
   });
 }
-
 // ======================================================
 // FORMATEAR MONEDA COP
 // ======================================================
@@ -3471,6 +3503,7 @@ onAuthStateChanged(auth, async (user) => {
       loadAdminParticipants();
       console.log("CARGANDO PARTICIPANTES ADMIN");
       setupUploadButton();
+      agregarBotonResetKnockout();
     } else {
       adminPanel.classList.add("hidden");
     }
