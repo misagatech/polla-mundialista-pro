@@ -983,6 +983,9 @@ window.saveThirdPlacePrediction = async (partidoNumero) => {
 // ======================================================
 // GENERAR FINAL
 // ======================================================
+// ======================================================
+// GENERAR FINAL (CARRUSEL HORIZONTAL)
+// ======================================================
 async function generarFinal() {
   const container = document.getElementById("finalContainer");
   if (!container) return;
@@ -1008,42 +1011,65 @@ async function generarFinal() {
   const predLocal = pred.pred_local ?? "";
   const predVisit = pred.pred_visitante ?? "";
   const clasifGuardado = pred.clasificado ?? "";
-  const radiosId = `radios_final_103`;
+
+  const radiosId = `radios_final_${partido.numero}`;
   const showRadios = (predLocal === predVisit && predLocal !== "");
 
   let html = `<div class="tabla-grupo-card">
     <h3 class="tabla-title">🏆 GRAN FINAL</h3>
-    <div class="puntuacion-info">⚽ Se toma el marcador de los 90 minutos. Puntos: exacto (3), ganador (1), empate +1 si aciertas el clasificado.</div>
-    <div class="dieciseisavos-grid" style="display: flex; justify-content: center;">
-      <div class="knockout-card" data-partido-final="103" data-local="${partido.local}" data-visitante="${partido.visitante}">
-        <div class="knockout-match-number">Partido 103 - FINAL</div>
-        <div class="match-teams">
-          <div class="team-row"><img class="flag-icon" src="https://flagcdn.com/${obtenerCodigoPais(partido.local)}.svg"><span>${fifaCodes[partido.local] || partido.local}</span></div>
-          <div class="vs-text">VS</div>
-          <div class="team-row"><img class="flag-icon" src="https://flagcdn.com/${obtenerCodigoPais(partido.visitante)}.svg"><span>${fifaCodes[partido.visitante] || partido.visitante}</span></div>
-        </div>
-        <div class="prediction-area">
-          <input type="number" id="final_local_103" class="prediction-input local-score" value="${predLocal}" placeholder="0" ${disabled ? "disabled" : ""}>
-          <span class="score-separator">-</span>
-          <input type="number" id="final_visit_103" class="prediction-input visitor-score" value="${predVisit}" placeholder="0" ${disabled ? "disabled" : ""}>
-        </div>
-        <div id="${radiosId}" class="knockout-radios" style="display: ${showRadios ? "flex" : "none"};">
-          <label><input type="radio" name="final_clasificado_103" value="${partido.local}" ${clasifGuardado === partido.local ? "checked" : ""} ${disabled ? "disabled" : ""}> ${fifaCodes[partido.local] || partido.local}</label>
-          <label><input type="radio" name="final_clasificado_103" value="${partido.visitante}" ${clasifGuardado === partido.visitante ? "checked" : ""} ${disabled ? "disabled" : ""}> ${fifaCodes[partido.visitante] || partido.visitante}</label>
-        </div>
-        <button class="btn-guardar" onclick="window.saveFinalPrediction('103')" ${disabled ? "disabled" : ""}>Guardar</button>
-        <div class="match-timer" data-cierre="${cierreApuestas.toISOString()}">⏰ Resultados se bloquean en: <span class="timer-value">${formatearTiempoRestante(cierreApuestas)}</span></div>
-        <div class="match-date">📅 ${fechaLocal}</div>
-      </div>
+    <div class="puntuacion-info">
+      ⚽ <strong>Reglas de puntuación:</strong> Se toma el marcador de los 90 minutos. 
+      Puntos: aciertas el marcador exacto → <strong>3 puntos</strong>. 
+      Aciertas solo quién gana → <strong>1 punto</strong>. 
+      En caso de <strong>empate</strong>, suma <strong>+1 punto</strong> si seleccionas correctamente el clasificado.
+    </div>
+    <div class="grupos-tabs-wrapper" style="margin-bottom: 16px;">
+      <button id="scrollFinalLeft" class="scroll-btn" style="visibility: hidden;"><i class="fas fa-chevron-left"></i></button>
+      <div id="carouselFinal" class="knockout-carousel" style="display: flex; overflow-x: auto; gap: 20px; scroll-behavior: smooth; padding-bottom: 10px; justify-content: center;"></div>
+      <button id="scrollFinalRight" class="scroll-btn" style="visibility: hidden;"><i class="fas fa-chevron-right"></i></button>
     </div>
   </div>`;
+  
   container.innerHTML = html;
+  const carousel = document.getElementById("carouselFinal");
 
-  // Listener para radios
+  const tarjetaHTML = `
+    <div class="knockout-card" data-partido-final="${partido.numero}" data-local="${partido.local}" data-visitante="${partido.visitante}" style="min-width: 340px;">
+      <div class="knockout-match-number">Partido ${partido.numero} - FINAL</div>
+      <div class="match-teams">
+        <div class="team-row">
+          <img class="flag-icon" src="https://flagcdn.com/${obtenerCodigoPais(partido.local)}.svg">
+          <span>${fifaCodes[partido.local] || partido.local}</span>
+        </div>
+        <div class="vs-text">VS</div>
+        <div class="team-row">
+          <img class="flag-icon" src="https://flagcdn.com/${obtenerCodigoPais(partido.visitante)}.svg">
+          <span>${fifaCodes[partido.visitante] || partido.visitante}</span>
+        </div>
+      </div>
+      <div class="prediction-area">
+        <input type="number" id="final_local_${partido.numero}" class="prediction-input local-score" value="${predLocal}" placeholder="0" ${disabled ? "disabled" : ""}>
+        <span class="score-separator">-</span>
+        <input type="number" id="final_visit_${partido.numero}" class="prediction-input visitor-score" value="${predVisit}" placeholder="0" ${disabled ? "disabled" : ""}>
+      </div>
+      <div id="${radiosId}" class="knockout-radios" style="display: ${showRadios ? "flex" : "none"};">
+        <label><input type="radio" name="final_clasificado_${partido.numero}" value="${partido.local}" ${clasifGuardado === partido.local ? "checked" : ""} ${disabled ? "disabled" : ""}> ${fifaCodes[partido.local] || partido.local}</label>
+        <label><input type="radio" name="final_clasificado_${partido.numero}" value="${partido.visitante}" ${clasifGuardado === partido.visitante ? "checked" : ""} ${disabled ? "disabled" : ""}> ${fifaCodes[partido.visitante] || partido.visitante}</label>
+      </div>
+      <button class="btn-guardar" onclick="window.saveFinalPrediction('${partido.numero}')" ${disabled ? "disabled" : ""}>Guardar</button>
+      <div class="match-timer" data-cierre="${cierreApuestas.toISOString()}">
+        ⏰ Resultados se bloquean en: <span class="timer-value">${formatearTiempoRestante(cierreApuestas)}</span>
+      </div>
+      <div class="match-date">📅 ${fechaLocal}</div>
+    </div>
+  `;
+  carousel.insertAdjacentHTML('beforeend', tarjetaHTML);
+
+  // Listeners para radios
   if (!disabled) {
-    const localInput = document.getElementById("final_local_103");
-    const visitInput = document.getElementById("final_visit_103");
-    const radiosDiv = document.getElementById("radios_final_103");
+    const localInput = document.getElementById(`final_local_${partido.numero}`);
+    const visitInput = document.getElementById(`final_visit_${partido.numero}`);
+    const radiosDiv = document.getElementById(`radios_final_${partido.numero}`);
     if (localInput && visitInput && radiosDiv) {
       const updateRadios = () => {
         const localVal = parseInt(localInput.value);
@@ -1063,6 +1089,9 @@ async function generarFinal() {
 // ======================================================
 // GENERAR TERCER PUESTO
 // ======================================================
+// ======================================================
+// GENERAR TERCER PUESTO (CARRUSEL HORIZONTAL)
+// ======================================================
 async function generarTercerPuesto() {
   const container = document.getElementById("thirdPlaceContainer");
   if (!container) return;
@@ -1075,10 +1104,10 @@ async function generarTercerPuesto() {
     clasificados[data.partido] = data.clasificado;
   });
 
-  const partido = { 
-    numero: 104, 
-    local: clasificados[101] ? `Perdedor ${clasificados[101]}` : "Perdedor 101", 
-    visitante: clasificados[102] ? `Perdedor ${clasificados[102]}` : "Perdedor 102" 
+  const partido = {
+    numero: 104,
+    local: clasificados[101] ? `Perdedor ${clasificados[101]}` : "Perdedor 101",
+    visitante: clasificados[102] ? `Perdedor ${clasificados[102]}` : "Perdedor 102"
   };
 
   const horaPartido = obtenerHoraPartidoKnockout(104);
@@ -1092,41 +1121,64 @@ async function generarTercerPuesto() {
   const predLocal = pred.pred_local ?? "";
   const predVisit = pred.pred_visitante ?? "";
   const clasifGuardado = pred.clasificado ?? "";
-  const radiosId = `radios_third_104`;
+
+  const radiosId = `radios_third_${partido.numero}`;
   const showRadios = (predLocal === predVisit && predLocal !== "");
 
   let html = `<div class="tabla-grupo-card">
     <h3 class="tabla-title">🥉 Tercer Puesto</h3>
-    <div class="puntuacion-info">⚽ Se toma el marcador de los 90 minutos. Puntos: exacto (3), ganador (1), empate +1 si aciertas el clasificado.</div>
-    <div class="dieciseisavos-grid" style="display: flex; justify-content: center;">
-      <div class="knockout-card" data-partido-third="104" data-local="${partido.local}" data-visitante="${partido.visitante}">
-        <div class="knockout-match-number">Partido 104</div>
-        <div class="match-teams">
-          <div class="team-row"><img class="flag-icon" src="https://flagcdn.com/${obtenerCodigoPais(partido.local)}.svg"><span>${fifaCodes[partido.local] || partido.local}</span></div>
-          <div class="vs-text">VS</div>
-          <div class="team-row"><img class="flag-icon" src="https://flagcdn.com/${obtenerCodigoPais(partido.visitante)}.svg"><span>${fifaCodes[partido.visitante] || partido.visitante}</span></div>
-        </div>
-        <div class="prediction-area">
-          <input type="number" id="third_local_104" class="prediction-input local-score" value="${predLocal}" placeholder="0" ${disabled ? "disabled" : ""}>
-          <span class="score-separator">-</span>
-          <input type="number" id="third_visit_104" class="prediction-input visitor-score" value="${predVisit}" placeholder="0" ${disabled ? "disabled" : ""}>
-        </div>
-        <div id="${radiosId}" class="knockout-radios" style="display: ${showRadios ? "flex" : "none"};">
-          <label><input type="radio" name="third_clasificado_104" value="${partido.local}" ${clasifGuardado === partido.local ? "checked" : ""} ${disabled ? "disabled" : ""}> ${fifaCodes[partido.local] || partido.local}</label>
-          <label><input type="radio" name="third_clasificado_104" value="${partido.visitante}" ${clasifGuardado === partido.visitante ? "checked" : ""} ${disabled ? "disabled" : ""}> ${fifaCodes[partido.visitante] || partido.visitante}</label>
-        </div>
-        <button class="btn-guardar" onclick="window.saveThirdPlacePrediction('104')" ${disabled ? "disabled" : ""}>Guardar</button>
-        <div class="match-timer" data-cierre="${cierreApuestas.toISOString()}">⏰ Resultados se bloquean en: <span class="timer-value">${formatearTiempoRestante(cierreApuestas)}</span></div>
-        <div class="match-date">📅 ${fechaLocal}</div>
-      </div>
+    <div class="puntuacion-info">
+      ⚽ <strong>Reglas de puntuación:</strong> Se toma el marcador de los 90 minutos. 
+      Puntos: aciertas el marcador exacto → <strong>3 puntos</strong>. 
+      Aciertas solo quién gana → <strong>1 punto</strong>. 
+      En caso de <strong>empate</strong>, suma <strong>+1 punto</strong> si seleccionas correctamente el clasificado.
+    </div>
+    <div class="grupos-tabs-wrapper" style="margin-bottom: 16px;">
+      <button id="scrollThirdLeft" class="scroll-btn" style="visibility: hidden;"><i class="fas fa-chevron-left"></i></button>
+      <div id="carouselThird" class="knockout-carousel" style="display: flex; overflow-x: auto; gap: 20px; scroll-behavior: smooth; padding-bottom: 10px; justify-content: center;"></div>
+      <button id="scrollThirdRight" class="scroll-btn" style="visibility: hidden;"><i class="fas fa-chevron-right"></i></button>
     </div>
   </div>`;
+  
   container.innerHTML = html;
+  const carousel = document.getElementById("carouselThird");
+
+  const tarjetaHTML = `
+    <div class="knockout-card" data-partido-third="${partido.numero}" data-local="${partido.local}" data-visitante="${partido.visitante}" style="min-width: 340px;">
+      <div class="knockout-match-number">Partido ${partido.numero}</div>
+      <div class="match-teams">
+        <div class="team-row">
+          <img class="flag-icon" src="https://flagcdn.com/${obtenerCodigoPais(partido.local)}.svg">
+          <span>${fifaCodes[partido.local] || partido.local}</span>
+        </div>
+        <div class="vs-text">VS</div>
+        <div class="team-row">
+          <img class="flag-icon" src="https://flagcdn.com/${obtenerCodigoPais(partido.visitante)}.svg">
+          <span>${fifaCodes[partido.visitante] || partido.visitante}</span>
+        </div>
+      </div>
+      <div class="prediction-area">
+        <input type="number" id="third_local_${partido.numero}" class="prediction-input local-score" value="${predLocal}" placeholder="0" ${disabled ? "disabled" : ""}>
+        <span class="score-separator">-</span>
+        <input type="number" id="third_visit_${partido.numero}" class="prediction-input visitor-score" value="${predVisit}" placeholder="0" ${disabled ? "disabled" : ""}>
+      </div>
+      <div id="${radiosId}" class="knockout-radios" style="display: ${showRadios ? "flex" : "none"};">
+        <label><input type="radio" name="third_clasificado_${partido.numero}" value="${partido.local}" ${clasifGuardado === partido.local ? "checked" : ""} ${disabled ? "disabled" : ""}> ${fifaCodes[partido.local] || partido.local}</label>
+        <label><input type="radio" name="third_clasificado_${partido.numero}" value="${partido.visitante}" ${clasifGuardado === partido.visitante ? "checked" : ""} ${disabled ? "disabled" : ""}> ${fifaCodes[partido.visitante] || partido.visitante}</label>
+      </div>
+      <button class="btn-guardar" onclick="window.saveThirdPlacePrediction('${partido.numero}')" ${disabled ? "disabled" : ""}>Guardar</button>
+      <div class="match-timer" data-cierre="${cierreApuestas.toISOString()}">
+        ⏰ Resultados se bloquean en: <span class="timer-value">${formatearTiempoRestante(cierreApuestas)}</span>
+      </div>
+      <div class="match-date">📅 ${fechaLocal}</div>
+    </div>
+  `;
+  carousel.insertAdjacentHTML('beforeend', tarjetaHTML);
 
   if (!disabled) {
-    const localInput = document.getElementById("third_local_104");
-    const visitInput = document.getElementById("third_visit_104");
-    const radiosDiv = document.getElementById("radios_third_104");
+    const localInput = document.getElementById(`third_local_${partido.numero}`);
+    const visitInput = document.getElementById(`third_visit_${partido.numero}`);
+    const radiosDiv = document.getElementById(`radios_third_${partido.numero}`);
     if (localInput && visitInput && radiosDiv) {
       const updateRadios = () => {
         const localVal = parseInt(localInput.value);
@@ -2731,10 +2783,14 @@ async function generarOctavos() {
  // ======================================================
 // GENERAR CUARTOS AUTOMÁTICOS
 // ======================================================
+// ======================================================
+// GENERAR CUARTOS AUTOMÁTICOS (CARRUSEL HORIZONTAL)
+// ======================================================
 async function generarCuartos() {
   const container = document.getElementById("cuartosContainer");
   if (!container) return;
 
+  // Obtener clasificados de octavos
   const octavosQuery = query(collection(db, "predictions_octavos"), where("uid", "==", currentUser.uid));
   const octavosSnap = await getDocs(octavosQuery);
   const clasificados = {};
@@ -2750,6 +2806,7 @@ async function generarCuartos() {
     { numero: 100, local: clasificados[95] || "Ganador 95", visitante: clasificados[96] || "Ganador 96" }
   ];
 
+  // Obtener predicciones guardadas
   const cuartosQuery = query(collection(db, "predictions_cuartos"), where("uid", "==", currentUser.uid));
   const cuartosSnap = await getDocs(cuartosQuery);
   const predicciones = {};
@@ -2760,9 +2817,22 @@ async function generarCuartos() {
 
   let html = `<div class="tabla-grupo-card">
     <h3 class="tabla-title">Cuartos de Final</h3>
-    <div class="puntuacion-info">⚽ Se toma el marcador de los 90 minutos. Puntos: exacto (3), ganador (1), empate +1 si aciertas el clasificado.</div>
-    <div class="dieciseisavos-grid" style="display: grid; gap: 20px; grid-template-columns: repeat(auto-fit, minmax(320px, 1fr));">
-  `;
+    <div class="puntuacion-info">
+      ⚽ <strong>Reglas de puntuación:</strong> Se toma el marcador de los 90 minutos. 
+      Puntos: aciertas el marcador exacto → <strong>3 puntos</strong>. 
+      Aciertas solo quién gana → <strong>1 punto</strong>. 
+      En caso de <strong>empate</strong>, suma <strong>+1 punto</strong> si seleccionas correctamente el clasificado.
+      <span style="display:block; margin-top:6px; font-size:0.7rem; color:#facc15;">➡️ Cuando marques un empate, aparecerán las opciones para elegir quién avanza.</span>
+    </div>
+    <div class="grupos-tabs-wrapper" style="margin-bottom: 16px;">
+      <button id="scrollCuartosLeft" class="scroll-btn"><i class="fas fa-chevron-left"></i></button>
+      <div id="carouselCuartos" class="knockout-carousel" style="display: flex; overflow-x: auto; gap: 20px; scroll-behavior: smooth; padding-bottom: 10px;"></div>
+      <button id="scrollCuartosRight" class="scroll-btn"><i class="fas fa-chevron-right"></i></button>
+    </div>
+  </div>`;
+  
+  container.innerHTML = html;
+  const carousel = document.getElementById("carouselCuartos");
 
   for (const partido of partidos) {
     const horaPartido = obtenerHoraPartidoKnockout(partido.numero);
@@ -2774,16 +2844,23 @@ async function generarCuartos() {
     const predLocal = pred.pred_local ?? "";
     const predVisit = pred.pred_visitante ?? "";
     const clasifGuardado = pred.clasificado ?? "";
+
     const radiosId = `radios_cuartos_${partido.numero}`;
     const showRadios = (predLocal === predVisit && predLocal !== "");
 
-    html += `
+    const tarjetaHTML = `
       <div class="knockout-card" data-partido-cuartos="${partido.numero}" data-local="${partido.local}" data-visitante="${partido.visitante}">
         <div class="knockout-match-number">Partido ${partido.numero}</div>
         <div class="match-teams">
-          <div class="team-row"><img class="flag-icon" src="https://flagcdn.com/${obtenerCodigoPais(partido.local)}.svg"><span>${fifaCodes[partido.local] || partido.local}</span></div>
+          <div class="team-row">
+            <img class="flag-icon" src="https://flagcdn.com/${obtenerCodigoPais(partido.local)}.svg">
+            <span>${fifaCodes[partido.local] || partido.local}</span>
+          </div>
           <div class="vs-text">VS</div>
-          <div class="team-row"><img class="flag-icon" src="https://flagcdn.com/${obtenerCodigoPais(partido.visitante)}.svg"><span>${fifaCodes[partido.visitante] || partido.visitante}</span></div>
+          <div class="team-row">
+            <img class="flag-icon" src="https://flagcdn.com/${obtenerCodigoPais(partido.visitante)}.svg">
+            <span>${fifaCodes[partido.visitante] || partido.visitante}</span>
+          </div>
         </div>
         <div class="prediction-area">
           <input type="number" id="cuartos_local_${partido.numero}" class="prediction-input local-score" value="${predLocal}" placeholder="0" ${disabled ? "disabled" : ""}>
@@ -2795,15 +2872,24 @@ async function generarCuartos() {
           <label><input type="radio" name="cuartos_clasificado_${partido.numero}" value="${partido.visitante}" ${clasifGuardado === partido.visitante ? "checked" : ""} ${disabled ? "disabled" : ""}> ${fifaCodes[partido.visitante] || partido.visitante}</label>
         </div>
         <button class="btn-guardar" onclick="window.saveCuartosPrediction('${partido.numero}')" ${disabled ? "disabled" : ""}>Guardar</button>
-        <div class="match-timer" data-cierre="${cierreApuestas.toISOString()}">⏰ Resultados se bloquean en: <span class="timer-value">${formatearTiempoRestante(cierreApuestas)}</span></div>
+        <div class="match-timer" data-cierre="${cierreApuestas.toISOString()}">
+          ⏰ Resultados se bloquean en: <span class="timer-value">${formatearTiempoRestante(cierreApuestas)}</span>
+        </div>
         <div class="match-date">📅 ${fechaLocal}</div>
       </div>
     `;
+    carousel.insertAdjacentHTML('beforeend', tarjetaHTML);
   }
-  html += `</div></div>`;
-  container.innerHTML = html;
 
-  // Listeners para radios en empate
+  // Botones de scroll
+  const leftBtn = document.getElementById("scrollCuartosLeft");
+  const rightBtn = document.getElementById("scrollCuartosRight");
+  if (leftBtn && rightBtn) {
+    leftBtn.onclick = () => carousel.scrollBy({ left: -340, behavior: "smooth" });
+    rightBtn.onclick = () => carousel.scrollBy({ left: 340, behavior: "smooth" });
+  }
+
+  // Listeners para radios
   for (const partido of partidos) {
     const horaPartido = obtenerHoraPartidoKnockout(partido.numero);
     const cierreApuestas = new Date(horaPartido.getTime() - 60 * 60 * 1000);
@@ -2832,6 +2918,9 @@ async function generarCuartos() {
 // ======================================================
 // GENERAR SEMIFINALES
 // ======================================================
+// ======================================================
+// GENERAR SEMIFINALES (CARRUSEL HORIZONTAL)
+// ======================================================
 async function generarSemifinales() {
   const container = document.getElementById("semifinalContainer");
   if (!container) return;
@@ -2859,9 +2948,22 @@ async function generarSemifinales() {
 
   let html = `<div class="tabla-grupo-card">
     <h3 class="tabla-title">Semifinales</h3>
-    <div class="puntuacion-info">⚽ Se toma el marcador de los 90 minutos. Puntos: exacto (3), ganador (1), empate +1 si aciertas el clasificado.</div>
-    <div class="dieciseisavos-grid" style="display: grid; gap: 20px; grid-template-columns: repeat(auto-fit, minmax(320px, 1fr));">
-  `;
+    <div class="puntuacion-info">
+      ⚽ <strong>Reglas de puntuación:</strong> Se toma el marcador de los 90 minutos. 
+      Puntos: aciertas el marcador exacto → <strong>3 puntos</strong>. 
+      Aciertas solo quién gana → <strong>1 punto</strong>. 
+      En caso de <strong>empate</strong>, suma <strong>+1 punto</strong> si seleccionas correctamente el clasificado.
+      <span style="display:block; margin-top:6px; font-size:0.7rem; color:#facc15;">➡️ Cuando marques un empate, aparecerán las opciones para elegir quién avanza.</span>
+    </div>
+    <div class="grupos-tabs-wrapper" style="margin-bottom: 16px;">
+      <button id="scrollSemisLeft" class="scroll-btn"><i class="fas fa-chevron-left"></i></button>
+      <div id="carouselSemis" class="knockout-carousel" style="display: flex; overflow-x: auto; gap: 20px; scroll-behavior: smooth; padding-bottom: 10px;"></div>
+      <button id="scrollSemisRight" class="scroll-btn"><i class="fas fa-chevron-right"></i></button>
+    </div>
+  </div>`;
+  
+  container.innerHTML = html;
+  const carousel = document.getElementById("carouselSemis");
 
   for (const partido of partidos) {
     const horaPartido = obtenerHoraPartidoKnockout(partido.numero);
@@ -2873,16 +2975,23 @@ async function generarSemifinales() {
     const predLocal = pred.pred_local ?? "";
     const predVisit = pred.pred_visitante ?? "";
     const clasifGuardado = pred.clasificado ?? "";
+
     const radiosId = `radios_semis_${partido.numero}`;
     const showRadios = (predLocal === predVisit && predLocal !== "");
 
-    html += `
+    const tarjetaHTML = `
       <div class="knockout-card" data-partido-semis="${partido.numero}" data-local="${partido.local}" data-visitante="${partido.visitante}">
         <div class="knockout-match-number">Semifinal ${partido.numero}</div>
         <div class="match-teams">
-          <div class="team-row"><img class="flag-icon" src="https://flagcdn.com/${obtenerCodigoPais(partido.local)}.svg"><span>${fifaCodes[partido.local] || partido.local}</span></div>
+          <div class="team-row">
+            <img class="flag-icon" src="https://flagcdn.com/${obtenerCodigoPais(partido.local)}.svg">
+            <span>${fifaCodes[partido.local] || partido.local}</span>
+          </div>
           <div class="vs-text">VS</div>
-          <div class="team-row"><img class="flag-icon" src="https://flagcdn.com/${obtenerCodigoPais(partido.visitante)}.svg"><span>${fifaCodes[partido.visitante] || partido.visitante}</span></div>
+          <div class="team-row">
+            <img class="flag-icon" src="https://flagcdn.com/${obtenerCodigoPais(partido.visitante)}.svg">
+            <span>${fifaCodes[partido.visitante] || partido.visitante}</span>
+          </div>
         </div>
         <div class="prediction-area">
           <input type="number" id="semis_local_${partido.numero}" class="prediction-input local-score" value="${predLocal}" placeholder="0" ${disabled ? "disabled" : ""}>
@@ -2894,13 +3003,21 @@ async function generarSemifinales() {
           <label><input type="radio" name="semis_clasificado_${partido.numero}" value="${partido.visitante}" ${clasifGuardado === partido.visitante ? "checked" : ""} ${disabled ? "disabled" : ""}> ${fifaCodes[partido.visitante] || partido.visitante}</label>
         </div>
         <button class="btn-guardar" onclick="window.saveSemifinalPrediction('${partido.numero}')" ${disabled ? "disabled" : ""}>Guardar</button>
-        <div class="match-timer" data-cierre="${cierreApuestas.toISOString()}">⏰ Resultados se bloquean en: <span class="timer-value">${formatearTiempoRestante(cierreApuestas)}</span></div>
+        <div class="match-timer" data-cierre="${cierreApuestas.toISOString()}">
+          ⏰ Resultados se bloquean en: <span class="timer-value">${formatearTiempoRestante(cierreApuestas)}</span>
+        </div>
         <div class="match-date">📅 ${fechaLocal}</div>
       </div>
     `;
+    carousel.insertAdjacentHTML('beforeend', tarjetaHTML);
   }
-  html += `</div></div>`;
-  container.innerHTML = html;
+
+  const leftBtn = document.getElementById("scrollSemisLeft");
+  const rightBtn = document.getElementById("scrollSemisRight");
+  if (leftBtn && rightBtn) {
+    leftBtn.onclick = () => carousel.scrollBy({ left: -340, behavior: "smooth" });
+    rightBtn.onclick = () => carousel.scrollBy({ left: 340, behavior: "smooth" });
+  }
 
   for (const partido of partidos) {
     const horaPartido = obtenerHoraPartidoKnockout(partido.numero);
