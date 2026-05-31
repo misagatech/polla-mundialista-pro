@@ -1331,147 +1331,175 @@ BRACKET FIFA STYLE
 
 /* CARD */
 
+/* Knockout card moderno */
 .knockout-card {
-
-  width: 290px;
-
-  flex-shrink: 0;
-
-  background:
-    linear-gradient(
-      180deg,
-      rgba(17,24,39,.98),
-      rgba(10,15,30,.98)
-    );
-
-  border-radius: 26px;
-
+  background: linear-gradient(145deg, #1a1f2e, #0f1320);
+  border-radius: 28px;
   padding: 20px;
-
-  border:
-    1px solid rgba(255,255,255,.08);
-
-  box-shadow:
-    0 15px 35px rgba(0,0,0,.35);
-
-  transition: .3s ease;
-
-  position: relative;
-
-  overflow: hidden;
-
+  box-shadow: 0 20px 35px -10px rgba(0, 0, 0, 0.5);
+  border: 1px solid rgba(255, 255, 255, 0.08);
+  transition: transform 0.2s, box-shadow 0.2s;
+  width: 400px;
+  backdrop-filter: blur(2px);
 }
-
-/* EFECTO PREMIUM */
-
-.knockout-card::before {
-
-  content: "";
-
-  position: absolute;
-
-  top: 0;
-  left: 0;
-  right: 0;
-
-  height: 4px;
-
-  background:
-    linear-gradient(
-      90deg,
-      #2563eb,
-      #facc15
-    );
-
-}
-
-/* HOVER */
 
 .knockout-card:hover {
-
-  transform:
-    translateY(-6px);
-
-  border-color:
-    rgba(250,204,21,.45);
-
-  box-shadow:
-    0 22px 45px rgba(0,0,0,.45);
-
+  transform: translateY(-4px);
+  box-shadow: 0 25px 40px -12px rgba(0, 0, 0, 0.6);
+  border-color: rgba(250, 204, 21, 0.3);
 }
 
-/* NUMERO */
+.knockout-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: baseline;
+  margin-bottom: 20px;
+  border-bottom: 1px dashed rgba(255, 255, 255, 0.15);
+  padding-bottom: 8px;
+}
 
 .knockout-match-number {
-
-  text-align: center;
-
+  font-size: 0.9rem;
+  font-weight: 700;
   color: #facc15;
-
-  font-size: 13px;
-
-  font-weight: 800;
-
   letter-spacing: 1px;
-
-  margin-bottom: 18px;
-
-  text-transform: uppercase;
-
 }
 
-/* TEAM */
+.match-timer {
+  font-size: 0.8rem;
+  background: rgba(0, 0, 0, 0.5);
+  padding: 4px 10px;
+  border-radius: 40px;
+  font-family: monospace;
+}
+
+.knockout-teams-row {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  gap: 15px;
+  margin-bottom: 20px;
+}
 
 .knockout-team {
-
+  flex: 1;
   display: flex;
-
+  flex-direction: column;
   align-items: center;
-
-  justify-content: center;
-
   gap: 10px;
+  background: rgba(0, 0, 0, 0.25);
+  border-radius: 24px;
+  padding: 15px 8px;
+  transition: background 0.2s;
+}
 
-  font-size: 20px;
+.local-side {
+  background: linear-gradient(145deg, rgba(37, 99, 235, 0.2), rgba(30, 64, 175, 0.1));
+  border: 1px solid rgba(59, 130, 246, 0.3);
+}
 
+.visit-side {
+  background: linear-gradient(145deg, rgba(34, 197, 94, 0.2), rgba(21, 128, 61, 0.1));
+  border: 1px solid rgba(74, 222, 128, 0.3);
+}
+
+.knockout-team .flag-icon {
+  width: 48px;
+  height: 32px;
+  border-radius: 8px;
+  box-shadow: 0 4px 8px rgba(0, 0, 0, 0.3);
+}
+
+.team-name {
   font-weight: 800;
-
-  color: white;
-
+  font-size: 1.1rem;
+  letter-spacing: 1px;
 }
 
-/* BANDERAS */
-
-.knockout-team img {
-
-  width: 34px;
-
-  height: 24px;
-
-  object-fit: cover;
-
-  border-radius: 4px;
-
-  background: white;
-
+.score-inputs .prediction-input {
+  width: 70px;
+  height: 50px;
+  font-size: 1.4rem;
+  text-align: center;
+  background: #0f172a;
+  border: 1px solid rgba(255, 255, 255, 0.2);
+  border-radius: 16px;
+  font-weight: 700;
 }
-
-/* VS */
 
 .knockout-vs {
+  font-size: 1.2rem;
+  font-weight: 800;
+  color: #facc15;
+  background: rgba(0, 0, 0, 0.5);
+  width: 40px;
+  height: 40px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  border-radius: 50%;
+  box-shadow: 0 0 0 2px rgba(250, 204, 21, 0.4);
+}
 
+.knockout-rules {
+  background: rgba(0, 0, 0, 0.4);
+  border-radius: 20px;
+  padding: 8px 12px;
+  font-size: 0.7rem;
   text-align: center;
-
   margin: 16px 0;
+  color: #cbd5e1;
+}
 
+.knockout-radios {
+  display: flex;
+  justify-content: center;
+  gap: 25px;
+  margin: 12px 0;
+  background: rgba(0, 0, 0, 0.3);
+  padding: 8px;
+  border-radius: 40px;
+}
+
+.knockout-radios label {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  font-size: 0.8rem;
+  font-weight: 600;
+  cursor: pointer;
+}
+
+.knockout-footer {
+  display: flex;
+  justify-content: center;
+  margin: 10px 0 8px;
+}
+
+.btn-guardar {
+  background: linear-gradient(90deg, #facc15, #eab308);
+  color: black;
+  font-weight: 800;
+  padding: 10px 28px;
+  border-radius: 40px;
+  border: none;
+  cursor: pointer;
+  transition: all 0.2s;
+  width: auto;
+}
+
+.btn-guardar:hover {
+  transform: scale(1.02);
+  box-shadow: 0 6px 14px rgba(250, 204, 21, 0.4);
+}
+
+.match-date {
+  font-size: 0.7rem;
+  text-align: center;
+  margin-top: 12px;
   color: #94a3b8;
-
-  font-size: 14px;
-
-  font-weight: 700;
-
-  letter-spacing: 2px;
-
+  border-top: 1px solid rgba(255, 255, 255, 0.1);
+  padding-top: 10px;
 }
 
 /* INPUTS */
