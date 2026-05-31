@@ -134,7 +134,7 @@ function obtenerHoraPartidoKnockout(numeroPartido) {
     // Semifinales
     101: "2026-07-14", 102: "2026-07-15",
     // Tercer puesto y final
-    103: "2026-07-18", 104: "2026-07-19"
+    104: "2026-07-18", 103: "2026-07-19"
   };
 
   // Horarios en hora Colombia (UTC-5) en formato "HH:MM:SS"
@@ -174,9 +174,9 @@ function obtenerHoraPartidoKnockout(numeroPartido) {
     101: "14:00:00", // Martes 14/7, 14:00 COL
     102: "14:00:00", // Miércoles 15/7, 14:00 COL
     // Tercer puesto
-    103: "16:00:00", // Sábado 18/7, 16:00 COL (tercer puesto)
+    104: "16:00:00", // Sábado 18/7, 16:00 COL (tercer puesto)
     // Final
-    104: "14:00:00"  // Domingo 19/7, 14:00 COL (final)
+    103: "14:00:00"  // Domingo 19/7, 14:00 COL (final)
   };
 
   const fechaStr = fechas[numeroPartido];
