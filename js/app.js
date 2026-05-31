@@ -2321,29 +2321,25 @@ async function generarDieciseisavos() {
           <input type="number" id="${visitInputId}" class="prediction-input visitor-score" value="${predVisit}" placeholder="0" ${disabled ? "disabled" : ""}>
         </div>
 
-        <div class="rules-box">
-          ⚽ Los 90 minutos definen el marcador. Puntos: exacto 3 | ganador 1 | empate +1 si aciertas el clasificado.
-        </div>
-
         <div id="${radiosId}" class="knockout-radios" style="display: ${(predLocal === predVisit && predLocal !== "") ? "flex" : "none"};">
           <label><input type="radio" name="clasificado_${partido.numero}" value="${partido.local}" ${clasifGuardado === partido.local ? "checked" : ""} ${disabled ? "disabled" : ""}> ${fifaCodes[partido.local] || partido.local}</label>
           <label><input type="radio" name="clasificado_${partido.numero}" value="${partido.visitante}" ${clasifGuardado === partido.visitante ? "checked" : ""} ${disabled ? "disabled" : ""}> ${fifaCodes[partido.visitante] || partido.visitante}</label>
         </div>
+
+        <button class="btn-guardar" onclick="window.saveKnockoutPrediction('${partido.numero}')" ${disabled ? "disabled" : ""}>Guardar</button>
 
         <div class="match-timer" data-cierre="${cierreApuestas.toISOString()}">
           ⏰ Resultados se bloquean en: <span class="timer-value">${formatearTiempoRestante(cierreApuestas)}</span>
         </div>
 
         <div class="match-date">📅 ${fechaLocal}</div>
-
-        <button class="btn-guardar" onclick="window.saveKnockoutPrediction('${partido.numero}')" ${disabled ? "disabled" : ""}>Guardar</button>
       </div>
     `;
   }
   html += `</div></div>`;
   container.innerHTML = html;
 
-  // Agregar listeners para mostrar/ocultar radios
+  // Listeners para radios en empate
   for (const partido of partidos) {
     if (disabled) continue;
     const localInput = document.getElementById(`ko_local_${partido.numero}`);
