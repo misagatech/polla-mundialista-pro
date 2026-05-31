@@ -1900,4 +1900,25 @@ RESPONSIVE ADMIN PARTICIPANTES
   color: #cbd5e1;
   border: 1px solid rgba(255, 255, 255, 0.08);
 }
+.knockout-carousel {
+  display: flex;
+  overflow-x: auto;
+  scroll-snap-type: x mandatory;
+  gap: 20px;
+  padding-bottom: 16px;
+}
 
+.knockout-carousel .knockout-card {
+  scroll-snap-align: start;
+  min-width: 320px;
+  flex-shrink: 0;
+}
+
+/* Ocultar scrollbar en navegadores WebKit (opcional) */
+.knockout-carousel::-webkit-scrollbar {
+  height: 8px;
+}
+.knockout-carousel::-webkit-scrollbar-thumb {
+  background: #facc15;
+  border-radius: 10px;
+}
