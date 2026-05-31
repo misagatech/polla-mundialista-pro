@@ -3067,34 +3067,35 @@ document.getElementById("btnRegister").onclick = async () => {
       doc(db, "users", cred.user.uid),
       {
         uid: cred.user.uid,
-
         nombre: name,
-
         email: email,
-
         rol: "user",
-
         expulsado: false,
-
         created_at: serverTimestamp()
       }
     );
+
+    const fechaInicioMundial = new Date("2026-06-11T00:00:00-05:00");
+    const now = new Date();
+    const registeredAfterGroups = now > fechaInicioMundial;
 
     await setDoc(
       doc(db, "participants", cred.user.uid),
       {
         uid: cred.user.uid,
-
+        // Grupos
         paid_groups: false,
-
         amount_groups: 0,
-
         groups_status: "pending",
-
         enabled_groups: false,
-
         submitted_groups_at: null,
-
+        // Knockout
+        paid_knockout: false,
+        amount_knockout: 0,
+        knockout_status: "pending",
+        enabled_knockout: false,
+        // Metadato
+        registered_after_groups: registeredAfterGroups,
         created_at: serverTimestamp()
       }
     );
