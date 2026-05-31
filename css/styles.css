@@ -1476,7 +1476,7 @@ KNOCKOUT CARDS (estilo idéntico a grupos)
 
   font-weight: 800;
 
-  color: white;
+  color: #facc15;
 
   margin-bottom: 22px;
 
@@ -1901,16 +1901,17 @@ RESPONSIVE ADMIN PARTICIPANTES
   border: 1px solid rgba(255, 255, 255, 0.08);
 }
 .knockout-carousel {
+  width: 100%;
   display: flex;
   overflow-x: auto;
   scroll-snap-type: x mandatory;
-  gap: 20px;
+  gap: 24px;
   padding-bottom: 16px;
 }
 
 .knockout-carousel .knockout-card {
   scroll-snap-align: start;
-  min-width: 320px;
+  min-width: 340px;
   flex-shrink: 0;
 }
 
