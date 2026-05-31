@@ -2275,12 +2275,27 @@ async function generarDieciseisavos() {
     { numero: 88, local: clasificadosGlobales["2D"] || "2D", visitante: clasificadosGlobales["2G"] || "2G" }
   ];
 
-   // Bloque de puntuación global para esta fase
+  // Crear la estructura del carrusel
   let html = `<div class="tabla-grupo-card">
     <h3 class="tabla-title">Dieciseisavos de Final</h3>
-    <div class="puntuacion-info">⚽ Se toma el marcador de los 90 minutos. Puntos: exacto (3), ganador (1), empate +1 si aciertas el clasificado.</div>
-    <div class="dieciseisavos-grid">`;
+    <div class="puntuacion-info">
+      ⚽ <strong>Reglas de puntuación:</strong> Se toma el marcador de los 90 minutos. 
+      Puntos: aciertas el marcador exacto → <strong>3 puntos</strong>. 
+      Aciertas solo quién gana → <strong>1 punto</strong>. 
+      En caso de <strong>empate</strong>, suma <strong>+1 punto</strong> si seleccionas correctamente el clasificado.
+      <span style="display:block; margin-top:6px; font-size:0.7rem; color:#facc15;">➡️ Cuando marques un empate, aparecerán las opciones para elegir quién avanza.</span>
+    </div>
+    <div class="grupos-tabs-wrapper" style="margin-bottom: 16px;">
+      <button id="scrollKnockoutLeft" class="scroll-btn"><i class="fas fa-chevron-left"></i></button>
+      <div id="knockoutCarousel" class="knockout-carousel" style="display: flex; overflow-x: auto; gap: 20px; scroll-behavior: smooth; padding-bottom: 10px;"></div>
+      <button id="scrollKnockoutRight" class="scroll-btn"><i class="fas fa-chevron-right"></i></button>
+    </div>
+  </div>`;
+  
+  container.innerHTML = html;
+  const carousel = document.getElementById("knockoutCarousel");
 
+  // Generar cada tarjeta y agregarla al carrusel
   for (const partido of partidos) {
     if (!partido.local || !partido.visitante) continue;
 
@@ -2299,11 +2314,10 @@ async function generarDieciseisavos() {
       clasifGuardado = data.clasificado ?? "";
     }
 
-    const radiosId = `radios_${partido.numero}`;
-    const localInputId = `ko_local_${partido.numero}`;
-    const visitInputId = `ko_visit_${partido.numero}`;
+    const radiosId = `radios_ko_${partido.numero}`;
+    const showRadios = (predLocal === predVisit && predLocal !== "");
 
-    html += `
+    const tarjetaHTML = `
       <div class="knockout-card" data-partido="${partido.numero}" data-local="${partido.local}" data-visitante="${partido.visitante}">
         <div class="knockout-match-number">Partido ${partido.numero}</div>
 
@@ -2320,12 +2334,12 @@ async function generarDieciseisavos() {
         </div>
 
         <div class="prediction-area">
-          <input type="number" id="${localInputId}" class="prediction-input local-score" value="${predLocal}" placeholder="0" ${disabled ? "disabled" : ""}>
+          <input type="number" id="ko_local_${partido.numero}" class="prediction-input local-score" value="${predLocal}" placeholder="0" ${disabled ? "disabled" : ""}>
           <span class="score-separator">-</span>
-          <input type="number" id="${visitInputId}" class="prediction-input visitor-score" value="${predVisit}" placeholder="0" ${disabled ? "disabled" : ""}>
+          <input type="number" id="ko_visit_${partido.numero}" class="prediction-input visitor-score" value="${predVisit}" placeholder="0" ${disabled ? "disabled" : ""}>
         </div>
 
-        <div id="${radiosId}" class="knockout-radios" style="display: ${(predLocal === predVisit && predLocal !== "") ? "flex" : "none"};">
+        <div id="${radiosId}" class="knockout-radios" style="display: ${showRadios ? "flex" : "none"};">
           <label><input type="radio" name="clasificado_${partido.numero}" value="${partido.local}" ${clasifGuardado === partido.local ? "checked" : ""} ${disabled ? "disabled" : ""}> ${fifaCodes[partido.local] || partido.local}</label>
           <label><input type="radio" name="clasificado_${partido.numero}" value="${partido.visitante}" ${clasifGuardado === partido.visitante ? "checked" : ""} ${disabled ? "disabled" : ""}> ${fifaCodes[partido.visitante] || partido.visitante}</label>
         </div>
@@ -2339,16 +2353,24 @@ async function generarDieciseisavos() {
         <div class="match-date">📅 ${fechaLocal}</div>
       </div>
     `;
-  }
-  html += `</div></div>`;
-  container.innerHTML = html;
 
-  // Listeners para radios
+    carousel.insertAdjacentHTML('beforeend', tarjetaHTML);
+  }
+
+  // Configurar botones de scroll
+  const leftBtn = document.getElementById("scrollKnockoutLeft");
+  const rightBtn = document.getElementById("scrollKnockoutRight");
+  if (leftBtn && rightBtn) {
+    leftBtn.onclick = () => carousel.scrollBy({ left: -340, behavior: "smooth" });
+    rightBtn.onclick = () => carousel.scrollBy({ left: 340, behavior: "smooth" });
+  }
+
+  // Agregar event listeners para mostrar/ocultar radios al cambiar inputs
   for (const partido of partidos) {
     if (disabled) continue;
     const localInput = document.getElementById(`ko_local_${partido.numero}`);
     const visitInput = document.getElementById(`ko_visit_${partido.numero}`);
-    const radiosDiv = document.getElementById(`radios_${partido.numero}`);
+    const radiosDiv = document.getElementById(`radios_ko_${partido.numero}`);
     if (localInput && visitInput && radiosDiv) {
       const updateRadios = () => {
         const localVal = parseInt(localInput.value);
@@ -2364,7 +2386,6 @@ async function generarDieciseisavos() {
     }
   }
 }
-
 // ======================================================
 // GUARDAR PREDICCIÓN ELIMINATORIAS
 // ======================================================
