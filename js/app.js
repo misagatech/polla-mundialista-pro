@@ -118,76 +118,43 @@ function obtenerCodigoPais(nombre) {
 function obtenerHoraPartidoKnockout(numeroPartido) {
   // Fechas (YYYY-MM-DD)
   const fechas = {
-    // Dieciseisavos
     73: "2026-06-28", 74: "2026-06-29", 75: "2026-06-29", 76: "2026-06-29",
     77: "2026-06-30", 78: "2026-06-30", 79: "2026-06-30",
     80: "2026-07-01", 81: "2026-07-01", 82: "2026-07-01",
     83: "2026-07-02", 84: "2026-07-02", 85: "2026-07-02",
     86: "2026-07-03", 87: "2026-07-03", 88: "2026-07-03",
-    // Octavos
-    89: "2026-07-04", 90: "2026-07-04",
-    91: "2026-07-05", 92: "2026-07-05",
-    93: "2026-07-06", 94: "2026-07-06",
-    95: "2026-07-07", 96: "2026-07-07",
-    // Cuartos
+    89: "2026-07-04", 90: "2026-07-04", 91: "2026-07-05", 92: "2026-07-05",
+    93: "2026-07-06", 94: "2026-07-06", 95: "2026-07-07", 96: "2026-07-07",
     97: "2026-07-09", 98: "2026-07-10", 99: "2026-07-11", 100: "2026-07-11",
-    // Semifinales
     101: "2026-07-14", 102: "2026-07-15",
-    // Tercer puesto y final
-    104: "2026-07-18", 103: "2026-07-19"
+    104: "2026-07-18",  // Tercer puesto
+    103: "2026-07-19"   // Final
   };
 
   // Horarios en hora Colombia (UTC-5) en formato "HH:MM:SS"
   const horarios = {
-    // Dieciseisavos
-    73: "14:00:00",  // Domingo 28/6, 14:00 COL
-    74: "15:30:00",  // Lunes 29/6, 15:30 COL
-    75: "20:00:00",  // Lunes 29/6, 20:00 COL
-    76: "12:00:00",  // Lunes 29/6, 12:00 COL (según tu tabla, partido 76 a las 12:00 COL)
-    77: "16:00:00",  // Martes 30/6, 16:00 COL
-    78: "12:00:00",  // Martes 30/6, 12:00 COL
-    79: "20:00:00",  // Martes 30/6, 20:00 COL
-    80: "11:00:00",  // Miércoles 1/7, 11:00 COL
-    81: "19:00:00",  // Miércoles 1/7, 19:00 COL
-    82: "15:00:00",  // Miércoles 1/7, 15:00 COL
-    83: "18:00:00",  // Jueves 2/7, 18:00 COL
-    84: "14:00:00",  // Jueves 2/7, 14:00 COL
-    85: "22:00:00",  // Jueves 2/7, 22:00 COL
-    86: "17:00:00",  // Viernes 3/7, 17:00 COL
-    87: "20:30:00",  // Viernes 3/7, 20:30 COL
-    88: "13:00:00",  // Viernes 3/7, 13:00 COL
-    // Octavos
-    89: "16:00:00",  // Sábado 4/7, 16:00 COL
-    90: "12:00:00",  // Sábado 4/7, 12:00 COL
-    91: "15:00:00",  // Domingo 5/7, 15:00 COL
-    92: "19:00:00",  // Domingo 5/7, 19:00 COL
-    93: "14:00:00",  // Lunes 6/7, 14:00 COL
-    94: "19:00:00",  // Lunes 6/7, 19:00 COL
-    95: "11:00:00",  // Martes 7/7, 11:00 COL
-    96: "15:00:00",  // Martes 7/7, 15:00 COL
-    // Cuartos
-    97: "15:00:00",  // Jueves 9/7, 15:00 COL
-    98: "14:00:00",  // Viernes 10/7, 14:00 COL
-    99: "16:00:00",  // Sábado 11/7, 16:00 COL
-    100: "20:00:00", // Sábado 11/7, 20:00 COL
-    // Semifinales
-    101: "14:00:00", // Martes 14/7, 14:00 COL
-    102: "14:00:00", // Miércoles 15/7, 14:00 COL
-    // Tercer puesto
-    104: "16:00:00", // Sábado 18/7, 16:00 COL (tercer puesto)
-    // Final
-    103: "14:00:00"  // Domingo 19/7, 14:00 COL (final)
+    73: "14:00:00", 74: "15:30:00", 75: "20:00:00", 76: "12:00:00",
+    77: "16:00:00", 78: "12:00:00", 79: "20:00:00", 80: "11:00:00",
+    81: "19:00:00", 82: "15:00:00", 83: "18:00:00", 84: "14:00:00",
+    85: "22:00:00", 86: "17:00:00", 87: "20:30:00", 88: "13:00:00",
+    89: "16:00:00", 90: "12:00:00", 91: "15:00:00", 92: "19:00:00",
+    93: "14:00:00", 94: "19:00:00", 95: "11:00:00", 96: "15:00:00",
+    97: "15:00:00", 98: "14:00:00", 99: "16:00:00", 100: "20:00:00",
+    101: "14:00:00", 102: "14:00:00",
+    104: "16:00:00",  // Tercer puesto
+    103: "14:00:00"   // Final
   };
 
   const fechaStr = fechas[numeroPartido];
-  const horaStr = horarios[numeroPartido] || "12:00:00"; // fallback
+  const horaStr = horarios[numeroPartido] || "12:00:00";
   if (!fechaStr) return new Date();
 
-  // Crear fecha local en Colombia (UTC-5) a partir de fecha y hora
-  const fechaLocal = new Date(`${fechaStr}T${horaStr}`);
-  // Convertir a UTC restando 5 horas (porque Colombia está 5 horas detrás de UTC)
-  const fechaUTC = new Date(fechaLocal.getTime() + 5 * 60 * 60 * 1000);
-  return fechaUTC;
+  const [year, month, day] = fechaStr.split('-');
+  const [hour, minute, second] = horaStr.split(':');
+
+  // Convertir hora local Colombia (UTC-5) a UTC sumando 5 horas
+  const utcDate = new Date(Date.UTC(year, month - 1, day, parseInt(hour) + 5, parseInt(minute), parseInt(second)));
+  return utcDate;
 }
 // ======================================================
 // CÓDIGOS FIFA (3 letras)
