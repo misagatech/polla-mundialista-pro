@@ -2275,7 +2275,11 @@ async function generarDieciseisavos() {
     { numero: 88, local: clasificadosGlobales["2D"] || "2D", visitante: clasificadosGlobales["2G"] || "2G" }
   ];
 
-   let html = `<div class="tabla-grupo-card"><h3 class="tabla-title">Dieciseisavos de Final</h3><div class="dieciseisavos-grid">`;
+   // Bloque de puntuación global para esta fase
+  let html = `<div class="tabla-grupo-card">
+    <h3 class="tabla-title">Dieciseisavos de Final</h3>
+    <div class="puntuacion-info">⚽ Se toma el marcador de los 90 minutos. Puntos: exacto (3), ganador (1), empate +1 si aciertas el clasificado.</div>
+    <div class="dieciseisavos-grid">`;
 
   for (const partido of partidos) {
     if (!partido.local || !partido.visitante) continue;
@@ -2339,7 +2343,7 @@ async function generarDieciseisavos() {
   html += `</div></div>`;
   container.innerHTML = html;
 
-  // Listeners para radios en empate
+  // Listeners para radios
   for (const partido of partidos) {
     if (disabled) continue;
     const localInput = document.getElementById(`ko_local_${partido.numero}`);
@@ -2360,6 +2364,7 @@ async function generarDieciseisavos() {
     }
   }
 }
+
 // ======================================================
 // GUARDAR PREDICCIÓN ELIMINATORIAS
 // ======================================================

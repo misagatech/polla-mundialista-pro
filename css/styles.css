@@ -1318,15 +1318,10 @@ BRACKET FIFA STYLE
 /* GRID HORIZONTAL */
 
 .dieciseisavos-grid {
-
-  display: flex;
-
-  gap: 18px;
-
-  width: max-content;
-
-  padding: 4px;
-
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
+  gap: 20px;
+  padding: 0;
 }
 
 /* CARD */
@@ -1346,6 +1341,7 @@ KNOCKOUT CARDS (estilo idéntico a grupos)
   gap: 15px;
   transition: .3s ease;
   box-shadow: 0 10px 25px rgba(0, 0, 0, .25);
+  min-width: 0;
 }
 
 .knockout-card:hover {
