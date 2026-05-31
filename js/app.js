@@ -3523,7 +3523,8 @@ onAuthStateChanged(auth, async (user) => {
       loadAdminParticipants();
       console.log("CARGANDO PARTICIPANTES ADMIN");
       setupUploadButton();
-      agregarBotonResetKnockout();
+      agregarBotonesReset();            // ← crea los botones rojos de reset
+loadAdminKnockoutMatches();       // ← carga la sección de resultados knockout
     } else {
       adminPanel.classList.add("hidden");
     }
