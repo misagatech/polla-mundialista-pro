@@ -2365,24 +2365,45 @@ async function generarDieciseisavos() {
     rightBtn.onclick = () => carousel.scrollBy({ left: 340, behavior: "smooth" });
   }
 
-  // Agregar event listeners para mostrar/ocultar radios al cambiar inputs
+  // ======================================================
+  // LISTENERS PARA MOSTRAR RADIOS EN EMPATE (CON CONSOLE.LOG)
+  // ======================================================
   for (const partido of partidos) {
-    if (disabled) continue;
+    // Recalcular disabled para este partido (necesario porque la variable 'disabled' del primer bucle no existe aquí)
+    const horaPartido = obtenerHoraPartidoKnockout(partido.numero);
+    const cierreApuestas = new Date(horaPartido.getTime() - 60 * 60 * 1000);
+    const disabled = new Date() >= cierreApuestas;
+
     const localInput = document.getElementById(`ko_local_${partido.numero}`);
     const visitInput = document.getElementById(`ko_visit_${partido.numero}`);
     const radiosDiv = document.getElementById(`radios_ko_${partido.numero}`);
+
+    console.log(`🔍 Partido ${partido.numero}: disabled = ${disabled}, localInput = ${!!localInput}, visitInput = ${!!visitInput}, radiosDiv = ${!!radiosDiv}`);
+
+    if (disabled) {
+      console.log(`⏭️ Partido ${partido.numero} deshabilitado, no se agregan listeners.`);
+      continue;
+    }
+
     if (localInput && visitInput && radiosDiv) {
       const updateRadios = () => {
         const localVal = parseInt(localInput.value);
         const visitVal = parseInt(visitInput.value);
+        console.log(`🔄 Partido ${partido.numero}: Local = ${localVal}, Visit = ${visitVal}, ¿empate? = ${localVal === visitVal}`);
         if (!isNaN(localVal) && !isNaN(visitVal) && localVal === visitVal) {
           radiosDiv.style.display = "flex";
+          console.log(`✅ Radios visibles para partido ${partido.numero}`);
         } else {
           radiosDiv.style.display = "none";
+          console.log(`❌ Radios ocultos para partido ${partido.numero}`);
         }
       };
       localInput.addEventListener("input", updateRadios);
       visitInput.addEventListener("input", updateRadios);
+      updateRadios(); // Sincronizar estado inicial (por si ya había empate guardado)
+      console.log(`🎧 Listeners agregados para partido ${partido.numero}`);
+    } else {
+      console.warn(`⚠️ Elementos no encontrados para partido ${partido.numero}. localInput=${localInput}, visitInput=${visitInput}, radiosDiv=${radiosDiv}`);
     }
   }
 }
