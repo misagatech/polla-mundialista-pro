@@ -3618,7 +3618,7 @@ async function calcularPuntosKnockout(partidoNumero, fase) {
   // Marcar que ya se asignaron puntos (opcional)
   await updateDoc(docSnap.ref, { points_assigned: true, points: puntos });
 }
-}
+
 // ======================================================
 // ESTADO DE AUTENTICACIÓN (CORAZÓN DE LA APP)
 // ======================================================
