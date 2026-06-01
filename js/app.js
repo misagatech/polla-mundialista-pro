@@ -3354,6 +3354,191 @@ document.getElementById("verGrupoBtn").onclick = () => {
     alert("No hay grupo activo");
   }
 };
+
+// ======================================================
+// ADMIN PANEL: RESULTADOS REALES DE KNOCKOUT
+// ======================================================
+async function loadAdminKnockoutMatches() {
+  const container = document.getElementById("adminKnockoutMatchesList");
+  if (!container) return;
+
+  // Obtener resultados actuales desde knockout_results
+  const resultadosSnap = await getDocs(collection(db, "knockout_results"));
+  const resultadosMap = {};
+  resultadosSnap.forEach(doc => {
+    const data = doc.data();
+    resultadosMap[data.numero] = data;
+  });
+
+  const fases = [
+    { nombre: "Dieciseisavos", inicio: 73, fin: 88 },
+    { nombre: "Octavos", inicio: 89, fin: 96 },
+    { nombre: "Cuartos", inicio: 97, fin: 100 },
+    { nombre: "Semifinales", inicio: 101, fin: 102 },
+    { nombre: "Final", inicio: 103, fin: 103 },
+    { nombre: "Tercer puesto", inicio: 104, fin: 104 }
+  ];
+
+  let html = `<div class="admin-knockout-section" style="margin-top: 30px;">
+    <h3 class="admin-section-title">🗡️ Resultados Eliminatorias</h3>`;
+  for (const fase of fases) {
+    html += `<div class="admin-group" style="margin-bottom: 30px;">
+      <div class="admin-group-title">${fase.nombre}</div>
+      <div class="admin-grid">`;
+    for (let num = fase.inicio; num <= fase.fin; num++) {
+      const resultado = resultadosMap[num] || { resultado_local: null, resultado_visitante: null, clasificado_real: null };
+      html += `
+        <div class="admin-card" data-partido="${num}">
+          <div class="admin-teams">
+            <div class="admin-team">Partido ${num}</div>
+          </div>
+          <div class="admin-score">
+            <input type="number" id="res_ko_local_${num}" class="admin-input" placeholder="Local" value="${resultado.resultado_local !== null ? resultado.resultado_local : ''}" style="width:60px;">
+            <span>-</span>
+            <input type="number" id="res_ko_visit_${num}" class="admin-input" placeholder="Visitante" value="${resultado.resultado_visitante !== null ? resultado.resultado_visitante : ''}" style="width:60px;">
+          </div>
+          <div style="margin-top:8px; text-align:center;">
+            <label style="font-size:12px;">Clasificado (si empate):</label>
+            <select id="clasificado_ko_${num}" class="admin-input" style="width:120px;">
+              <option value="">-- Seleccionar --</option>
+              <option value="local" ${resultado.clasificado_real === "local" ? "selected" : ""}>Local</option>
+              <option value="visitante" ${resultado.clasificado_real === "visitante" ? "selected" : ""}>Visitante</option>
+            </select>
+          </div>
+          <div style="display:flex; gap:8px; margin-top:10px;">
+            <button class="admin-btn" onclick="window.guardarResultadoKnockout(${num})">Guardar</button>
+            <button class="admin-btn finalizar-btn" onclick="window.finalizarPartidoKnockout(${num})">Finalizar</button>
+          </div>
+        </div>`;
+    }
+    html += `</div></div>`;
+  }
+  html += `</div>`;
+  container.innerHTML = html;
+}
+
+window.guardarResultadoKnockout = async (numeroPartido) => {
+  const localInput = document.getElementById(`res_ko_local_${numeroPartido}`);
+  const visitInput = document.getElementById(`res_ko_visit_${numeroPartido}`);
+  const clasificadoSelect = document.getElementById(`clasificado_ko_${numeroPartido}`);
+  if (!localInput || !visitInput) return alert("Error: no se encontraron los inputs");
+
+  const local = parseInt(localInput.value);
+  const visit = parseInt(visitInput.value);
+  if (isNaN(local) || isNaN(visit)) return alert("Ingresa números válidos");
+
+  const clasificado = clasificadoSelect ? clasificadoSelect.value : null;
+
+  const resultadoRef = doc(db, "knockout_results", numeroPartido.toString());
+  const resultadoSnap = await getDoc(resultadoRef);
+  if (!resultadoSnap.exists()) {
+    await setDoc(resultadoRef, {
+      numero: numeroPartido,
+      resultado_local: local,
+      resultado_visitante: visit,
+      clasificado_real: clasificado,
+      finalizado: false
+    });
+  } else {
+    await updateDoc(resultadoRef, {
+      resultado_local: local,
+      resultado_visitante: visit,
+      clasificado_real: clasificado
+    });
+  }
+  alert("✅ Resultado guardado. Puedes finalizar el partido cuando esté correcto.");
+};
+
+window.finalizarPartidoKnockout = async (numeroPartido) => {
+  let fase = "";
+  if (numeroPartido <= 88) fase = "dieciseisavos";
+  else if (numeroPartido <= 96) fase = "octavos";
+  else if (numeroPartido <= 100) fase = "cuartos";
+  else if (numeroPartido <= 102) fase = "semifinales";
+  else if (numeroPartido === 103) fase = "final";
+  else if (numeroPartido === 104) fase = "tercer_puesto";
+  else return alert("Partido no válido");
+
+  const resultadoRef = doc(db, "knockout_results", numeroPartido.toString());
+  const resultadoSnap = await getDoc(resultadoRef);
+  if (!resultadoSnap.exists()) return alert("No hay resultado guardado aún. Guarda primero.");
+  const data = resultadoSnap.data();
+  if (data.resultado_local === null || data.resultado_visitante === null) return alert("Debes guardar el resultado primero.");
+  
+  await updateDoc(resultadoRef, { finalizado: true });
+  await calcularPuntosKnockout(numeroPartido, fase);
+  alert("✅ Partido finalizado y puntos calculados.");
+  loadAdminKnockoutMatches(); // refrescar vista
+};
+
+// ======================================================
+// CÁLCULO DE PUNTOS PARA ELIMINATORIAS
+// ======================================================
+async function calcularPuntosKnockout(partidoNumero, fase) {
+  let collectionName = "";
+  if (fase === "dieciseisavos") collectionName = "predictions_knockout";
+  else if (fase === "octavos") collectionName = "predictions_octavos";
+  else if (fase === "cuartos") collectionName = "predictions_cuartos";
+  else if (fase === "semifinales") collectionName = "predictions_semifinales";
+  else if (fase === "final") collectionName = "predictions_final";
+  else if (fase === "tercer_puesto") collectionName = "predictions_third";
+  else return;
+
+  const resultadoRef = doc(db, "knockout_results", partidoNumero.toString());
+  const resultadoSnap = await getDoc(resultadoRef);
+  if (!resultadoSnap.exists()) return;
+  const resultado = resultadoSnap.data();
+  const realLocal = resultado.resultado_local;
+  const realVisit = resultado.resultado_visitante;
+  const realEsEmpate = (realLocal === realVisit);
+  let realClasificado = resultado.clasificado_real;
+  if (!realClasificado) {
+    realClasificado = realLocal > realVisit ? "local" : "visitante";
+  }
+
+  const prediccionesSnap = await getDocs(query(collection(db, collectionName), where("partido", "==", partidoNumero)));
+  for (const docSnap of prediccionesSnap.docs) {
+    const pred = docSnap.data();
+    const uid = pred.uid;
+    const predLocal = pred.pred_local;
+    const predVisit = pred.pred_visitante;
+    const predClasificado = pred.clasificado;
+
+    let puntos = 0;
+    if (predLocal === realLocal && predVisit === realVisit) {
+      puntos = 3;
+    } else {
+      const predEmpate = (predLocal === predVisit);
+      if (predEmpate && realEsEmpate) {
+        puntos = 1;
+        if (predClasificado === realClasificado) puntos += 1;
+      } else if (!predEmpate && !realEsEmpate) {
+        const predGanador = predLocal > predVisit ? "local" : "visitante";
+        const realGanador = realLocal > realVisit ? "local" : "visitante";
+        if (predGanador === realGanador) puntos = 1;
+      }
+    }
+
+    if (puntos > 0) {
+      const rankingRef = doc(db, "ranking", uid);
+      const rankingSnap = await getDoc(rankingRef);
+      if (rankingSnap.exists()) {
+        await updateDoc(rankingRef, {
+          puntos: (rankingSnap.data().puntos || 0) + puntos,
+          updated_at: serverTimestamp()
+        });
+      } else {
+        await setDoc(rankingRef, {
+          user_id: uid,
+          puntos: puntos,
+          updated_at: serverTimestamp()
+        });
+      }
+    }
+    // Marcar que ya se asignaron puntos (opcional)
+    await updateDoc(docSnap.ref, { points_assigned: true, points: puntos });
+  }
+}
 // ======================================================
 // ESTADO DE AUTENTICACIÓN (CORAZÓN DE LA APP)
 // ======================================================
@@ -3401,7 +3586,7 @@ onAuthStateChanged(auth, async (user) => {
       setupUploadButton();
       agregarBotonResetKnockout();   // ← esta línea debe estar presente
       // agregarBotonesReset();          // ← COMENTA O ELIMINA
-  // loadAdminKnockoutMatches();     // ← COMENTA O ELIMINA
+      loadAdminKnockoutMatches();     // ← COMENTA O ELIMINA
     } else {
       adminPanel.classList.add("hidden");
     }
