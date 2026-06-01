@@ -1931,11 +1931,16 @@ RESPONSIVE ADMIN PARTICIPANTES
   gap: 20px;
   padding-bottom: 10px;
 }
-
+.admin-knockout-carousel .admin-teams .admin-team {
+  font-size: 1rem;
+  font-weight: 700;
+  margin-bottom: 8px;
+}
 .admin-knockout-carousel .admin-card {
   scroll-snap-align: start;
-  min-width: 340px;
+  min-width: 280px;
   flex-shrink: 0;
+  padding: 12px;
 }
 
 /* Ocultar scrollbar en WebKit (opcional) */
@@ -1994,20 +1999,38 @@ RESPONSIVE ADMIN PARTICIPANTES
 
 .admin-knockout-carousel .admin-score {
   display: flex;
+  align-items: center;
   justify-content: center;
-  gap: 12px;
-  margin: 12px 0;
+  gap: 6px;
+  margin: 8px 0;
 }
 
 .admin-knockout-carousel .admin-score input {
+  width: 55px;
+  height: 36px;
+  font-size: 1rem;
+  text-align: center;
   background: #0f172a;
   border: 1px solid #334155;
-  border-radius: 12px;
-  padding: 8px;
+  border-radius: 10px;
+  padding: 4px;
   text-align: center;
   font-size: 1.2rem;
   color: white;
 }
+.admin-knockout-carousel .admin-score span {
+  font-size: 1.2rem;
+  font-weight: bold;
+  color: #facc15;
+}
+.admin-knockout-carousel .admin-label {
+  font-size: 0.7rem;
+  text-transform: uppercase;
+  color: #94a3b8;
+  margin-bottom: 4px;
+  display: block;
+}
+
 
 .admin-knockout-carousel .admin-score input:focus {
   border-color: #facc15;
@@ -2015,11 +2038,16 @@ RESPONSIVE ADMIN PARTICIPANTES
 }
 
 .admin-knockout-carousel select {
+  width: 100%;
+  max-width: 130px;
+  padding: 6px 8px;
+  font-size: 0.75rem;
   background: #0f172a;
   border: 1px solid #334155;
-  border-radius: 12px;
+  border-radius: 20px;
   padding: 6px;
   color: white;
+  cursor: pointer;
 }
 
 .admin-knockout-carousel .admin-btn {
@@ -2027,9 +2055,10 @@ RESPONSIVE ADMIN PARTICIPANTES
   border: 1px solid #facc15;
   color: #facc15;
   font-weight: 600;
-  padding: 8px 12px;
+  padding: 6px 12px;
   border-radius: 30px;
   transition: 0.2s;
+  font-size: 0.75rem;
 }
 
 .admin-knockout-carousel .admin-btn:hover {
