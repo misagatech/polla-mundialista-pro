@@ -3427,7 +3427,7 @@ async function loadAdminKnockoutMatches() {
             <button class="carousel-btn-right" data-fase="${fase.nombre}">▶</button>
           </div>
         </div>
-        <div id="carousel-${fase.nombre.replace(/\s/g, '')}" class="admin-knockout-carousel" style="display: flex; overflow-x: auto; scroll-behavior: smooth; gap: 20px; padding-bottom: 15px;">
+        <div id="carousel-${fase.nombre.replace(/\s/g, '')}" class="admin-knockout-carousel" style="display: flex; overflow-x: auto; scroll-snap-type: x mandatory; gap: 12px; padding-bottom: 10px;">
     `;
 
     for (const p of partidosFase) {
