@@ -1247,6 +1247,31 @@ function loadRanking() {
 }
 
 // ======================================================
+// LOAD RANKING
+// ======================================================
+function loadRankingKnockout() {
+  const rankingRef = collection(db, "ranking_knockout");
+  onSnapshot(query(rankingRef, orderBy("puntos", "desc")), async (snapshot) => {
+    const container = document.getElementById("rankingKnockoutList");
+    if (!container) return;
+    let pos = 1;
+    let html = "";
+    for (const docSnap of snapshot.docs) {
+      const data = docSnap.data();
+      const userSnap = await getDoc(doc(db, "users", data.user_id));
+      const nombre = userSnap.exists() ? userSnap.data().nombre : "Usuario";
+      let medalla = "";
+      if (pos === 1) medalla = "🥇";
+      else if (pos === 2) medalla = "🥈";
+      else if (pos === 3) medalla = "🥉";
+      else medalla = `#${pos}`;
+      html += `<div style="display:flex; justify-content:space-between; padding:8px 0;"><span>${medalla} ${nombre}</span><strong>${data.puntos} pts</strong></div>`;
+      pos++;
+    }
+    container.innerHTML = html || "<div>No hay datos aún</div>";
+  });
+}
+// ======================================================
 // PANEL ADMINISTRADOR (con grupos y filtro)
 // ======================================================
 async function loadAdminMatches() {
@@ -3019,28 +3044,54 @@ document.getElementById("btnLogout").onclick = async () => {
 // ======================================================
 // PREMIOS Y ACUMULADO EN TIEMPO REAL
 // ======================================================
+function loadPrizePoolRealtime() {
+  if (participantsUnsubscribe) participantsUnsubscribe();
 
-<!-- PREMIOS GRUPOS -->
-<div class="sidebar-card sidebar-trophy">
-  <i class="fas fa-trophy trophy-icon"></i>
-  <h3>Polla Grupos</h3>
-  <div class="prize-item">👥 Participantes: <strong id="totalParticipantesGrupos">0</strong></div>
-  <div class="prize-item">💰 Acumulado: <strong id="totalAcumuladoGrupos">$0</strong></div>
-  <div class="prize-item">🥇 Primer lugar (70%): <strong id="premioGruposPrimer">$0</strong></div>
-  <div class="prize-item">🧑‍💼 Administración (20%): <strong id="premioGruposAdmin">$0</strong></div>
-  <div class="prize-item">💻 Plataforma (10%): <strong id="premioGruposPlataforma">$0</strong></div>
-</div>
+  const participantsRef = collection(db, "participants");
+  participantsUnsubscribe = onSnapshot(participantsRef, (snapshot) => {
+    let totalGrupos = 0, acumuladoGrupos = 0;
+    let totalKO = 0, acumuladoKO = 0;
 
-<!-- PREMIOS KNOCKOUT -->
-<div class="sidebar-card sidebar-trophy">
-  <i class="fas fa-trophy trophy-icon"></i>
-  <h3>Polla Eliminatorias</h3>
-  <div class="prize-item">👥 Participantes: <strong id="totalParticipantesKO">0</strong></div>
-  <div class="prize-item">💰 Acumulado: <strong id="totalAcumuladoKO">$0</strong></div>
-  <div class="prize-item">🥇 Primer lugar (70%): <strong id="premioKOPrimer">$0</strong></div>
-  <div class="prize-item">🧑‍💼 Administración (20%): <strong id="premioKOAdmin">$0</strong></div>
-  <div class="prize-item">💻 Plataforma (10%): <strong id="premioKOPlataforma">$0</strong></div>
-</div>
+    snapshot.forEach(docSnap => {
+      const data = docSnap.data();
+      if (data.paid_groups === true) {
+        totalGrupos++;
+        acumuladoGrupos += Number(data.amount_groups || 0);
+      }
+      if (data.paid_knockout === true) {
+        totalKO++;
+        acumuladoKO += Number(data.amount_knockout || 0);
+      }
+    });
+
+    // Actualizar elementos de grupos
+    const gruposTotal = document.getElementById("totalParticipantesGrupos");
+    const gruposAcumulado = document.getElementById("totalAcumuladoGrupos");
+    const gruposPrimer = document.getElementById("premioGruposPrimer");
+    const gruposAdmin = document.getElementById("premioGruposAdmin");
+    const gruposPlataforma = document.getElementById("premioGruposPlataforma");
+
+    if (gruposTotal) gruposTotal.innerText = totalGrupos;
+    if (gruposAcumulado) gruposAcumulado.innerText = formatearCOP(acumuladoGrupos);
+    if (gruposPrimer) gruposPrimer.innerText = formatearCOP(acumuladoGrupos * 0.7);
+    if (gruposAdmin) gruposAdmin.innerText = formatearCOP(acumuladoGrupos * 0.2);
+    if (gruposPlataforma) gruposPlataforma.innerText = formatearCOP(acumuladoGrupos * 0.1);
+
+    // Actualizar elementos de knockout
+    const koTotal = document.getElementById("totalParticipantesKO");
+    const koAcumulado = document.getElementById("totalAcumuladoKO");
+    const koPrimer = document.getElementById("premioKOPrimer");
+    const koAdmin = document.getElementById("premioKOAdmin");
+    const koPlataforma = document.getElementById("premioKOPlataforma");
+
+    if (koTotal) koTotal.innerText = totalKO;
+    if (koAcumulado) koAcumulado.innerText = formatearCOP(acumuladoKO);
+    if (koPrimer) koPrimer.innerText = formatearCOP(acumuladoKO * 0.7);
+    if (koAdmin) koAdmin.innerText = formatearCOP(acumuladoKO * 0.2);
+    if (koPlataforma) koPlataforma.innerText = formatearCOP(acumuladoKO * 0.1);
+  });
+}
+
 
 // ======================================================
 // ADMIN PARTICIPANTES (con filtro y dos pollas)
@@ -3609,6 +3660,7 @@ onAuthStateChanged(auth, async (user) => {
       window.timerInterval = setInterval(actualizarTodosLosTimers, 1000);
     }
     loadRanking();
+    loadRankingKnockout();
     loadPrizePoolRealtime();
     await generarOctavos();
     await generarCuartos();
