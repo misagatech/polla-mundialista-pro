@@ -3369,6 +3369,7 @@ onAuthStateChanged(auth, async (user) => {
       loadAdminParticipants();
       console.log("CARGANDO PARTICIPANTES ADMIN");
       setupUploadButton();
+      agregarBotonResetKnockout();   // ← esta línea debe estar presente
       // agregarBotonesReset();          // ← COMENTA O ELIMINA
   // loadAdminKnockoutMatches();     // ← COMENTA O ELIMINA
     } else {
