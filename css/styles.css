@@ -1966,3 +1966,74 @@ RESPONSIVE ADMIN PARTICIPANTES
   background: #facc15;
   color: black;
 }
+/* Mejora de tarjetas de resultados knockout en admin */
+.admin-knockout-carousel .admin-card {
+  background: linear-gradient(145deg, #1e293b, #0f172a);
+  border-radius: 24px;
+  padding: 16px;
+  transition: transform 0.2s, box-shadow 0.2s;
+  border: 1px solid rgba(250, 204, 21, 0.2);
+}
+
+.admin-knockout-carousel .admin-card:hover {
+  transform: translateY(-4px);
+  border-color: #facc15;
+  box-shadow: 0 12px 25px -8px rgba(0,0,0,0.5);
+}
+
+.admin-knockout-carousel .admin-teams {
+  justify-content: center;
+  margin-bottom: 12px;
+}
+
+.admin-knockout-carousel .admin-team {
+  font-size: 1rem;
+  font-weight: 800;
+  color: #facc15;
+}
+
+.admin-knockout-carousel .admin-score {
+  display: flex;
+  justify-content: center;
+  gap: 12px;
+  margin: 12px 0;
+}
+
+.admin-knockout-carousel .admin-score input {
+  background: #0f172a;
+  border: 1px solid #334155;
+  border-radius: 12px;
+  padding: 8px;
+  text-align: center;
+  font-size: 1.2rem;
+  color: white;
+}
+
+.admin-knockout-carousel .admin-score input:focus {
+  border-color: #facc15;
+  outline: none;
+}
+
+.admin-knockout-carousel select {
+  background: #0f172a;
+  border: 1px solid #334155;
+  border-radius: 12px;
+  padding: 6px;
+  color: white;
+}
+
+.admin-knockout-carousel .admin-btn {
+  background: linear-gradient(90deg, #1e293b, #0f172a);
+  border: 1px solid #facc15;
+  color: #facc15;
+  font-weight: 600;
+  padding: 8px 12px;
+  border-radius: 30px;
+  transition: 0.2s;
+}
+
+.admin-knockout-carousel .admin-btn:hover {
+  background: #facc15;
+  color: black;
+  transform: scale(1.02);
+}
