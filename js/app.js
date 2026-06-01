@@ -3020,53 +3020,27 @@ document.getElementById("btnLogout").onclick = async () => {
 // PREMIOS Y ACUMULADO EN TIEMPO REAL
 // ======================================================
 
-function loadPrizePoolRealtime() {
+<!-- PREMIOS GRUPOS -->
+<div class="sidebar-card sidebar-trophy">
+  <i class="fas fa-trophy trophy-icon"></i>
+  <h3>Polla Grupos</h3>
+  <div class="prize-item">👥 Participantes: <strong id="totalParticipantesGrupos">0</strong></div>
+  <div class="prize-item">💰 Acumulado: <strong id="totalAcumuladoGrupos">$0</strong></div>
+  <div class="prize-item">🥇 Primer lugar (70%): <strong id="premioGruposPrimer">$0</strong></div>
+  <div class="prize-item">🧑‍💼 Administración (20%): <strong id="premioGruposAdmin">$0</strong></div>
+  <div class="prize-item">💻 Plataforma (10%): <strong id="premioGruposPlataforma">$0</strong></div>
+</div>
 
-  if (participantsUnsubscribe) {
-    participantsUnsubscribe();
-  }
-
-  const participantsRef =
-    collection(db, "participants");
-
-  participantsUnsubscribe =
-    onSnapshot(participantsRef, (snapshot) => {
-
-      let totalParticipantes = 0;
-
-      let totalAcumulado = 0;
-
-      snapshot.forEach(docSnap => {
-
-        const data = docSnap.data();
-
-        if (data.paid_groups === true) {
-
-          totalParticipantes++;
-
-          totalAcumulado +=
-            Number(data.amount_groups || 0);
-
-        }
-
-      });
-
-      document.getElementById("totalParticipantes").innerText =
-        totalParticipantes;
-
-      document.getElementById("totalAcumulado").innerText =
-        formatearCOP(totalAcumulado);
-
-      document.getElementById("premioPrimerLugar").innerText =
-        formatearCOP(totalAcumulado * 0.7);
-
-      document.getElementById("premioAdmin").innerText =
-        formatearCOP(totalAcumulado * 0.2);
-      document.getElementById("premioPlataforma").innerText =
-        formatearCOP(totalAcumulado * 0.1);
-
-    });
-}
+<!-- PREMIOS KNOCKOUT -->
+<div class="sidebar-card sidebar-trophy">
+  <i class="fas fa-trophy trophy-icon"></i>
+  <h3>Polla Eliminatorias</h3>
+  <div class="prize-item">👥 Participantes: <strong id="totalParticipantesKO">0</strong></div>
+  <div class="prize-item">💰 Acumulado: <strong id="totalAcumuladoKO">$0</strong></div>
+  <div class="prize-item">🥇 Primer lugar (70%): <strong id="premioKOPrimer">$0</strong></div>
+  <div class="prize-item">🧑‍💼 Administración (20%): <strong id="premioKOAdmin">$0</strong></div>
+  <div class="prize-item">💻 Plataforma (10%): <strong id="premioKOPlataforma">$0</strong></div>
+</div>
 
 // ======================================================
 // ADMIN PARTICIPANTES (con filtro y dos pollas)
