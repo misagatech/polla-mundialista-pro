@@ -3147,9 +3147,13 @@ window.toggleHabilitadoKO = async (uid) => {
 // ======================================================
 // BOTÓN DE RESET DE PRUEBAS (KNOCKOUT)
 // ======================================================
+// ======================================================
+// BOTÓN DE RESET DE PRUEBAS (KNOCKOUT) - VERSIÓN ROBUSTA
+// ======================================================
 window.resetearPruebasKnockout = async () => {
   if (!confirm("⚠️ ¿Eliminar TODAS las predicciones de knockout y reiniciar resultados reales? Esta acción no se puede deshacer.")) return;
-  
+
+  // 1. Eliminar todas las predicciones de knockout
   const colecciones = [
     "predictions_knockout",
     "predictions_octavos",
@@ -3158,44 +3162,70 @@ window.resetearPruebasKnockout = async () => {
     "predictions_final",
     "predictions_third"
   ];
-  
+
   for (const col of colecciones) {
-    const snapshot = await getDocs(collection(db, col));
-    const batch = writeBatch(db);
-    snapshot.forEach(doc => batch.delete(doc.ref));
-    await batch.commit();
+    try {
+      const snapshot = await getDocs(collection(db, col));
+      if (snapshot.empty) {
+        console.log(`ℹ️ Colección ${col} vacía, no hay nada que eliminar`);
+        continue;
+      }
+      const batch = writeBatch(db);
+      snapshot.forEach(doc => batch.delete(doc.ref));
+      await batch.commit();
+      console.log(`✅ Eliminados todos los documentos de ${col}`);
+    } catch (error) {
+      console.error(`Error eliminando documentos de ${col}:`, error);
+      // No detenemos el proceso, continuamos con la siguiente colección
+    }
   }
-  
-  // Reiniciar resultados reales (solo poner a null, no eliminar documentos)
-  const resultadosSnapshot = await getDocs(collection(db, "knockout_results"));
-  const batchResults = writeBatch(db);
-  resultadosSnapshot.forEach(doc => {
-    batchResults.update(doc.ref, {
-      resultado_local: null,
-      resultado_visitante: null,
-      finalizado: false
-    });
-  });
-  await batchResults.commit();
-  
-  alert("✅ Predicciones de knockout eliminadas y resultados reales reiniciados.");
+
+  // 2. Reiniciar resultados reales (knockout_results)
+  const resultadosRef = collection(db, "knockout_results");
+  try {
+    const resultadosSnapshot = await getDocs(resultadosRef);
+    if (resultadosSnapshot.empty) {
+      console.log("ℹ️ knockout_results no tiene documentos o no existe. No se reinició nada.");
+    } else {
+      const batchResults = writeBatch(db);
+      resultadosSnapshot.forEach(doc => {
+        batchResults.update(doc.ref, {
+          resultado_local: null,
+          resultado_visitante: null,
+          clasificado_real: null,
+          finalizado: false
+        });
+      });
+      await batchResults.commit();
+      console.log("✅ Resultados reales reiniciados (campos a null).");
+    }
+  } catch (error) {
+    console.warn("⚠️ No se pudo acceder a knockout_results (quizás la colección no existe):", error);
+  }
+
+  alert("✅ Predicciones de knockout eliminadas y resultados reales reiniciados (si existían).");
   location.reload();
 };
 
 function agregarBotonResetKnockout() {
-  const adminBottom = document.querySelector(".admin-bottom-actions");
-  if (!adminBottom) return;
-  if (document.getElementById("btnResetKnockout")) return;
-  const btn = document.createElement("button");
-  btn.id = "btnResetKnockout";
-  btn.textContent = "🧹 Resetear pruebas KO";
-  btn.className = "admin-load-btn";
-  btn.style.background = "linear-gradient(90deg, #dc2626, #b91c1c)";
-  btn.style.marginLeft = "10px";
-  btn.onclick = window.resetearPruebasKnockout;
-  adminBottom.appendChild(btn);
+  setTimeout(() => {
+    const adminBottom = document.querySelector(".admin-bottom-actions");
+    if (!adminBottom) {
+      console.error("No se encontró .admin-bottom-actions");
+      return;
+    }
+    if (document.getElementById("btnResetKnockout")) return;
+    const btn = document.createElement("button");
+    btn.id = "btnResetKnockout";
+    btn.textContent = "🧹 Resetear pruebas KO";
+    btn.className = "admin-load-btn";
+    btn.style.background = "linear-gradient(90deg, #dc2626, #b91c1c)";
+    btn.style.marginLeft = "10px";
+    btn.onclick = window.resetearPruebasKnockout;
+    adminBottom.appendChild(btn);
+    console.log("Botón de reset KO añadido");
+  }, 500);
 }
-
 // ======================================================
 // RENDERIZADO DE LISTA DE PARTICIPANTES (con buscador dual)
 // ======================================================
