@@ -1923,3 +1923,46 @@ RESPONSIVE ADMIN PARTICIPANTES
   background: #facc15;
   border-radius: 10px;
 }
+/* Carrusel admin knockout */
+.admin-knockout-carousel {
+  display: flex;
+  overflow-x: auto;
+  scroll-snap-type: x mandatory;
+  gap: 20px;
+  padding-bottom: 10px;
+}
+
+.admin-knockout-carousel .admin-card {
+  scroll-snap-align: start;
+  min-width: 340px;
+  flex-shrink: 0;
+}
+
+/* Ocultar scrollbar en WebKit (opcional) */
+.admin-knockout-carousel::-webkit-scrollbar {
+  height: 8px;
+}
+.admin-knockout-carousel::-webkit-scrollbar-thumb {
+  background: #facc15;
+  border-radius: 10px;
+}
+.admin-knockout-carousel::-webkit-scrollbar-track {
+  background: rgba(255,255,255,0.1);
+  border-radius: 10px;
+}
+
+.carousel-btn-left, .carousel-btn-right {
+  background: #1e293b;
+  border: none;
+  color: #facc15;
+  width: 32px;
+  height: 32px;
+  border-radius: 50%;
+  cursor: pointer;
+  font-weight: bold;
+  transition: 0.2s;
+}
+.carousel-btn-left:hover, .carousel-btn-right:hover {
+  background: #facc15;
+  color: black;
+}

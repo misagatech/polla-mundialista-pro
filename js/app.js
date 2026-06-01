@@ -3381,40 +3381,77 @@ async function loadAdminKnockoutMatches() {
 
   let html = `<div class="admin-knockout-section" style="margin-top: 30px;">
     <h3 class="admin-section-title">🗡️ Resultados Eliminatorias</h3>`;
+
   for (const fase of fases) {
-    html += `<div class="admin-group" style="margin-bottom: 30px;">
-      <div class="admin-group-title">${fase.nombre}</div>
-      <div class="admin-grid">`;
+    // Obtener los partidos de esta fase
+    const partidosFase = [];
     for (let num = fase.inicio; num <= fase.fin; num++) {
-      const resultado = resultadosMap[num] || { resultado_local: null, resultado_visitante: null, clasificado_real: null };
+      partidosFase.push({
+        numero: num,
+        resultado: resultadosMap[num] || { resultado_local: null, resultado_visitante: null, clasificado_real: null }
+      });
+    }
+
+    // Crear carrusel horizontal
+    html += `
+      <div class="admin-knockout-fase" style="margin-bottom: 40px;">
+        <div class="admin-group-title" style="display: flex; justify-content: space-between; align-items: center;">
+          <span>${fase.nombre}</span>
+          <div class="carousel-nav" style="display: flex; gap: 10px;">
+            <button class="carousel-btn-left" data-fase="${fase.nombre}">◀</button>
+            <button class="carousel-btn-right" data-fase="${fase.nombre}">▶</button>
+          </div>
+        </div>
+        <div id="carousel-${fase.nombre.replace(/\s/g, '')}" class="admin-knockout-carousel" style="display: flex; overflow-x: auto; scroll-behavior: smooth; gap: 20px; padding-bottom: 15px;">
+    `;
+
+    for (const p of partidosFase) {
+      const resultado = p.resultado;
       html += `
-        <div class="admin-card" data-partido="${num}">
+        <div class="admin-card" data-partido="${p.numero}" style="min-width: 340px; flex-shrink: 0;">
           <div class="admin-teams">
-            <div class="admin-team">Partido ${num}</div>
+            <div class="admin-team">Partido ${p.numero}</div>
           </div>
           <div class="admin-score">
-            <input type="number" id="res_ko_local_${num}" class="admin-input" placeholder="Local" value="${resultado.resultado_local !== null ? resultado.resultado_local : ''}" style="width:60px;">
+            <input type="number" id="res_ko_local_${p.numero}" class="admin-input" placeholder="Local" value="${resultado.resultado_local !== null ? resultado.resultado_local : ''}" style="width:60px;">
             <span>-</span>
-            <input type="number" id="res_ko_visit_${num}" class="admin-input" placeholder="Visitante" value="${resultado.resultado_visitante !== null ? resultado.resultado_visitante : ''}" style="width:60px;">
+            <input type="number" id="res_ko_visit_${p.numero}" class="admin-input" placeholder="Visitante" value="${resultado.resultado_visitante !== null ? resultado.resultado_visitante : ''}" style="width:60px;">
           </div>
           <div style="margin-top:8px; text-align:center;">
             <label style="font-size:12px;">Clasificado (si empate):</label>
-            <select id="clasificado_ko_${num}" class="admin-input" style="width:120px;">
+            <select id="clasificado_ko_${p.numero}" class="admin-input" style="width:120px;">
               <option value="">-- Seleccionar --</option>
               <option value="local" ${resultado.clasificado_real === "local" ? "selected" : ""}>Local</option>
               <option value="visitante" ${resultado.clasificado_real === "visitante" ? "selected" : ""}>Visitante</option>
             </select>
           </div>
           <div style="display:flex; gap:8px; margin-top:10px;">
-            <button class="admin-btn" onclick="window.guardarResultadoKnockout(${num})">Guardar</button>
-            <button class="admin-btn finalizar-btn" onclick="window.finalizarPartidoKnockout(${num})">Finalizar</button>
+            <button class="admin-btn" onclick="window.guardarResultadoKnockout(${p.numero})">Guardar</button>
+            <button class="admin-btn finalizar-btn" onclick="window.finalizarPartidoKnockout(${p.numero})">Finalizar</button>
           </div>
-        </div>`;
+        </div>
+      `;
     }
+
     html += `</div></div>`;
   }
   html += `</div>`;
   container.innerHTML = html;
+
+  // Conectar botones de navegación para cada carrusel
+  for (const fase of fases) {
+    const carouselId = `carousel-${fase.nombre.replace(/\s/g, '')}`;
+    const carousel = document.getElementById(carouselId);
+    if (!carousel) continue;
+    const leftBtn = document.querySelector(`.carousel-btn-left[data-fase="${fase.nombre}"]`);
+    const rightBtn = document.querySelector(`.carousel-btn-right[data-fase="${fase.nombre}"]`);
+    if (leftBtn) {
+      leftBtn.onclick = () => carousel.scrollBy({ left: -360, behavior: "smooth" });
+    }
+    if (rightBtn) {
+      rightBtn.onclick = () => carousel.scrollBy({ left: 360, behavior: "smooth" });
+    }
+  }
 }
 
 window.guardarResultadoKnockout = async (numeroPartido) => {
