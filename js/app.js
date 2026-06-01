@@ -3433,7 +3433,7 @@ async function loadAdminKnockoutMatches() {
     for (const p of partidosFase) {
       const resultado = p.resultado;
       html += `
-        <div class="admin-card" data-partido="${p.numero}" style="min-width: 340px; flex-shrink: 0;">
+        <div class="admin-card" data-partido="${p.numero}" style="min-width: 320px; flex-shrink: 0;">
           <div class="admin-teams">
             <div class="admin-team">Partido ${p.numero}</div>
           </div>
