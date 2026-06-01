@@ -3433,29 +3433,26 @@ async function loadAdminKnockoutMatches() {
     for (const p of partidosFase) {
       const resultado = p.resultado;
       html += `
-        <div class="admin-card" data-partido="${p.numero}" style="min-width: 320px; flex-shrink: 0;">
-          <div class="admin-teams">
-            <div class="admin-team">Partido ${p.numero}</div>
-          </div>
-          <div class="admin-score">
-            <input type="number" id="res_ko_local_${p.numero}" class="admin-input" placeholder="Local" value="${resultado.resultado_local !== null ? resultado.resultado_local : ''}" style="width:60px;">
-            <span>-</span>
-            <input type="number" id="res_ko_visit_${p.numero}" class="admin-input" placeholder="Visitante" value="${resultado.resultado_visitante !== null ? resultado.resultado_visitante : ''}" style="width:60px;">
-          </div>
-          <div style="margin-top:8px; text-align:center;">
-            <label style="font-size:12px;">Clasificado (si empate):</label>
-            <select id="clasificado_ko_${p.numero}" class="admin-input" style="width:120px;">
-              <option value="">-- Seleccionar --</option>
-              <option value="local" ${resultado.clasificado_real === "local" ? "selected" : ""}>Local</option>
-              <option value="visitante" ${resultado.clasificado_real === "visitante" ? "selected" : ""}>Visitante</option>
-            </select>
-          </div>
-          <div style="display:flex; gap:8px; margin-top:10px;">
-            <button class="admin-btn" onclick="window.guardarResultadoKnockout(${p.numero})">Guardar</button>
-            <button class="admin-btn finalizar-btn" onclick="window.finalizarPartidoKnockout(${p.numero})">Finalizar</button>
-          </div>
-        </div>
-      `;
+  <div class="admin-card" data-partido="${p.numero}" style="min-width: 280px; flex-shrink: 0;">
+    <div class="admin-teams" style="text-align:center; margin-bottom:6px;">
+      <div class="admin-team">Partido ${p.numero}</div>
+    </div>
+    <div class="admin-score" style="display:flex; justify-content:center; gap:8px; margin:8px 0;">
+      <input type="number" id="res_ko_local_${p.numero}" class="admin-input" placeholder="0" value="${resultado.resultado_local !== null ? resultado.resultado_local : ''}" style="width:55px; text-align:center;">
+      <span style="font-size:1.2rem;">-</span>
+      <input type="number" id="res_ko_visit_${p.numero}" class="admin-input" placeholder="0" value="${resultado.resultado_visitante !== null ? resultado.resultado_visitante : ''}" style="width:55px; text-align:center;">
+    </div>
+    <div style="display:flex; align-items:center; justify-content:space-between; gap:8px; margin-top:8px;">
+      <select id="clasificado_ko_${p.numero}" style="flex:1; background:#0f172a; border:1px solid #334155; border-radius:20px; padding:5px 8px; font-size:0.7rem; color:white;">
+        <option value="">Empate → ?</option>
+        <option value="local" ${resultado.clasificado_real === "local" ? "selected" : ""}>Local</option>
+        <option value="visitante" ${resultado.clasificado_real === "visitante" ? "selected" : ""}>Visitante</option>
+      </select>
+      <button class="admin-btn" onclick="window.guardarResultadoKnockout(${p.numero})" style="padding:5px 10px;">Guardar</button>
+      <button class="admin-btn finalizar-btn" onclick="window.finalizarPartidoKnockout(${p.numero})" style="padding:5px 10px;">Finalizar</button>
+    </div>
+  </div>
+`;
     }
 
     html += `</div></div>`;
