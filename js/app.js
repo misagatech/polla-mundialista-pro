@@ -3559,47 +3559,64 @@ async function calcularPuntosKnockout(partidoNumero, fase) {
   }
 
   const prediccionesSnap = await getDocs(query(collection(db, collectionName), where("partido", "==", partidoNumero)));
-  for (const docSnap of prediccionesSnap.docs) {
-    const pred = docSnap.data();
-    const uid = pred.uid;
-    const predLocal = pred.pred_local;
-    const predVisit = pred.pred_visitante;
-    const predClasificado = pred.clasificado;
+ for (const docSnap of prediccionesSnap.docs) {
+  const pred = docSnap.data();
+  const uid = pred.uid;
+  const predLocal = pred.pred_local;
+  const predVisit = pred.pred_visitante;
+  const predClasificado = pred.clasificado;
 
-    let puntos = 0;
-    if (predLocal === realLocal && predVisit === realVisit) {
-      puntos = 3;
-    } else {
-      const predEmpate = (predLocal === predVisit);
-      if (predEmpate && realEsEmpate) {
-        puntos = 1;
-        if (predClasificado === realClasificado) puntos += 1;
-      } else if (!predEmpate && !realEsEmpate) {
-        const predGanador = predLocal > predVisit ? "local" : "visitante";
-        const realGanador = realLocal > realVisit ? "local" : "visitante";
-        if (predGanador === realGanador) puntos = 1;
-      }
+  let puntos = 0;
+  if (predLocal === realLocal && predVisit === realVisit) {
+    puntos = 3;
+  } else {
+    const predEmpate = (predLocal === predVisit);
+    if (predEmpate && realEsEmpate) {
+      puntos = 1;
+      if (predClasificado === realClasificado) puntos += 1;
+    } else if (!predEmpate && !realEsEmpate) {
+      const predGanador = predLocal > predVisit ? "local" : "visitante";
+      const realGanador = realLocal > realVisit ? "local" : "visitante";
+      if (predGanador === realGanador) puntos = 1;
     }
-
-    if (puntos > 0) {
-      const rankingRef = doc(db, "ranking", uid);
-      const rankingSnap = await getDoc(rankingRef);
-      if (rankingSnap.exists()) {
-        await updateDoc(rankingRef, {
-          puntos: (rankingSnap.data().puntos || 0) + puntos,
-          updated_at: serverTimestamp()
-        });
-      } else {
-        await setDoc(rankingRef, {
-          user_id: uid,
-          puntos: puntos,
-          updated_at: serverTimestamp()
-        });
-      }
-    }
-    // Marcar que ya se asignaron puntos (opcional)
-    await updateDoc(docSnap.ref, { points_assigned: true, points: puntos });
   }
+
+  if (puntos > 0) {
+    // Ranking global
+    const rankingRef = doc(db, "ranking", uid);
+    const rankingSnap = await getDoc(rankingRef);
+    if (rankingSnap.exists()) {
+      await updateDoc(rankingRef, {
+        puntos: (rankingSnap.data().puntos || 0) + puntos,
+        updated_at: serverTimestamp()
+      });
+    } else {
+      await setDoc(rankingRef, {
+        user_id: uid,
+        puntos: puntos,
+        updated_at: serverTimestamp()
+      });
+    }
+
+    // Ranking solo knockout
+    const rankingKORef = doc(db, "ranking_knockout", uid);
+    const rankingKOSnap = await getDoc(rankingKORef);
+    if (rankingKOSnap.exists()) {
+      await updateDoc(rankingKORef, {
+        puntos: (rankingKOSnap.data().puntos || 0) + puntos,
+        updated_at: serverTimestamp()
+      });
+    } else {
+      await setDoc(rankingKORef, {
+        user_id: uid,
+        puntos: puntos,
+        updated_at: serverTimestamp()
+      });
+    }
+  }
+
+  // Marcar que ya se asignaron puntos (opcional)
+  await updateDoc(docSnap.ref, { points_assigned: true, points: puntos });
 }
 // ======================================================
 // ESTADO DE AUTENTICACIÓN (CORAZÓN DE LA APP)
