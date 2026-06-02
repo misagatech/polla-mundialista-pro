@@ -294,6 +294,7 @@ function mostrarTodosLosGrupos() {
     const start = match.hora_partido.toDate();
 
     const isStarted = now >= start;
+    const isFinalizado = match.estado === "finalizado";   // ← NUEVA LÍNEA
     const hasPrediction = !!match.userPred;
     const fechaLocal = match.hora_partido.toDate().toLocaleString("es-CO", { timeZone: "America/Bogota" });
     // Cierre de apuestas: 1 hora antes del partido
@@ -351,7 +352,7 @@ ${!disabled ? `
     class="btn-guardar"
     disabled
   >
-    🔒 ${isStarted ? "Partido iniciado" : "Apuestas cerradas"}
+    🔒 ${isFinalizado ? "Partido finalizado" : (isStarted ? "Partido iniciado" : "Apuestas cerradas")}
   </button>
 `}
       <div class="match-timer" data-cierre="${cierreApuestas.toISOString()}" style="margin-top:8px; text-align:center; font-size:13px; background: rgba(0,0,0,0.7); color: #facc15; padding:6px; border-radius:20px; white-space: normal; word-break: break-word;">
@@ -589,6 +590,9 @@ window.savePrediction = async (matchId) => {
         "Este partido ya comenzó"
       );
     }
+    if (matchData.estado === "finalizado") {
+  return alert("Este partido ya fue finalizado. No puedes cambiar tu predicción.");
+}
 
     // =========================================
     // ID INTELIGENTE
@@ -835,16 +839,21 @@ async function generarFinal() {
   const container = document.getElementById("finalContainer");
   if (!container) return;
 
-// ========== VALIDACIÓN DE ACCESO ==========
-const participantSnap = await getDoc(doc(db, "participants", currentUser.uid));
-if (!participantSnap.exists() || participantSnap.data().enabled_knockout !== true) {
-  container.innerHTML = `<div class="tabla-grupo-card" style="text-align:center; padding:30px;">
-    <h3>🔒 Acceso restringido</h3>
-    <p>No tienes habilitada la participación en la fase eliminatoria.<br>Contacta al administrador para obtener acceso.</p>
-  </div>`;
-  return;
-}
-// ==========================================
+  // ========== VALIDACIÓN DE ACCESO ==========
+  const participantSnap = await getDoc(doc(db, "participants", currentUser.uid));
+  if (!participantSnap.exists() || participantSnap.data().enabled_knockout !== true) {
+    container.innerHTML = `<div class="tabla-grupo-card" style="text-align:center; padding:30px;">
+      <h3>🔒 Acceso restringido</h3>
+      <p>No tienes habilitada la participación en la fase eliminatoria.<br>Contacta al administrador para obtener acceso.</p>
+    </div>`;
+    return;
+  }
+  // ==========================================
+
+  // Cargar resultados de knockout
+  const resultadosSnap = await getDocs(collection(db, "knockout_results"));
+  const resultadosMap = {};
+  resultadosSnap.forEach(doc => { resultadosMap[doc.data().numero] = doc.data(); });
 
   const semisQuery = query(collection(db, "predictions_semifinales"), where("uid", "==", currentUser.uid));
   const semisSnap = await getDocs(semisQuery);
@@ -858,7 +867,9 @@ if (!participantSnap.exists() || participantSnap.data().enabled_knockout !== tru
 
   const horaPartido = obtenerHoraPartidoKnockout(104);
   const cierreApuestas = new Date(horaPartido.getTime() - 60 * 60 * 1000);
-  const disabled = new Date() >= cierreApuestas;
+  const isClosed = new Date() >= cierreApuestas;
+  const isFinalizado = resultadosMap[partido.numero]?.finalizado === true;
+  const disabled = isClosed || isFinalizado;
   const fechaLocal = horaPartido.toLocaleString("es-CO", { timeZone: "America/Bogota" });
 
   const finalRef = doc(db, "predictions_final", `${currentUser.uid}_FINAL_104`);
@@ -913,7 +924,9 @@ if (!participantSnap.exists() || participantSnap.data().enabled_knockout !== tru
         <label><input type="radio" name="final_clasificado_${partido.numero}" value="${partido.local}" ${clasifGuardado === partido.local ? "checked" : ""} ${disabled ? "disabled" : ""}> ${fifaCodes[partido.local] || partido.local}</label>
         <label><input type="radio" name="final_clasificado_${partido.numero}" value="${partido.visitante}" ${clasifGuardado === partido.visitante ? "checked" : ""} ${disabled ? "disabled" : ""}> ${fifaCodes[partido.visitante] || partido.visitante}</label>
       </div>
-      <button class="btn-guardar" onclick="window.saveFinalPrediction('${partido.numero}')" ${disabled ? "disabled" : ""}>Guardar</button>
+      <button class="btn-guardar" onclick="window.saveFinalPrediction('${partido.numero}')" ${disabled ? "disabled" : ""}>
+        ${disabled ? (isFinalizado ? "🔒 Partido finalizado" : "🔒 Apuestas cerradas") : "Guardar"}
+      </button>
       <div class="match-timer" data-cierre="${cierreApuestas.toISOString()}">
         ⏰ Resultados se bloquean en: <span class="timer-value">${formatearTiempoRestante(cierreApuestas)}</span>
       </div>
@@ -943,7 +956,6 @@ if (!participantSnap.exists() || participantSnap.data().enabled_knockout !== tru
     }
   }
 }
-
 // ======================================================
 // GENERAR TERCER PUESTO (CARRUSEL HORIZONTAL)
 // ======================================================
@@ -951,16 +963,21 @@ async function generarTercerPuesto() {
   const container = document.getElementById("thirdPlaceContainer");
   if (!container) return;
 
-      // ========== VALIDACIÓN DE ACCESO ==========
-const participantSnap = await getDoc(doc(db, "participants", currentUser.uid));
-if (!participantSnap.exists() || participantSnap.data().enabled_knockout !== true) {
-  container.innerHTML = `<div class="tabla-grupo-card" style="text-align:center; padding:30px;">
-    <h3>🔒 Acceso restringido</h3>
-    <p>No tienes habilitada la participación en la fase eliminatoria.<br>Contacta al administrador para obtener acceso.</p>
-  </div>`;
-  return;
-}
-// ==========================================
+  // ========== VALIDACIÓN DE ACCESO ==========
+  const participantSnap = await getDoc(doc(db, "participants", currentUser.uid));
+  if (!participantSnap.exists() || participantSnap.data().enabled_knockout !== true) {
+    container.innerHTML = `<div class="tabla-grupo-card" style="text-align:center; padding:30px;">
+      <h3>🔒 Acceso restringido</h3>
+      <p>No tienes habilitada la participación en la fase eliminatoria.<br>Contacta al administrador para obtener acceso.</p>
+    </div>`;
+    return;
+  }
+  // ==========================================
+
+  // Cargar resultados de knockout
+  const resultadosSnap = await getDocs(collection(db, "knockout_results"));
+  const resultadosMap = {};
+  resultadosSnap.forEach(doc => { resultadosMap[doc.data().numero] = doc.data(); });
 
   const semisQuery = query(collection(db, "predictions_semifinales"), where("uid", "==", currentUser.uid));
   const semisSnap = await getDocs(semisQuery);
@@ -978,7 +995,9 @@ if (!participantSnap.exists() || participantSnap.data().enabled_knockout !== tru
 
   const horaPartido = obtenerHoraPartidoKnockout(103);
   const cierreApuestas = new Date(horaPartido.getTime() - 60 * 60 * 1000);
-  const disabled = new Date() >= cierreApuestas;
+  const isClosed = new Date() >= cierreApuestas;
+  const isFinalizado = resultadosMap[partido.numero]?.finalizado === true;
+  const disabled = isClosed || isFinalizado;
   const fechaLocal = horaPartido.toLocaleString("es-CO", { timeZone: "America/Bogota" });
 
   const thirdRef = doc(db, "predictions_third", `${currentUser.uid}_THIRD_103`);
@@ -1033,7 +1052,9 @@ if (!participantSnap.exists() || participantSnap.data().enabled_knockout !== tru
         <label><input type="radio" name="third_clasificado_${partido.numero}" value="${partido.local}" ${clasifGuardado === partido.local ? "checked" : ""} ${disabled ? "disabled" : ""}> ${fifaCodes[partido.local] || partido.local}</label>
         <label><input type="radio" name="third_clasificado_${partido.numero}" value="${partido.visitante}" ${clasifGuardado === partido.visitante ? "checked" : ""} ${disabled ? "disabled" : ""}> ${fifaCodes[partido.visitante] || partido.visitante}</label>
       </div>
-      <button class="btn-guardar" onclick="window.saveThirdPlacePrediction('${partido.numero}')" ${disabled ? "disabled" : ""}>Guardar</button>
+      <button class="btn-guardar" onclick="window.saveThirdPlacePrediction('${partido.numero}')" ${disabled ? "disabled" : ""}>
+        ${disabled ? (isFinalizado ? "🔒 Partido finalizado" : "🔒 Apuestas cerradas") : "Guardar"}
+      </button>
       <div class="match-timer" data-cierre="${cierreApuestas.toISOString()}">
         ⏰ Resultados se bloquean en: <span class="timer-value">${formatearTiempoRestante(cierreApuestas)}</span>
       </div>
@@ -2010,6 +2031,11 @@ async function generarDieciseisavos() {
   }
   // ==========================================
 
+  // Cargar resultados de knockout (para saber si un partido está finalizado)
+  const resultadosSnap = await getDocs(collection(db, "knockout_results"));
+  const resultadosMap = {};
+  resultadosSnap.forEach(doc => { resultadosMap[doc.data().numero] = doc.data(); });
+
   // Obtener asignación de terceros guardada por el admin
   let tercerosMap = {};
   try {
@@ -2019,7 +2045,6 @@ async function generarDieciseisavos() {
     }
   } catch(e) { console.error("Error al cargar terceros", e); }
 
-  // Definir los partidos, reemplazando los placeholders con los equipos asignados
   const partidos = [
     { numero: 73, local: clasificadosGlobales["2A"] || "2A", visitante: clasificadosGlobales["2B"] || "2B" },
     { numero: 74, local: clasificadosGlobales["1E"] || "1E", visitante: tercerosMap[74] || "Tercero por definir" },
@@ -2063,7 +2088,9 @@ async function generarDieciseisavos() {
 
     const horaPartido = obtenerHoraPartidoKnockout(partido.numero);
     const cierreApuestas = new Date(horaPartido.getTime() - 60 * 60 * 1000);
-    const disabled = new Date() >= cierreApuestas;
+    const isClosed = new Date() >= cierreApuestas;
+    const isFinalizado = resultadosMap[partido.numero]?.finalizado === true;
+    const disabled = isClosed || isFinalizado;
     const fechaLocal = horaPartido.toLocaleString("es-CO", { timeZone: "America/Bogota" });
 
     const predictionId = `${currentUser.uid}_KO_${partido.numero}`;
@@ -2102,7 +2129,9 @@ async function generarDieciseisavos() {
           <label><input type="radio" name="clasificado_${partido.numero}" value="${partido.local}" ${clasifGuardado === partido.local ? "checked" : ""} ${disabled ? "disabled" : ""}> ${fifaCodes[partido.local] || partido.local}</label>
           <label><input type="radio" name="clasificado_${partido.numero}" value="${partido.visitante}" ${clasifGuardado === partido.visitante ? "checked" : ""} ${disabled ? "disabled" : ""}> ${fifaCodes[partido.visitante] || partido.visitante}</label>
         </div>
-        <button class="btn-guardar" onclick="window.saveKnockoutPrediction('${partido.numero}')" ${disabled ? "disabled" : ""}>Guardar</button>
+        <button class="btn-guardar" onclick="window.saveKnockoutPrediction('${partido.numero}')" ${disabled ? "disabled" : ""}>
+          ${disabled ? (isFinalizado ? "🔒 Partido finalizado" : "🔒 Apuestas cerradas") : "Guardar"}
+        </button>
         <div class="match-timer" data-cierre="${cierreApuestas.toISOString()}">
           ⏰ Resultados se bloquean en: <span class="timer-value">${formatearTiempoRestante(cierreApuestas)}</span>
         </div>
@@ -2125,12 +2154,11 @@ async function generarDieciseisavos() {
     const horaPartido = obtenerHoraPartidoKnockout(partido.numero);
     const cierreApuestas = new Date(horaPartido.getTime() - 60 * 60 * 1000);
     const disabled = new Date() >= cierreApuestas;
+    if (disabled) continue;
 
     const localInput = document.getElementById(`ko_local_${partido.numero}`);
     const visitInput = document.getElementById(`ko_visit_${partido.numero}`);
     const radiosDiv = document.getElementById(`radios_ko_${partido.numero}`);
-
-    if (disabled) continue;
     if (localInput && visitInput && radiosDiv) {
       const updateRadios = () => {
         const localVal = parseInt(localInput.value);
@@ -2348,16 +2376,21 @@ async function generarOctavos() {
   const container = document.getElementById("octavosContainer");
   if (!container) return;
 
-    // ========== VALIDACIÓN DE ACCESO ==========
-const participantSnap = await getDoc(doc(db, "participants", currentUser.uid));
-if (!participantSnap.exists() || participantSnap.data().enabled_knockout !== true) {
-  container.innerHTML = `<div class="tabla-grupo-card" style="text-align:center; padding:30px;">
-    <h3>🔒 Acceso restringido</h3>
-    <p>No tienes habilitada la participación en la fase eliminatoria.<br>Contacta al administrador para obtener acceso.</p>
-  </div>`;
-  return;
-}
-// ==========================================
+  // ========== VALIDACIÓN DE ACCESO ==========
+  const participantSnap = await getDoc(doc(db, "participants", currentUser.uid));
+  if (!participantSnap.exists() || participantSnap.data().enabled_knockout !== true) {
+    container.innerHTML = `<div class="tabla-grupo-card" style="text-align:center; padding:30px;">
+      <h3>🔒 Acceso restringido</h3>
+      <p>No tienes habilitada la participación en la fase eliminatoria.<br>Contacta al administrador para obtener acceso.</p>
+    </div>`;
+    return;
+  }
+  // ==========================================
+
+  // Cargar resultados de knockout (para saber si un partido está finalizado)
+  const resultadosSnap = await getDocs(collection(db, "knockout_results"));
+  const resultadosMap = {};
+  resultadosSnap.forEach(doc => { resultadosMap[doc.data().numero] = doc.data(); });
 
   // Obtener clasificados de dieciseisavos (desde predictions_knockout)
   const knockoutSnap = await getDocs(collection(db, "predictions_knockout"));
@@ -2368,7 +2401,6 @@ if (!participantSnap.exists() || participantSnap.data().enabled_knockout !== tru
       clasificados[data.partido] = data.clasificado;
     }
   });
-
 
   const partidos = [
     { numero: 89, local: clasificados[74] || "Ganador 74", visitante: clasificados[77] || "Ganador 77" },
@@ -2412,7 +2444,9 @@ if (!participantSnap.exists() || participantSnap.data().enabled_knockout !== tru
   for (const partido of partidos) {
     const horaPartido = obtenerHoraPartidoKnockout(partido.numero);
     const cierreApuestas = new Date(horaPartido.getTime() - 60 * 60 * 1000);
-    const disabled = new Date() >= cierreApuestas;
+    const isClosed = new Date() >= cierreApuestas;
+    const isFinalizado = resultadosMap[partido.numero]?.finalizado === true;
+    const disabled = isClosed || isFinalizado;
     const fechaLocal = horaPartido.toLocaleString("es-CO", { timeZone: "America/Bogota" });
 
     const pred = predicciones[partido.numero] || {};
@@ -2426,7 +2460,6 @@ if (!participantSnap.exists() || participantSnap.data().enabled_knockout !== tru
     const tarjetaHTML = `
       <div class="knockout-card" data-partido-octavos="${partido.numero}" data-local="${partido.local}" data-visitante="${partido.visitante}">
         <div class="knockout-match-number">Partido ${partido.numero}</div>
-
         <div class="match-teams">
           <div class="team-row">
             <img class="flag-icon" src="https://flagcdn.com/${obtenerCodigoPais(partido.local)}.svg">
@@ -2438,24 +2471,21 @@ if (!participantSnap.exists() || participantSnap.data().enabled_knockout !== tru
             <span>${fifaCodes[partido.visitante] || partido.visitante}</span>
           </div>
         </div>
-
         <div class="prediction-area">
           <input type="number" id="oct_local_${partido.numero}" class="prediction-input local-score" value="${predLocal}" placeholder="0" ${disabled ? "disabled" : ""}>
           <span class="score-separator">-</span>
           <input type="number" id="oct_visit_${partido.numero}" class="prediction-input visitor-score" value="${predVisit}" placeholder="0" ${disabled ? "disabled" : ""}>
         </div>
-
         <div id="${radiosId}" class="knockout-radios" style="display: ${showRadios ? "flex" : "none"};">
           <label><input type="radio" name="oct_clasificado_${partido.numero}" value="${partido.local}" ${clasifGuardado === partido.local ? "checked" : ""} ${disabled ? "disabled" : ""}> ${fifaCodes[partido.local] || partido.local}</label>
           <label><input type="radio" name="oct_clasificado_${partido.numero}" value="${partido.visitante}" ${clasifGuardado === partido.visitante ? "checked" : ""} ${disabled ? "disabled" : ""}> ${fifaCodes[partido.visitante] || partido.visitante}</label>
         </div>
-
-        <button class="btn-guardar" onclick="window.saveOctavosPrediction('${partido.numero}')" ${disabled ? "disabled" : ""}>Guardar</button>
-
+        <button class="btn-guardar" onclick="window.saveOctavosPrediction('${partido.numero}')" ${disabled ? "disabled" : ""}>
+          ${disabled ? (isFinalizado ? "🔒 Partido finalizado" : "🔒 Apuestas cerradas") : "Guardar"}
+        </button>
         <div class="match-timer" data-cierre="${cierreApuestas.toISOString()}">
           ⏰ Resultados se bloquean en: <span class="timer-value">${formatearTiempoRestante(cierreApuestas)}</span>
         </div>
-
         <div class="match-date">📅 ${fechaLocal}</div>
       </div>
     `;
@@ -2475,28 +2505,27 @@ if (!participantSnap.exists() || participantSnap.data().enabled_knockout !== tru
     const horaPartido = obtenerHoraPartidoKnockout(partido.numero);
     const cierreApuestas = new Date(horaPartido.getTime() - 60 * 60 * 1000);
     const disabled = new Date() >= cierreApuestas;
+    if (disabled) continue;
 
     const localInput = document.getElementById(`oct_local_${partido.numero}`);
     const visitInput = document.getElementById(`oct_visit_${partido.numero}`);
     const radiosDiv = document.getElementById(`radios_oct_${partido.numero}`);
-
-    if (disabled || !localInput || !visitInput || !radiosDiv) continue;
-
-    const updateRadios = () => {
-      const localVal = parseInt(localInput.value);
-      const visitVal = parseInt(visitInput.value);
-      if (!isNaN(localVal) && !isNaN(visitVal) && localVal === visitVal) {
-        radiosDiv.style.display = "flex";
-      } else {
-        radiosDiv.style.display = "none";
-      }
-    };
-    localInput.addEventListener("input", updateRadios);
-    visitInput.addEventListener("input", updateRadios);
-    updateRadios();
+    if (localInput && visitInput && radiosDiv) {
+      const updateRadios = () => {
+        const localVal = parseInt(localInput.value);
+        const visitVal = parseInt(visitInput.value);
+        if (!isNaN(localVal) && !isNaN(visitVal) && localVal === visitVal) {
+          radiosDiv.style.display = "flex";
+        } else {
+          radiosDiv.style.display = "none";
+        }
+      };
+      localInput.addEventListener("input", updateRadios);
+      visitInput.addEventListener("input", updateRadios);
+      updateRadios();
+    }
   }
 }
-
 // ======================================================
 // GENERAR CUARTOS AUTOMÁTICOS (CARRUSEL HORIZONTAL)
 // ======================================================
@@ -2504,16 +2533,21 @@ async function generarCuartos() {
   const container = document.getElementById("cuartosContainer");
   if (!container) return;
 
-// ========== VALIDACIÓN DE ACCESO ==========
-const participantSnap = await getDoc(doc(db, "participants", currentUser.uid));
-if (!participantSnap.exists() || participantSnap.data().enabled_knockout !== true) {
-  container.innerHTML = `<div class="tabla-grupo-card" style="text-align:center; padding:30px;">
-    <h3>🔒 Acceso restringido</h3>
-    <p>No tienes habilitada la participación en la fase eliminatoria.<br>Contacta al administrador para obtener acceso.</p>
-  </div>`;
-  return;
-}
-// ==========================================
+  // ========== VALIDACIÓN DE ACCESO ==========
+  const participantSnap = await getDoc(doc(db, "participants", currentUser.uid));
+  if (!participantSnap.exists() || participantSnap.data().enabled_knockout !== true) {
+    container.innerHTML = `<div class="tabla-grupo-card" style="text-align:center; padding:30px;">
+      <h3>🔒 Acceso restringido</h3>
+      <p>No tienes habilitada la participación en la fase eliminatoria.<br>Contacta al administrador para obtener acceso.</p>
+    </div>`;
+    return;
+  }
+  // ==========================================
+
+  // Cargar resultados de knockout
+  const resultadosSnap = await getDocs(collection(db, "knockout_results"));
+  const resultadosMap = {};
+  resultadosSnap.forEach(doc => { resultadosMap[doc.data().numero] = doc.data(); });
 
   // Obtener clasificados de octavos
   const octavosQuery = query(collection(db, "predictions_octavos"), where("uid", "==", currentUser.uid));
@@ -2562,7 +2596,9 @@ if (!participantSnap.exists() || participantSnap.data().enabled_knockout !== tru
   for (const partido of partidos) {
     const horaPartido = obtenerHoraPartidoKnockout(partido.numero);
     const cierreApuestas = new Date(horaPartido.getTime() - 60 * 60 * 1000);
-    const disabled = new Date() >= cierreApuestas;
+    const isClosed = new Date() >= cierreApuestas;
+    const isFinalizado = resultadosMap[partido.numero]?.finalizado === true;
+    const disabled = isClosed || isFinalizado;
     const fechaLocal = horaPartido.toLocaleString("es-CO", { timeZone: "America/Bogota" });
 
     const pred = predicciones[partido.numero] || {};
@@ -2596,7 +2632,9 @@ if (!participantSnap.exists() || participantSnap.data().enabled_knockout !== tru
           <label><input type="radio" name="cuartos_clasificado_${partido.numero}" value="${partido.local}" ${clasifGuardado === partido.local ? "checked" : ""} ${disabled ? "disabled" : ""}> ${fifaCodes[partido.local] || partido.local}</label>
           <label><input type="radio" name="cuartos_clasificado_${partido.numero}" value="${partido.visitante}" ${clasifGuardado === partido.visitante ? "checked" : ""} ${disabled ? "disabled" : ""}> ${fifaCodes[partido.visitante] || partido.visitante}</label>
         </div>
-        <button class="btn-guardar" onclick="window.saveCuartosPrediction('${partido.numero}')" ${disabled ? "disabled" : ""}>Guardar</button>
+        <button class="btn-guardar" onclick="window.saveCuartosPrediction('${partido.numero}')" ${disabled ? "disabled" : ""}>
+          ${disabled ? (isFinalizado ? "🔒 Partido finalizado" : "🔒 Apuestas cerradas") : "Guardar"}
+        </button>
         <div class="match-timer" data-cierre="${cierreApuestas.toISOString()}">
           ⏰ Resultados se bloquean en: <span class="timer-value">${formatearTiempoRestante(cierreApuestas)}</span>
         </div>
@@ -2640,7 +2678,6 @@ if (!participantSnap.exists() || participantSnap.data().enabled_knockout !== tru
     }
   }
 }
-
 // ======================================================
 // GENERAR SEMIFINALES (CARRUSEL HORIZONTAL)
 // ======================================================
@@ -2648,16 +2685,21 @@ async function generarSemifinales() {
   const container = document.getElementById("semifinalContainer");
   if (!container) return;
 
- // ========== VALIDACIÓN DE ACCESO ==========
-const participantSnap = await getDoc(doc(db, "participants", currentUser.uid));
-if (!participantSnap.exists() || participantSnap.data().enabled_knockout !== true) {
-  container.innerHTML = `<div class="tabla-grupo-card" style="text-align:center; padding:30px;">
-    <h3>🔒 Acceso restringido</h3>
-    <p>No tienes habilitada la participación en la fase eliminatoria.<br>Contacta al administrador para obtener acceso.</p>
-  </div>`;
-  return;
-}
-// ==========================================
+  // ========== VALIDACIÓN DE ACCESO ==========
+  const participantSnap = await getDoc(doc(db, "participants", currentUser.uid));
+  if (!participantSnap.exists() || participantSnap.data().enabled_knockout !== true) {
+    container.innerHTML = `<div class="tabla-grupo-card" style="text-align:center; padding:30px;">
+      <h3>🔒 Acceso restringido</h3>
+      <p>No tienes habilitada la participación en la fase eliminatoria.<br>Contacta al administrador para obtener acceso.</p>
+    </div>`;
+    return;
+  }
+  // ==========================================
+
+  // Cargar resultados de knockout
+  const resultadosSnap = await getDocs(collection(db, "knockout_results"));
+  const resultadosMap = {};
+  resultadosSnap.forEach(doc => { resultadosMap[doc.data().numero] = doc.data(); });
 
   const cuartosQuery = query(collection(db, "predictions_cuartos"), where("uid", "==", currentUser.uid));
   const cuartosSnap = await getDocs(cuartosQuery);
@@ -2702,7 +2744,9 @@ if (!participantSnap.exists() || participantSnap.data().enabled_knockout !== tru
   for (const partido of partidos) {
     const horaPartido = obtenerHoraPartidoKnockout(partido.numero);
     const cierreApuestas = new Date(horaPartido.getTime() - 60 * 60 * 1000);
-    const disabled = new Date() >= cierreApuestas;
+    const isClosed = new Date() >= cierreApuestas;
+    const isFinalizado = resultadosMap[partido.numero]?.finalizado === true;
+    const disabled = isClosed || isFinalizado;
     const fechaLocal = horaPartido.toLocaleString("es-CO", { timeZone: "America/Bogota" });
 
     const pred = predicciones[partido.numero] || {};
@@ -2736,7 +2780,9 @@ if (!participantSnap.exists() || participantSnap.data().enabled_knockout !== tru
           <label><input type="radio" name="semis_clasificado_${partido.numero}" value="${partido.local}" ${clasifGuardado === partido.local ? "checked" : ""} ${disabled ? "disabled" : ""}> ${fifaCodes[partido.local] || partido.local}</label>
           <label><input type="radio" name="semis_clasificado_${partido.numero}" value="${partido.visitante}" ${clasifGuardado === partido.visitante ? "checked" : ""} ${disabled ? "disabled" : ""}> ${fifaCodes[partido.visitante] || partido.visitante}</label>
         </div>
-        <button class="btn-guardar" onclick="window.saveSemifinalPrediction('${partido.numero}')" ${disabled ? "disabled" : ""}>Guardar</button>
+        <button class="btn-guardar" onclick="window.saveSemifinalPrediction('${partido.numero}')" ${disabled ? "disabled" : ""}>
+          ${disabled ? (isFinalizado ? "🔒 Partido finalizado" : "🔒 Apuestas cerradas") : "Guardar"}
+        </button>
         <div class="match-timer" data-cierre="${cierreApuestas.toISOString()}">
           ⏰ Resultados se bloquean en: <span class="timer-value">${formatearTiempoRestante(cierreApuestas)}</span>
         </div>
