@@ -2087,3 +2087,44 @@ RESPONSIVE ADMIN PARTICIPANTES
   color: black;
   transform: scale(1.02);
 }
+/* Contenedor de la tabla de terceros - scroll horizontal en móvil */
+.admin-terceros-section .tabla-posiciones {
+  display: block;
+  overflow-x: auto;
+  white-space: nowrap;
+  font-size: 0.85rem;
+}
+
+/* Tarjetas de asignación de partidos en grid responsivo */
+.admin-terceros-partidos {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(250px, 1fr));
+  gap: 12px;
+}
+
+/* En móvil muy pequeño, que ocupe todo el ancho */
+@media (max-width: 640px) {
+  .admin-terceros-partidos {
+    grid-template-columns: 1fr;
+  }
+  .admin-terceros-section .tabla-posiciones th,
+  .admin-terceros-section .tabla-posiciones td {
+    padding: 6px 8px;
+  }
+}
+@media (max-width: 640px) {
+  .hero-logo {
+    max-width: 60px;
+  }
+  .hero-header .topbar {
+    flex-direction: column;
+    gap: 10px;
+  }
+  .user-actions {
+    justify-content: center;
+  }
+  .auth-card {
+    width: 90%;
+    padding: 20px;
+  }
+}
