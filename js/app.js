@@ -1901,317 +1901,96 @@ async function calcularPuntos(matchId) {
 // ======================================================
 
 async function generarTablaGrupos() {
-
-  const tablaContainer =
-    document.getElementById(
-      "tablaGruposContainer"
-    );
-
+  const tablaContainer = document.getElementById("tablaGruposContainer");
   if (!tablaContainer) return;
 
-  // =====================================
-  // OBTENER PARTIDOS
-  // =====================================
-
-  const matchesSnap =
-    await getDocs(
-      collection(db, "matches")
-    );
-
+  // Obtener todos los partidos de grupos
+  const matchesSnap = await getDocs(collection(db, "matches"));
   const grupos = {};
 
-  // =====================================
-  // RECORRER PARTIDOS
-  // =====================================
+  // Inicializar estructura para todos los grupos (A a L)
+  const letrasGrupos = ["A", "B", "C", "D", "E", "F", "G", "H", "I", "J", "K", "L"];
+  for (const letra of letrasGrupos) {
+    grupos[letra] = {};
+  }
 
+  // Procesar cada partido
   matchesSnap.forEach(docSnap => {
+    const match = docSnap.data();
+    if (match.fase !== "grupos") return;
+    const grupo = match.grupo;
+    if (!grupos[grupo]) return;
 
-    const match =
-      docSnap.data();
-
-    // SOLO FASE DE GRUPOS
-
-    if (
-      match.fase !== "grupos"
-    ) return;
-
-    const grupo =
-      match.grupo;
-
-    if (!grupos[grupo]) {
-
-      grupos[grupo] = {};
-
-    }
-
-    // EQUIPOS
-
-    const equipos = [
-      match.equipo_local,
-      match.equipo_visitante
-    ];
-
-    equipos.forEach(equipo => {
-
-      if (!grupos[grupo][equipo]) {
-
-        grupos[grupo][equipo] = {
-
-          equipo,
-
-          pj: 0,
-          pg: 0,
-          pe: 0,
-          pp: 0,
-
-          gf: 0,
-          gc: 0,
-          dg: 0,
-
-          pts: 0
-
+    const equipos = [match.equipo_local, match.equipo_visitante];
+    equipos.forEach(e => {
+      if (!grupos[grupo][e]) {
+        grupos[grupo][e] = {
+          equipo: e,
+          pj: 0, pg: 0, pe: 0, pp: 0,
+          gf: 0, gc: 0, dg: 0, pts: 0
         };
-
       }
-
     });
 
-    // =====================================
-    // SOLO SI ESTÁ FINALIZADO
-    // =====================================
+    // Solo si el partido está finalizado, se suman estadísticas
+    if (match.estado !== "finalizado") return;
 
-    if (
-      match.estado !== "finalizado"
-    ) return;
+    const local = grupos[grupo][match.equipo_local];
+    const visit = grupos[grupo][match.equipo_visitante];
+    const gl = Number(match.resultado_local);
+    const gv = Number(match.resultado_visitante);
 
-    const local =
-      grupos[grupo][
-      match.equipo_local
-      ];
-
-    const visit =
-      grupos[grupo][
-      match.equipo_visitante
-      ];
-
-    const gl =
-      Number(
-        match.resultado_local
-      );
-
-    const gv =
-      Number(
-        match.resultado_visitante
-      );
-
-    // PJ
-
-    local.pj++;
-    visit.pj++;
-
-    // GOLES
-
-    local.gf += gl;
-    local.gc += gv;
-
-    visit.gf += gv;
-    visit.gc += gl;
-
-    // DIFERENCIA
-
-    local.dg =
-      local.gf - local.gc;
-
-    visit.dg =
-      visit.gf - visit.gc;
-
-    // GANADOR
+    local.pj++; visit.pj++;
+    local.gf += gl; local.gc += gv;
+    visit.gf += gv; visit.gc += gl;
+    local.dg = local.gf - local.gc;
+    visit.dg = visit.gf - visit.gc;
 
     if (gl > gv) {
-
-      local.pg++;
-      local.pts += 3;
-
+      local.pg++; local.pts += 3;
       visit.pp++;
-
-    }
-
-    else if (gv > gl) {
-
-      visit.pg++;
-      visit.pts += 3;
-
+    } else if (gv > gl) {
+      visit.pg++; visit.pts += 3;
       local.pp++;
-
+    } else {
+      local.pe++; visit.pe++;
+      local.pts++; visit.pts++;
     }
-
-    else {
-
-      local.pe++;
-      visit.pe++;
-
-      local.pts++;
-      visit.pts++;
-
-    }
-
   });
 
-  // =====================================
-  // GENERAR HTML
-  // =====================================
+  // Ordenar cada grupo y guardar clasificados globales
+  for (const grupo of letrasGrupos) {
+    const tabla = Object.values(grupos[grupo]);
+    tabla.sort((a, b) => b.pts - a.pts || b.dg - a.dg || b.gf - a.gf);
+    if (tabla[0]) clasificadosGlobales[`1${grupo}`] = tabla[0].equipo;
+    if (tabla[1]) clasificadosGlobales[`2${grupo}`] = tabla[1].equipo;
+  }
 
-  let html = "";
+  // Mostrar SOLO la tabla del grupo activo (para el usuario)
+  const grupoActivoTabla = grupos[grupoActivo];
+  const tablaActiva = Object.values(grupoActivoTabla);
+  tablaActiva.sort((a, b) => b.pts - a.pts || b.dg - a.dg || b.gf - a.gf);
 
-  const gruposOrdenados = [grupoActivo];
-
-  gruposOrdenados.forEach(grupo => {
-
-    const tabla =
-      Object.values(
-        grupos[grupo]
-      );
-
-    // =====================================
-    // ORDENAR TABLA FIFA
-    // =====================================
-
-    tabla.sort((a, b) => {
-
-      if (b.pts !== a.pts) {
-        return b.pts - a.pts;
-      }
-
-      if (b.dg !== a.dg) {
-        return b.dg - a.dg;
-      }
-
-      if (b.gf !== a.gf) {
-        return b.gf - a.gf;
-      }
-
-      return a.equipo.localeCompare(
-        b.equipo
-      );
-
-    });
-
+  let html = `<div class="tabla-grupo-card">
+    <h3 class="tabla-title">Grupo ${grupoActivo}</h3>
+    <table class="tabla-posiciones">
+      <thead><tr><th>#</th><th>Equipo</th><th>PTS</th><th>PJ</th><th>DG</th></tr></thead>
+      <tbody>`;
+  tablaActiva.forEach((team, idx) => {
     html += `
-
-      <div class="tabla-grupo-card">
-
-        <h3 class="tabla-title">
-          Grupo ${grupo}
-        </h3>
-
-        <table class="tabla-posiciones">
-
-          <thead>
-
-            <tr>
-
-              <th>#</th>
-              <th>Equipo</th>
-              <th>PTS</th>
-              <th>PJ</th>
-              <th>DG</th>
-
-            </tr>
-
-          </thead>
-
-          <tbody>
-
-    `;
-    // =====================================
-    // GUARDAR CLASIFICADOS
-    // =====================================
-
-    if (tabla[0]) {
-
-      clasificadosGlobales[
-        `1${grupo}`
-      ] = tabla[0].equipo;
-
-    }
-
-    if (tabla[1]) {
-
-      clasificadosGlobales[
-        `2${grupo}`
-      ] = tabla[1].equipo;
-
-    }
-
-    tabla.forEach((team, index) => {
-
-      html += `
-
-        <tr>
-
-          <td>
-            ${index + 1}
-          </td>
-
-          <td>
-
-            <div
-              style="
-                display:flex;
-                align-items:center;
-                gap:8px;
-              "
-            >
-
-              <img
-                src="https://flagcdn.com/${obtenerCodigoPais(team.equipo)}.svg"
-                width="22"
-              >
-
-              ${team.equipo}
-
-            </div>
-
-          </td>
-
-          <td>
-            <strong>
-              ${team.pts}
-            </strong>
-          </td>
-
-          <td>
-            ${team.pj}
-          </td>
-
-          <td>
-  ${team.dg > 0
-          ? "+" + team.dg
-          : team.dg}
-</td>
-
-        </tr>
-
-      `;
-
-    });
-
-    html += `
-
-          </tbody>
-
-        </table>
-
-      </div>
-
-    `;
-
+      <tr>
+        <td>${idx + 1}</td>
+        <td><div style="display:flex; align-items:center; gap:8px;"><img src="https://flagcdn.com/${obtenerCodigoPais(team.equipo)}.svg" width="22"> ${team.equipo}</div></td>
+        <td><strong>${team.pts}</strong></td>
+        <td>${team.pj}</td>
+        <td>${team.dg > 0 ? "+" + team.dg : team.dg}</td>
+      </tr>`;
   });
+  html += `</tbody></table></div>`;
+  tablaContainer.innerHTML = html;
 
-  tablaContainer.innerHTML =
-    html;
+  // Actualizar los dieciseisavos (bracket) porque ahora los clasificados globales están completos
   generarDieciseisavos();
-
 }
 // ======================================================
 // GENERAR DIECISEISAVOS
