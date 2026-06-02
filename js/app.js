@@ -997,7 +997,7 @@ async function generarFinal() {
 }
 
 // ======================================================
-// GENERAR TERCER PUESTO - VERSIÓN CORREGIDA
+// GENERAR TERCER PUESTO - CORREGIDO (PERDEDORES REALES)
 // ======================================================
 async function generarTercerPuesto() {
   const container = document.getElementById("thirdPlaceContainer");
@@ -1014,12 +1014,73 @@ async function generarTercerPuesto() {
     if (!participantSnap.exists() || participantSnap.data().enabled_knockout !== true) {
       container.innerHTML = `<div class="tabla-grupo-card" style="text-align:center; padding:30px;">
         <h3>🔒 Acceso restringido</h3>
-        <p>No tienes habilitada la participación en la fase eliminatoria.<br>Contacta al administrador para obtener acceso.</p>
+        <p>No tienes habilitada la participación en la fase eliminatoria.</p>
       </div>`;
       return;
     }
 
-    // ========== CARGAR RESULTADOS REALES ==========
+    // ========== 1. OBTENER CLASIFICADOS DE CUARTOS (para saber quiénes jugaron las semifinales) ==========
+    let clasificadosCuartos = {};
+    try {
+      const cuartosQuery = query(collection(db, "predictions_cuartos"), where("uid", "==", currentUser.uid));
+      const cuartosSnap = await getDocs(cuartosQuery);
+      cuartosSnap.forEach(doc => {
+        const data = doc.data();
+        clasificadosCuartos[data.partido] = data.clasificado;
+      });
+    } catch (e) {
+      console.error("Error al cargar cuartos:", e);
+    }
+
+    // ========== 2. CONSTRUIR LOS PARTIDOS DE SEMIFINALES (con los equipos que salieron de cuartos) ==========
+    // Estos son los mismos que se usan en generarSemifinales
+    const partidosSemis = [
+      { numero: 101, local: clasificadosCuartos[97] || "Ganador 97", visitante: clasificadosCuartos[98] || "Ganador 98" },
+      { numero: 102, local: clasificadosCuartos[99] || "Ganador 99", visitante: clasificadosCuartos[100] || "Ganador 100" }
+    ];
+
+    // ========== 3. OBTENER LOS GANADORES ELEGIDOS POR EL USUARIO EN SEMIFINALES ==========
+    let ganadoresSemis = {};
+    try {
+      const semisQuery = query(collection(db, "predictions_semifinales"), where("uid", "==", currentUser.uid));
+      const semisSnap = await getDocs(semisQuery);
+      semisSnap.forEach(doc => {
+        const data = doc.data();
+        ganadoresSemis[data.partido] = data.clasificado;
+      });
+    } catch (e) {
+      console.error("Error al cargar semifinales:", e);
+    }
+
+    // ========== 4. DETERMINAR LOS PERDEDORES DE CADA SEMIFINAL ==========
+    let perdedorSemifinal1 = "Por definir";
+    let perdedorSemifinal2 = "Por definir";
+
+    // Semifinal 101
+    const partido101 = partidosSemis.find(p => p.numero === 101);
+    if (partido101 && ganadoresSemis[101]) {
+      const ganador = ganadoresSemis[101];
+      perdedorSemifinal1 = (ganador === partido101.local) ? partido101.visitante : partido101.local;
+    } else if (partido101) {
+      perdedorSemifinal1 = `Perdedor de ${partido101.local} vs ${partido101.visitante}`;
+    }
+
+    // Semifinal 102
+    const partido102 = partidosSemis.find(p => p.numero === 102);
+    if (partido102 && ganadoresSemis[102]) {
+      const ganador = ganadoresSemis[102];
+      perdedorSemifinal2 = (ganador === partido102.local) ? partido102.visitante : partido102.local;
+    } else if (partido102) {
+      perdedorSemifinal2 = `Perdedor de ${partido102.local} vs ${partido102.visitante}`;
+    }
+
+    const partido = {
+      numero: 103,
+      local: perdedorSemifinal1,
+      visitante: perdedorSemifinal2
+    };
+
+    // ========== 5. RESULTADOS REALES Y DATOS DEL PARTIDO ==========
     let resultadosMap = {};
     try {
       const resultadosSnap = await getDocs(collection(db, "knockout_results"));
@@ -1028,28 +1089,6 @@ async function generarTercerPuesto() {
       console.warn("No se pudieron cargar knockout_results:", e);
     }
 
-    // ========== OBTENER CLASIFICADOS DE SEMIFINALES ==========
-    let clasificados = {};
-    try {
-      const semisQuery = query(collection(db, "predictions_semifinales"), where("uid", "==", currentUser.uid));
-      const semisSnap = await getDocs(semisQuery);
-      semisSnap.forEach(doc => {
-        const data = doc.data();
-        clasificados[data.partido] = data.clasificado;
-      });
-    } catch (e) {
-      console.error("Error al cargar predicciones de semifinales:", e);
-    }
-
-    // Equipos para el tercer puesto: los perdedores de las semifinales
-    const perdedor1 = clasificados[101] ? `Perdedor ${clasificados[101]}` : "Perdedor Semifinal 1";
-    const perdedor2 = clasificados[102] ? `Perdedor ${clasificados[102]}` : "Perdedor Semifinal 2";
-    const partido = {
-      numero: 103,
-      local: perdedor1,
-      visitante: perdedor2
-    };
-
     const horaPartido = obtenerHoraPartidoKnockout(103);
     const cierreApuestas = new Date(horaPartido.getTime() - 60 * 60 * 1000);
     const isClosed = new Date() >= cierreApuestas;
@@ -1057,7 +1096,7 @@ async function generarTercerPuesto() {
     const disabled = isClosed || isFinalizado;
     const fechaLocal = horaPartido.toLocaleString("es-CO", { timeZone: "America/Bogota" });
 
-    // ========== PREDICCIÓN GUARDADA ==========
+    // ========== 6. PREDICCIÓN GUARDADA DEL USUARIO PARA EL TERCER PUESTO ==========
     let predLocal = "", predVisit = "", clasifGuardado = "";
     try {
       const thirdRef = doc(db, "predictions_third", `${currentUser.uid}_THIRD_103`);
@@ -1075,7 +1114,7 @@ async function generarTercerPuesto() {
     const radiosId = `radios_third_${partido.numero}`;
     const showRadios = (predLocal === predVisit && predLocal !== "");
 
-    // ========== HTML ==========
+    // ========== 7. GENERAR HTML ==========
     let html = `<div class="tabla-grupo-card">
       <h3 class="tabla-title">🥉 Tercer Puesto</h3>
       <div class="puntuacion-info">
@@ -1130,6 +1169,7 @@ async function generarTercerPuesto() {
     `;
     carousel.insertAdjacentHTML('beforeend', tarjetaHTML);
 
+    // Listeners para radios en empate
     if (!disabled) {
       const localInput = document.getElementById(`third_local_${partido.numero}`);
       const visitInput = document.getElementById(`third_visit_${partido.numero}`);
