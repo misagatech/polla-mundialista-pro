@@ -127,8 +127,8 @@ function obtenerHoraPartidoKnockout(numeroPartido) {
     93: "2026-07-06", 94: "2026-07-06", 95: "2026-07-07", 96: "2026-07-07",
     97: "2026-07-09", 98: "2026-07-10", 99: "2026-07-11", 100: "2026-07-11",
     101: "2026-07-14", 102: "2026-07-15",
-    104: "2026-07-18",  // Tercer puesto
-    103: "2026-07-19"   // Final
+    103: "2026-07-18",  // Tercer puesto
+    104: "2026-07-19"   // Final
   };
 
   // Horarios en hora Colombia (UTC-5) en formato "HH:MM:SS"
@@ -141,8 +141,8 @@ function obtenerHoraPartidoKnockout(numeroPartido) {
     93: "14:00:00", 94: "19:00:00", 95: "11:00:00", 96: "15:00:00",
     97: "15:00:00", 98: "14:00:00", 99: "16:00:00", 100: "20:00:00",
     101: "14:00:00", 102: "14:00:00",
-    104: "16:00:00",  // Tercer puesto
-    103: "14:00:00"   // Final
+    103: "16:00:00",  // Tercer puesto
+    104: "14:00:00"   // Final
   };
 
   const fechaStr = fechas[numeroPartido];
@@ -853,14 +853,14 @@ if (!participantSnap.exists() || participantSnap.data().enabled_knockout !== tru
     clasificados[data.partido] = data.clasificado;
   });
 
-  const partido = { numero: 103, local: clasificados[101] || "Ganador 101", visitante: clasificados[102] || "Ganador 102" };
+  const partido = { numero: 104, local: clasificados[101] || "Ganador 101", visitante: clasificados[102] || "Ganador 102" };
 
-  const horaPartido = obtenerHoraPartidoKnockout(103);
+  const horaPartido = obtenerHoraPartidoKnockout(104);
   const cierreApuestas = new Date(horaPartido.getTime() - 60 * 60 * 1000);
   const disabled = new Date() >= cierreApuestas;
   const fechaLocal = horaPartido.toLocaleString("es-CO", { timeZone: "America/Bogota" });
 
-  const finalRef = doc(db, "predictions_final", `${currentUser.uid}_FINAL_103`);
+  const finalRef = doc(db, "predictions_final", `${currentUser.uid}_FINAL_104`);
   const finalSnap = await getDoc(finalRef);
   const pred = finalSnap.exists() ? finalSnap.data() : {};
   const predLocal = pred.pred_local ?? "";
@@ -970,17 +970,17 @@ if (!participantSnap.exists() || participantSnap.data().enabled_knockout !== tru
   });
 
   const partido = {
-    numero: 104,
+    numero: 103,
     local: clasificados[101] ? `Perdedor ${clasificados[101]}` : "Perdedor 101",
     visitante: clasificados[102] ? `Perdedor ${clasificados[102]}` : "Perdedor 102"
   };
 
-  const horaPartido = obtenerHoraPartidoKnockout(104);
+  const horaPartido = obtenerHoraPartidoKnockout(103);
   const cierreApuestas = new Date(horaPartido.getTime() - 60 * 60 * 1000);
   const disabled = new Date() >= cierreApuestas;
   const fechaLocal = horaPartido.toLocaleString("es-CO", { timeZone: "America/Bogota" });
 
-  const thirdRef = doc(db, "predictions_third", `${currentUser.uid}_THIRD_104`);
+  const thirdRef = doc(db, "predictions_third", `${currentUser.uid}_THIRD_103`);
   const thirdSnap = await getDoc(thirdRef);
   const pred = thirdSnap.exists() ? thirdSnap.data() : {};
   const predLocal = pred.pred_local ?? "";
@@ -3400,8 +3400,8 @@ async function loadAdminKnockoutMatches() {
     { nombre: "Octavos", inicio: 89, fin: 96 },
     { nombre: "Cuartos", inicio: 97, fin: 100 },
     { nombre: "Semifinales", inicio: 101, fin: 102 },
-    { nombre: "Final", inicio: 103, fin: 103 },
-    { nombre: "Tercer puesto", inicio: 104, fin: 104 }
+    { nombre: "Final", inicio: 104, fin: 104 },
+    { nombre: "Tercer puesto", inicio: 103, fin: 103 }
   ];
 
   let html = `<div class="admin-knockout-section" style="margin-top: 30px;">
@@ -3514,8 +3514,8 @@ window.finalizarPartidoKnockout = async (numeroPartido) => {
   else if (numeroPartido <= 96) fase = "octavos";
   else if (numeroPartido <= 100) fase = "cuartos";
   else if (numeroPartido <= 102) fase = "semifinales";
-  else if (numeroPartido === 103) fase = "final";
-  else if (numeroPartido === 104) fase = "tercer_puesto";
+  else if (numeroPartido === 104) fase = "final";
+  else if (numeroPartido === 103) fase = "tercer_puesto";
   else return alert("Partido no válido");
 
   const resultadoRef = doc(db, "knockout_results", numeroPartido.toString());
