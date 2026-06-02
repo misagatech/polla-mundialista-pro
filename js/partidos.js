@@ -185,10 +185,10 @@ export const todosLosPartidos = [
   // Ghana vs Inglaterra - 23 junio, 15:00 COL → UTC 20:00
   { fase: "grupos", grupo: "L", local: "Inglaterra", visitante: "Ghana", fechaUTC: "2026-06-23T20:00:00Z" },
   // Croacia vs Panamá - 23 junio, 18:00 COL → UTC 23:00
-  { fase: "grupos", grupo: "L", local: "Panamá", visitante: "Croacia", fechaUTC: "2026-06-23T23:00:00Z" }
+  { fase: "grupos", grupo: "L", local: "Panamá", visitante: "Croacia", fechaUTC: "2026-06-23T23:00:00Z" },
   // Inglaterra vs Panamá - 27 junio, 16:00 COL → UTC 21:00
   { fase: "grupos", grupo: "L", local: "Panamá", visitante: "Inglaterra", fechaUTC: "2026-06-27T21:00:00Z" },
   // Croacia vs Ghana - 27 junio, 16:00 COL → UTC 21:00
-  { fase: "grupos", grupo: "L", local: "Croacia", visitante: "Ghana", fechaUTC: "2026-06-27T21:00:00Z" },
+  { fase: "grupos", grupo: "L", local: "Croacia", visitante: "Ghana", fechaUTC: "2026-06-27T21:00:00Z" }
   
 ];
