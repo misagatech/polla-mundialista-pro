@@ -3577,13 +3577,13 @@ async function cargarAdminTerceros() {
   }
 }
 // ======================================================
-// ADMIN PANEL: RESULTADOS REALES DE KNOCKOUT
+// ADMIN PANEL: RESULTADOS REALES DE KNOCKOUT (CON EQUIPOS Y BANDERAS)
 // ======================================================
 async function loadAdminKnockoutMatches() {
   const container = document.getElementById("adminKnockoutMatchesList");
   if (!container) return;
 
-  // Obtener resultados actuales desde knockout_results
+  // 1. Obtener resultados reales ya guardados
   const resultadosSnap = await getDocs(collection(db, "knockout_results"));
   const resultadosMap = {};
   resultadosSnap.forEach(doc => {
@@ -3591,29 +3591,142 @@ async function loadAdminKnockoutMatches() {
     resultadosMap[data.numero] = data;
   });
 
+  // 2. Obtener asignación de terceros (para dieciseisavos)
+  let tercerosMap = {};
+  try {
+    const asignacionDoc = await getDoc(doc(db, "settings", "terceros_asignacion"));
+    if (asignacionDoc.exists()) tercerosMap = asignacionDoc.data();
+  } catch(e) { console.warn("No se pudo cargar asignación de terceros", e); }
+
+  // 3. Función para obtener el equipo que avanzó de un partido knockout (según resultados reales)
+  const obtenerAvanzado = (numPartido) => {
+    const res = resultadosMap[numPartido];
+    if (!res) return null;
+    // Si está finalizado y tiene clasificado_real, lo usamos
+    if (res.finalizado && res.clasificado_real) {
+      return res.clasificado_real === "local" ? "local" : "visitante";
+    }
+    // Si tiene resultado definido (aunque no finalizado), podemos calcular
+    if (res.resultado_local !== null && res.resultado_visitante !== null) {
+      if (res.resultado_local > res.resultado_visitante) return "local";
+      if (res.resultado_visitante > res.resultado_local) return "visitante";
+      // Empate: si tiene clasificado_real, lo usamos
+      if (res.clasificado_real) return res.clasificado_real;
+    }
+    return null;
+  };
+
+  // 4. Construir enfrentamientos para cada fase
+  // ---- Dieciseisavos (partidos 73-88) ----
+  const partidosDieciseisavos = [
+    { num: 73, local: clasificadosGlobales["2A"] || "2A", visit: clasificadosGlobales["2B"] || "2B" },
+    { num: 74, local: clasificadosGlobales["1E"] || "1E", visit: tercerosMap[74] || "Tercero por definir" },
+    { num: 75, local: clasificadosGlobales["1F"] || "1F", visit: clasificadosGlobales["2C"] || "2C" },
+    { num: 76, local: clasificadosGlobales["1C"] || "1C", visit: clasificadosGlobales["2F"] || "2F" },
+    { num: 77, local: clasificadosGlobales["1I"] || "1I", visit: tercerosMap[77] || "Tercero por definir" },
+    { num: 78, local: clasificadosGlobales["2E"] || "2E", visit: clasificadosGlobales["2I"] || "2I" },
+    { num: 79, local: clasificadosGlobales["1A"] || "1A", visit: tercerosMap[79] || "Tercero por definir" },
+    { num: 80, local: clasificadosGlobales["1L"] || "1L", visit: tercerosMap[80] || "Tercero por definir" },
+    { num: 81, local: clasificadosGlobales["1D"] || "1D", visit: tercerosMap[81] || "Tercero por definir" },
+    { num: 82, local: clasificadosGlobales["1G"] || "1G", visit: tercerosMap[82] || "Tercero por definir" },
+    { num: 83, local: clasificadosGlobales["2K"] || "2K", visit: clasificadosGlobales["2L"] || "2L" },
+    { num: 84, local: clasificadosGlobales["1H"] || "1H", visit: clasificadosGlobales["2J"] || "2J" },
+    { num: 85, local: clasificadosGlobales["1B"] || "1B", visit: tercerosMap[85] || "Tercero por definir" },
+    { num: 86, local: clasificadosGlobales["1J"] || "1J", visit: clasificadosGlobales["2H"] || "2H" },
+    { num: 87, local: clasificadosGlobales["1K"] || "1K", visit: tercerosMap[87] || "Tercero por definir" },
+    { num: 88, local: clasificadosGlobales["2D"] || "2D", visit: clasificadosGlobales["2G"] || "2G" }
+  ];
+
+  // ---- Octavos (89-96) ----
+  const partidosOctavos = [
+    { num: 89, local: "Ganador 74", visit: "Ganador 77" },
+    { num: 90, local: "Ganador 73", visit: "Ganador 75" },
+    { num: 91, local: "Ganador 76", visit: "Ganador 78" },
+    { num: 92, local: "Ganador 79", visit: "Ganador 80" },
+    { num: 93, local: "Ganador 83", visit: "Ganador 84" },
+    { num: 94, local: "Ganador 81", visit: "Ganador 82" },
+    { num: 95, local: "Ganador 86", visit: "Ganador 88" },
+    { num: 96, local: "Ganador 85", visit: "Ganador 87" }
+  ];
+
+  // ---- Cuartos (97-100) ----
+  const partidosCuartos = [
+    { num: 97, local: "Ganador 89", visit: "Ganador 90" },
+    { num: 98, local: "Ganador 91", visit: "Ganador 92" },
+    { num: 99, local: "Ganador 93", visit: "Ganador 94" },
+    { num: 100, local: "Ganador 95", visit: "Ganador 96" }
+  ];
+
+  // ---- Semifinales (101-102) ----
+  const partidosSemis = [
+    { num: 101, local: "Ganador 97", visit: "Ganador 98" },
+    { num: 102, local: "Ganador 99", visit: "Ganador 100" }
+  ];
+
+  // ---- Final (104) ----
+  const partidoFinal = { num: 104, local: "Ganador 101", visit: "Ganador 102" };
+
+  // ---- Tercer puesto (103) ----
+  const partidoTercero = { num: 103, local: "Perdedor 101", visit: "Perdedor 102" };
+
+  // Función para reemplazar "Ganador X" o "Perdedor X" por el equipo real (si existe en resultados)
+  const resolverEquipo = (texto, esGanador = true) => {
+    if (!texto) return "Por definir";
+    const matchNum = texto.match(/\d+/);
+    if (!matchNum) return texto;
+    const num = parseInt(matchNum[0]);
+    const avanzado = obtenerAvanzado(num);
+    if (avanzado) {
+      // Necesitamos saber el nombre del equipo local/visitante de ese partido
+      // Para ello buscamos en las listas de enfrentamientos el partido con ese número
+      const todosPartidos = [...partidosDieciseisavos, ...partidosOctavos, ...partidosCuartos, ...partidosSemis, partidoFinal, partidoTercero];
+      const partidoOrig = todosPartidos.find(p => p.num === num);
+      if (partidoOrig) {
+        if (esGanador) {
+          return avanzado === "local" ? partidoOrig.local : partidoOrig.visit;
+        } else {
+          // Perdedor: el que no avanzó
+          const ganador = avanzado === "local" ? partidoOrig.local : partidoOrig.visit;
+          return ganador === partidoOrig.local ? partidoOrig.visit : partidoOrig.local;
+        }
+      }
+    }
+    // Si no hay resultado, devolvemos el texto original (ej: "Ganador 74")
+    return texto;
+  };
+
+  // Función para actualizar todos los textos "Ganador X" / "Perdedor X" con nombres reales
+  const resolverPartido = (partido) => {
+    let local = partido.local;
+    let visit = partido.visit;
+    if (local.startsWith("Ganador")) local = resolverEquipo(local, true);
+    if (local.startsWith("Perdedor")) local = resolverEquipo(local, false);
+    if (visit.startsWith("Ganador")) visit = resolverEquipo(visit, true);
+    if (visit.startsWith("Perdedor")) visit = resolverEquipo(visit, false);
+    return { ...partido, local, visit };
+  };
+
+  // Aplicar resolución a todas las fases
+  const dieciseisavosResueltos = partidosDieciseisavos.map(p => resolverPartido(p));
+  const octavosResueltos = partidosOctavos.map(p => resolverPartido(p));
+  const cuartosResueltos = partidosCuartos.map(p => resolverPartido(p));
+  const semisResueltos = partidosSemis.map(p => resolverPartido(p));
+  const finalResuelto = resolverPartido(partidoFinal);
+  const terceroResuelto = resolverPartido(partidoTercero);
+
   const fases = [
-    { nombre: "Dieciseisavos", inicio: 73, fin: 88 },
-    { nombre: "Octavos", inicio: 89, fin: 96 },
-    { nombre: "Cuartos", inicio: 97, fin: 100 },
-    { nombre: "Semifinales", inicio: 101, fin: 102 },
-    { nombre: "Final", inicio: 104, fin: 104 },
-    { nombre: "Tercer puesto", inicio: 103, fin: 103 }
+    { nombre: "Dieciseisavos", partidos: dieciseisavosResueltos },
+    { nombre: "Octavos", partidos: octavosResueltos },
+    { nombre: "Cuartos", partidos: cuartosResueltos },
+    { nombre: "Semifinales", partidos: semisResueltos },
+    { nombre: "Final", partidos: [finalResuelto] },
+    { nombre: "Tercer puesto", partidos: [terceroResuelto] }
   ];
 
   let html = `<div class="admin-knockout-section" style="margin-top: 30px;">
     <h3 class="admin-section-title">🗡️ Resultados Eliminatorias</h3>`;
 
   for (const fase of fases) {
-    // Obtener los partidos de esta fase
-    const partidosFase = [];
-    for (let num = fase.inicio; num <= fase.fin; num++) {
-      partidosFase.push({
-        numero: num,
-        resultado: resultadosMap[num] || { resultado_local: null, resultado_visitante: null, clasificado_real: null }
-      });
-    }
-
-    // Crear carrusel horizontal
     html += `
       <div class="admin-knockout-fase" style="margin-bottom: 40px;">
         <div class="admin-group-title" style="display: flex; justify-content: space-between; align-items: center;">
@@ -3626,49 +3739,52 @@ async function loadAdminKnockoutMatches() {
         <div id="carousel-${fase.nombre.replace(/\s/g, '')}" class="admin-knockout-carousel" style="display: flex; overflow-x: auto; scroll-snap-type: x mandatory; gap: 12px; padding-bottom: 10px;">
     `;
 
-    for (const p of partidosFase) {
-      const resultado = p.resultado;
+    for (const p of fase.partidos) {
+      const resultado = resultadosMap[p.num] || { resultado_local: null, resultado_visitante: null, clasificado_real: null };
       html += `
-  <div class="admin-card" data-partido="${p.numero}" style="min-width: 280px; flex-shrink: 0;">
-    <div class="admin-teams" style="text-align:center; margin-bottom:6px;">
-      <div class="admin-team">Partido ${p.numero}</div>
-    </div>
-    <div class="admin-score" style="display:flex; justify-content:center; gap:8px; margin:8px 0;">
-      <input type="number" id="res_ko_local_${p.numero}" class="admin-input" placeholder="0" value="${resultado.resultado_local !== null ? resultado.resultado_local : ''}" style="width:55px; text-align:center;">
-      <span style="font-size:1.2rem;">-</span>
-      <input type="number" id="res_ko_visit_${p.numero}" class="admin-input" placeholder="0" value="${resultado.resultado_visitante !== null ? resultado.resultado_visitante : ''}" style="width:55px; text-align:center;">
-    </div>
-    <div style="display:flex; align-items:center; justify-content:space-between; gap:8px; margin-top:8px;">
-      <select id="clasificado_ko_${p.numero}" style="flex:1; background:#0f172a; border:1px solid #334155; border-radius:20px; padding:5px 8px; font-size:0.7rem; color:white;">
-        <option value="">Empate → ?</option>
-        <option value="local" ${resultado.clasificado_real === "local" ? "selected" : ""}>Local</option>
-        <option value="visitante" ${resultado.clasificado_real === "visitante" ? "selected" : ""}>Visitante</option>
-      </select>
-      <button class="admin-btn" onclick="window.guardarResultadoKnockout(${p.numero})" style="padding:5px 10px;">Guardar</button>
-      <button class="admin-btn finalizar-btn" onclick="window.finalizarPartidoKnockout(${p.numero})" style="padding:5px 10px;">Finalizar</button>
-    </div>
-  </div>
-`;
+        <div class="admin-card" data-partido="${p.num}" style="min-width: 320px; flex-shrink: 0;">
+          <div class="admin-teams" style="display: flex; align-items: center; justify-content: space-between; gap: 8px; margin-bottom: 12px;">
+            <div style="display: flex; align-items: center; gap: 6px;">
+              <img src="https://flagcdn.com/${obtenerCodigoPais(p.local)}.svg" width="24" style="border-radius: 4px;" onerror="this.style.display='none'">
+              <span style="font-weight: bold;">${p.local}</span>
+            </div>
+            <span style="font-size: 1.2rem;">VS</span>
+            <div style="display: flex; align-items: center; gap: 6px;">
+              <img src="https://flagcdn.com/${obtenerCodigoPais(p.visit)}.svg" width="24" style="border-radius: 4px;" onerror="this.style.display='none'">
+              <span style="font-weight: bold;">${p.visit}</span>
+            </div>
+          </div>
+          <div class="admin-score" style="display:flex; justify-content:center; gap:8px; margin:8px 0;">
+            <input type="number" id="res_ko_local_${p.num}" class="admin-input" placeholder="0" value="${resultado.resultado_local !== null ? resultado.resultado_local : ''}" style="width:55px; text-align:center;">
+            <span style="font-size:1.2rem;">-</span>
+            <input type="number" id="res_ko_visit_${p.num}" class="admin-input" placeholder="0" value="${resultado.resultado_visitante !== null ? resultado.resultado_visitante : ''}" style="width:55px; text-align:center;">
+          </div>
+          <div style="display:flex; align-items:center; justify-content:space-between; gap:8px; margin-top:8px;">
+            <select id="clasificado_ko_${p.num}" style="flex:1; background:#0f172a; border:1px solid #334155; border-radius:20px; padding:5px 8px; font-size:0.7rem; color:white;">
+              <option value="">Empate → ?</option>
+              <option value="local" ${resultado.clasificado_real === "local" ? "selected" : ""}>${p.local}</option>
+              <option value="visitante" ${resultado.clasificado_real === "visitante" ? "selected" : ""}>${p.visit}</option>
+            </select>
+            <button class="admin-btn" onclick="window.guardarResultadoKnockout(${p.num})" style="padding:5px 10px;">Guardar</button>
+            <button class="admin-btn finalizar-btn" onclick="window.finalizarPartidoKnockout(${p.num})" style="padding:5px 10px;">Finalizar</button>
+          </div>
+        </div>
+      `;
     }
-
     html += `</div></div>`;
   }
   html += `</div>`;
   container.innerHTML = html;
 
-  // Conectar botones de navegación para cada carrusel
+  // Conectar botones de navegación
   for (const fase of fases) {
     const carouselId = `carousel-${fase.nombre.replace(/\s/g, '')}`;
     const carousel = document.getElementById(carouselId);
     if (!carousel) continue;
     const leftBtn = document.querySelector(`.carousel-btn-left[data-fase="${fase.nombre}"]`);
     const rightBtn = document.querySelector(`.carousel-btn-right[data-fase="${fase.nombre}"]`);
-    if (leftBtn) {
-      leftBtn.onclick = () => carousel.scrollBy({ left: -360, behavior: "smooth" });
-    }
-    if (rightBtn) {
-      rightBtn.onclick = () => carousel.scrollBy({ left: 360, behavior: "smooth" });
-    }
+    if (leftBtn) leftBtn.onclick = () => carousel.scrollBy({ left: -360, behavior: "smooth" });
+    if (rightBtn) rightBtn.onclick = () => carousel.scrollBy({ left: 360, behavior: "smooth" });
   }
 }
 
