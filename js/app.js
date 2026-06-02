@@ -1251,10 +1251,11 @@ function loadRanking() {
 // ======================================================
 function loadRankingKnockout() {
   const rankingRef = collection(db, "ranking_knockout");
-  onSnapshot(query(rankingRef, orderBy("puntos", "desc")), async (snapshot) => {
+  rankingUnsubscribeKO = onSnapshot(query(rankingRef, orderBy("puntos", "desc")), async (snapshot) => {
     const container = document.getElementById("rankingKnockoutList");
     if (!container) return;
     let pos = 1;
+    let encontrado = false;
     let html = "";
     for (const docSnap of snapshot.docs) {
       const data = docSnap.data();
@@ -1266,7 +1267,18 @@ function loadRankingKnockout() {
       else if (pos === 3) medalla = "🥉";
       else medalla = `#${pos}`;
       html += `<div style="display:flex; justify-content:space-between; padding:8px 0;"><span>${medalla} ${nombre}</span><strong>${data.puntos} pts</strong></div>`;
+      
+      // Actualizar mi posición KO si es el usuario actual
+      if (data.user_id === currentUser.uid) {
+        document.getElementById("miPosicionKO").innerText = pos + "°";
+        document.getElementById("misPuntosKO").innerText = data.puntos;
+        encontrado = true;
+      }
       pos++;
+    }
+    if (!encontrado) {
+      document.getElementById("miPosicionKO").innerText = "-";
+      document.getElementById("misPuntosKO").innerText = "0";
     }
     container.innerHTML = html || "<div>No hay datos aún</div>";
   });
@@ -3169,16 +3181,13 @@ window.toggleHabilitadoKO = async (uid) => {
   });
 };
 
+
 // ======================================================
-// BOTÓN DE RESET DE PRUEBAS (KNOCKOUT)
-// ======================================================
-// ======================================================
-// BOTÓN DE RESET DE PRUEBAS (KNOCKOUT) - VERSIÓN ROBUSTA
+// RESET DE PRUEBAS PARA KNOCKOUT (VERSIÓN ROBUSTA)
 // ======================================================
 window.resetearPruebasKnockout = async () => {
   if (!confirm("⚠️ ¿Eliminar TODAS las predicciones de knockout y reiniciar resultados reales? Esta acción no se puede deshacer.")) return;
 
-  // 1. Eliminar todas las predicciones de knockout
   const colecciones = [
     "predictions_knockout",
     "predictions_octavos",
@@ -3191,27 +3200,19 @@ window.resetearPruebasKnockout = async () => {
   for (const col of colecciones) {
     try {
       const snapshot = await getDocs(collection(db, col));
-      if (snapshot.empty) {
-        console.log(`ℹ️ Colección ${col} vacía, no hay nada que eliminar`);
-        continue;
-      }
+      if (snapshot.empty) continue;
       const batch = writeBatch(db);
       snapshot.forEach(doc => batch.delete(doc.ref));
       await batch.commit();
-      console.log(`✅ Eliminados todos los documentos de ${col}`);
     } catch (error) {
       console.error(`Error eliminando documentos de ${col}:`, error);
-      // No detenemos el proceso, continuamos con la siguiente colección
     }
   }
 
-  // 2. Reiniciar resultados reales (knockout_results)
   const resultadosRef = collection(db, "knockout_results");
   try {
     const resultadosSnapshot = await getDocs(resultadosRef);
-    if (resultadosSnapshot.empty) {
-      console.log("ℹ️ knockout_results no tiene documentos o no existe. No se reinició nada.");
-    } else {
+    if (!resultadosSnapshot.empty) {
       const batchResults = writeBatch(db);
       resultadosSnapshot.forEach(doc => {
         batchResults.update(doc.ref, {
@@ -3222,35 +3223,106 @@ window.resetearPruebasKnockout = async () => {
         });
       });
       await batchResults.commit();
-      console.log("✅ Resultados reales reiniciados (campos a null).");
     }
   } catch (error) {
-    console.warn("⚠️ No se pudo acceder a knockout_results (quizás la colección no existe):", error);
+    console.warn("No se pudo acceder a knockout_results", error);
   }
 
-  alert("✅ Predicciones de knockout eliminadas y resultados reales reiniciados (si existían).");
+  alert("✅ Predicciones de knockout eliminadas y resultados reales reiniciados.");
   location.reload();
 };
 
-function agregarBotonResetKnockout() {
+// ======================================================
+// RESET DE PRUEBAS PARA GRUPOS
+// ======================================================
+window.resetearPruebasGrupos = async () => {
+  if (!confirm("⚠️ ¿Eliminar TODAS las predicciones de grupos y reiniciar resultados reales? Esta acción no se puede deshacer.")) return;
+
+  const snapshot = await getDocs(collection(db, "predictions_groups"));
+  const batch = writeBatch(db);
+  snapshot.forEach(doc => batch.delete(doc.ref));
+  await batch.commit();
+
+  const matchesSnap = await getDocs(query(collection(db, "matches"), where("fase", "==", "grupos")));
+  const batchMatches = writeBatch(db);
+  matchesSnap.forEach(doc => {
+    batchMatches.update(doc.ref, {
+      resultado_local: null,
+      resultado_visitante: null,
+      estado: "pendiente",
+      puntos_calculados: false
+    });
+  });
+  await batchMatches.commit();
+
+  alert("✅ Predicciones de grupos eliminadas y resultados reiniciados.");
+  location.reload();
+};
+
+// ======================================================
+// AGREGAR BOTONES DE RESET (GRUPOS Y KNOCKOUT) EN EL PANEL ADMIN
+// ======================================================
+function agregarBotonesReset() {
   setTimeout(() => {
     const adminBottom = document.querySelector(".admin-bottom-actions");
-    if (!adminBottom) {
-      console.error("No se encontró .admin-bottom-actions");
-      return;
+    if (!adminBottom) return;
+
+    // Botón reset grupos
+    if (!document.getElementById("btnResetGrupos")) {
+      const btnGrupos = document.createElement("button");
+      btnGrupos.id = "btnResetGrupos";
+      btnGrupos.textContent = "🧹 Resetear pruebas GRUPOS";
+      btnGrupos.className = "admin-load-btn";
+      btnGrupos.style.background = "linear-gradient(90deg, #dc2626, #b91c1c)";
+      btnGrupos.style.marginLeft = "10px";
+      btnGrupos.onclick = window.resetearPruebasGrupos;
+      adminBottom.appendChild(btnGrupos);
     }
-    if (document.getElementById("btnResetKnockout")) return;
-    const btn = document.createElement("button");
-    btn.id = "btnResetKnockout";
-    btn.textContent = "🧹 Resetear pruebas KO";
-    btn.className = "admin-load-btn";
-    btn.style.background = "linear-gradient(90deg, #dc2626, #b91c1c)";
-    btn.style.marginLeft = "10px";
-    btn.onclick = window.resetearPruebasKnockout;
-    adminBottom.appendChild(btn);
-    console.log("Botón de reset KO añadido");
+
+    // Botón reset knockout
+    if (!document.getElementById("btnResetKnockout")) {
+      const btnKnockout = document.createElement("button");
+      btnKnockout.id = "btnResetKnockout";
+      btnKnockout.textContent = "🧹 Resetear pruebas KO";
+      btnKnockout.className = "admin-load-btn";
+      btnKnockout.style.background = "linear-gradient(90deg, #dc2626, #b91c1c)";
+      btnKnockout.style.marginLeft = "10px";
+      btnKnockout.onclick = window.resetearPruebasKnockout;
+      adminBottom.appendChild(btnKnockout);
+    }
   }, 500);
 }
+
+// ======================================================
+// RESET DE PRUEBAS PARA GRUPOS
+// ======================================================
+window.resetearPruebasGrupos = async () => {
+  if (!confirm("⚠️ ¿Eliminar TODAS las predicciones de grupos y reiniciar resultados reales? Esta acción no se puede deshacer.")) return;
+  
+  // 1. Eliminar todas las predicciones de grupos
+  const snapshot = await getDocs(collection(db, "predictions_groups"));
+  const batch = writeBatch(db);
+  snapshot.forEach(doc => batch.delete(doc.ref));
+  await batch.commit();
+  console.log("✅ Predicciones de grupos eliminadas");
+  
+  // 2. Reiniciar resultados reales en matches (solo fase grupos)
+  const matchesSnap = await getDocs(query(collection(db, "matches"), where("fase", "==", "grupos")));
+  const batchMatches = writeBatch(db);
+  matchesSnap.forEach(doc => {
+    batchMatches.update(doc.ref, {
+      resultado_local: null,
+      resultado_visitante: null,
+      estado: "pendiente",
+      puntos_calculados: false
+    });
+  });
+  await batchMatches.commit();
+  console.log("✅ Resultados de grupos reiniciados");
+  
+  alert("✅ Predicciones de grupos eliminadas y resultados reiniciados.");
+  location.reload();
+};
 // ======================================================
 // RENDERIZADO DE LISTA DE PARTICIPANTES (con buscador dual)
 // ======================================================
@@ -3661,8 +3733,8 @@ onAuthStateChanged(auth, async (user) => {
       loadAdminParticipants();
       console.log("CARGANDO PARTICIPANTES ADMIN");
       setupUploadButton();
-      agregarBotonResetKnockout();   // ← esta línea debe estar presente
-      // agregarBotonesReset();          // ← COMENTA O ELIMINA
+     // agregarBotonResetKnockout();   // ← esta línea debe estar presente
+      agregarBotonesReset();          // ← COMENTA O ELIMINA
       loadAdminKnockoutMatches();     // ← COMENTA O ELIMINA
     } else {
       adminPanel.classList.add("hidden");
