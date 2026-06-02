@@ -49,6 +49,7 @@ let currentUser = null;
 let currentUserRol = null;
 let matchesUnsubscribe = null;
 let rankingUnsubscribe = null;
+let rankingUnsubscribeKO = null;
 let participantsUnsubscribe = null;
 let adminParticipantsUnsubscribe = null;
 let gruposData = {};
@@ -3293,36 +3294,6 @@ function agregarBotonesReset() {
   }, 500);
 }
 
-// ======================================================
-// RESET DE PRUEBAS PARA GRUPOS
-// ======================================================
-window.resetearPruebasGrupos = async () => {
-  if (!confirm("⚠️ ¿Eliminar TODAS las predicciones de grupos y reiniciar resultados reales? Esta acción no se puede deshacer.")) return;
-  
-  // 1. Eliminar todas las predicciones de grupos
-  const snapshot = await getDocs(collection(db, "predictions_groups"));
-  const batch = writeBatch(db);
-  snapshot.forEach(doc => batch.delete(doc.ref));
-  await batch.commit();
-  console.log("✅ Predicciones de grupos eliminadas");
-  
-  // 2. Reiniciar resultados reales en matches (solo fase grupos)
-  const matchesSnap = await getDocs(query(collection(db, "matches"), where("fase", "==", "grupos")));
-  const batchMatches = writeBatch(db);
-  matchesSnap.forEach(doc => {
-    batchMatches.update(doc.ref, {
-      resultado_local: null,
-      resultado_visitante: null,
-      estado: "pendiente",
-      puntos_calculados: false
-    });
-  });
-  await batchMatches.commit();
-  console.log("✅ Resultados de grupos reiniciados");
-  
-  alert("✅ Predicciones de grupos eliminadas y resultados reiniciados.");
-  location.reload();
-};
 // ======================================================
 // RENDERIZADO DE LISTA DE PARTICIPANTES (con buscador dual)
 // ======================================================
