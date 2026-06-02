@@ -40,8 +40,8 @@ export const todosLosPartidos = [
   { fase: "grupos", grupo: "C", local: "Haití", visitante: "Escocia", fechaUTC: "2026-06-14T01:00:00Z" },
   // Escocia vs Marruecos - 19 junio, 17:00 COL → UTC 22:00
   { fase: "grupos", grupo: "C", local: "Escocia", visitante: "Marruecos", fechaUTC: "2026-06-19T22:00:00Z" },
-  // Brasil vs Haití - 19 junio, 20:00 COL → UTC 01:00 (20 junio)
-  { fase: "grupos", grupo: "C", local: "Brasil", visitante: "Haití", fechaUTC: "2026-06-20T01:00:00Z" },
+  // Brasil vs Haití - 19 junio, 19:30 COL → UTC 00:30 (20 junio)
+  { fase: "grupos", grupo: "C", local: "Brasil", visitante: "Haití", fechaUTC: "2026-06-20T00:30:00Z" },
   // Escocia vs Brasil - 24 junio, 17:00 COL → UTC 22:00
   { fase: "grupos", grupo: "C", local: "Escocia", visitante: "Brasil", fechaUTC: "2026-06-24T22:00:00Z" },
   // Marruecos vs Haití - 24 junio, 17:00 COL → UTC 22:00
@@ -119,13 +119,13 @@ export const todosLosPartidos = [
   // Arabia Saudita vs Uruguay - 15 junio, 17:00 COL → UTC 22:00
   { fase: "grupos", grupo: "H", local: "Arabia Saudita", visitante: "Uruguay", fechaUTC: "2026-06-15T22:00:00Z" },
   // España vs Uruguay - 21 junio, 17:00 COL → UTC 22:00
-  { fase: "grupos", grupo: "H", local: "España", visitante: "Uruguay", fechaUTC: "2026-06-21T22:00:00Z" },
+  { fase: "grupos", grupo: "H", local: "Uruguay", visitante: "Cabo Verde", fechaUTC: "2026-06-21T22:00:00Z" },
   // Cabo Verde vs Arabia Saudita - 21 junio, 11:00 COL → UTC 16:00
-  { fase: "grupos", grupo: "H", local: "Cabo Verde", visitante: "Arabia Saudita", fechaUTC: "2026-06-21T16:00:00Z" },
+  { fase: "grupos", grupo: "H", local: "España", visitante: "Arabia Saudita", fechaUTC: "2026-06-21T16:00:00Z" },
   // Uruguay vs Cabo Verde - 26 junio, 19:00 COL → UTC 00:00 (27 junio)
-  { fase: "grupos", grupo: "H", local: "Uruguay", visitante: "Cabo Verde", fechaUTC: "2026-06-27T00:00:00Z" },
+  { fase: "grupos", grupo: "H", local: "Cabo Verde", visitante: "Arabia Saudita", fechaUTC: "2026-06-27T00:00:00Z" },
   // Arabia Saudita vs España - 26 junio, 19:00 COL → UTC 00:00 (27 junio)
-  { fase: "grupos", grupo: "H", local: "Arabia Saudita", visitante: "España", fechaUTC: "2026-06-27T00:00:00Z" },
+  { fase: "grupos", grupo: "H", local: "Uruguay", visitante: "España", fechaUTC: "2026-06-27T00:00:00Z" },
 
   // =========================================
   // GRUPO I
@@ -134,14 +134,14 @@ export const todosLosPartidos = [
   { fase: "grupos", grupo: "I", local: "Francia", visitante: "Senegal", fechaUTC: "2026-06-16T19:00:00Z" },
   // Irak vs Noruega - 16 junio, 17:00 COL → UTC 22:00
   { fase: "grupos", grupo: "I", local: "Irak", visitante: "Noruega", fechaUTC: "2026-06-16T22:00:00Z" },
-  // Francia vs Noruega - 22 junio, (hora no especificada, usamos 19:00 como referencia del calendario? El calendario dice "Noruega Vs. Senegal / Nueva York / 7:00 p. m." pero Francia vs Noruega aparece el 26 junio según el calendario: "Noruega Vs. Francia / Boston / 2:00 p. m."). Corrijo: según calendario, Noruega vs Francia es 26 junio 14:00 COL → UTC 19:00. El partido original es Francia vs Noruega, misma fecha.
-  { fase: "grupos", grupo: "I", local: "Francia", visitante: "Noruega", fechaUTC: "2026-06-26T19:00:00Z" },
-  // Senegal vs Irak - 26 junio, 14:00 COL → UTC 19:00
+  // Francia vs Irak - 22 junio, 16:00 COL → UTC 21:00.
+  { fase: "grupos", grupo: "I", local: "Francia", visitante: "Irak", fechaUTC: "2026-06-22T21:00:00Z" },
+  // Noruega vs Senegal - 22 junio, 21:00 COL → UTC 02:00
+  { fase: "grupos", grupo: "I", local: "Noruega", visitante: "Senegal", fechaUTC: "2026-06-23T02:00:00Z" },
+  // Noruega vs Francia - 26 junio, 14:00 COL → UTC 19:00
+  { fase: "grupos", grupo: "I", local: "Noruega", visitante: "Francia", fechaUTC: "2026-06-26T19:00:00Z" },
+  // Senegal vs Irak - 26 junio, 14:00 COL → UTC 19:00 
   { fase: "grupos", grupo: "I", local: "Senegal", visitante: "Irak", fechaUTC: "2026-06-26T19:00:00Z" },
-  // Irak vs Francia - 22 junio, ? (calendario: Francia vs Iraq, sin hora. Tomamos la hora del partido Francia vs Irak del calendario original? No aparece. Usaremos la hora del partido Irak vs Francia que es el mismo encuentro. Según calendario, no hay un horario claro. Por consistencia, usamos la misma hora de otros partidos de ese día: 19:00? Mejor usar la hora del partido Irak vs Francia del original (Jun 25 19:00 UTC). Pero el calendario no lo tiene. Dejamos el original? Para no inventar, usaré el original que ya tenía (Jun 25 19:00 UTC). El usuario quiere corregir horas, pero si no hay referencia, mantenemos la anterior.
-  { fase: "grupos", grupo: "I", local: "Irak", visitante: "Francia", fechaUTC: "2026-06-25T19:00:00Z" },
-  // Senegal vs Noruega - 22 junio, 19:00 COL → UTC 00:00 (23 junio)
-  { fase: "grupos", grupo: "I", local: "Senegal", visitante: "Noruega", fechaUTC: "2026-06-23T00:00:00Z" },
 
   // =========================================
   // GRUPO J
@@ -152,8 +152,8 @@ export const todosLosPartidos = [
   { fase: "grupos", grupo: "J", local: "Austria", visitante: "Jordania", fechaUTC: "2026-06-17T04:00:00Z" },
   // Argentina vs Austria - 22 junio, 12:00 COL → UTC 17:00
   { fase: "grupos", grupo: "J", local: "Argentina", visitante: "Austria", fechaUTC: "2026-06-22T17:00:00Z" },
-  // Argelia vs Jordania - 22 junio, 23:00 COL → UTC 04:00 (23 junio)
-  { fase: "grupos", grupo: "J", local: "Argelia", visitante: "Jordania", fechaUTC: "2026-06-23T04:00:00Z" },
+  // Argelia vs Jordania - 22 junio, 22:00 COL → UTC 03:00 (23 junio)
+  { fase: "grupos", grupo: "J", local: "Jordania", visitante: "Argelia", fechaUTC: "2026-06-23T03:00:00Z" },
   // Jordania vs Argentina - 27 junio, 21:00 COL → UTC 02:00 (28 junio)
   { fase: "grupos", grupo: "J", local: "Jordania", visitante: "Argentina", fechaUTC: "2026-06-28T02:00:00Z" },
   // Argelia vs Austria - 27 junio, 21:00 COL → UTC 02:00 (28 junio)
@@ -165,15 +165,15 @@ export const todosLosPartidos = [
   // Portugal vs RD Congo - 17 junio, 12:00 COL → UTC 17:00
   { fase: "grupos", grupo: "K", local: "Portugal", visitante: "RD Congo", fechaUTC: "2026-06-17T17:00:00Z" },
   // Uzbekistán vs Colombia - 17 junio, 21:00 COL → UTC 02:00 (18 junio)
-  { fase: "grupos", grupo: "K", local: "Uzbekistán", visitante: "Colombia", fechaUTC: "2026-06-18T02:00:00Z" },
-  // Portugal vs Colombia - 27 junio, 18:30 COL → UTC 23:30 (colombia 18:30 = UTC 23:30)
-  { fase: "grupos", grupo: "K", local: "Portugal", visitante: "Colombia", fechaUTC: "2026-06-27T23:30:00Z" },
-  // RD Congo vs Uzbekistán - 27 junio, 18:30 COL → UTC 23:30
-  { fase: "grupos", grupo: "K", local: "RD Congo", visitante: "Uzbekistán", fechaUTC: "2026-06-27T23:30:00Z" },
+  { fase: "grupos", grupo: "K", local: "Uzbekistán", visitante: "Colombia", fechaUTC: "2026-06-18T02:00:00Z" }, 
   // Colombia vs RD Congo - 23 junio, 21:00 COL → UTC 02:00 (24 junio)
   { fase: "grupos", grupo: "K", local: "Colombia", visitante: "RD Congo", fechaUTC: "2026-06-24T02:00:00Z" },
   // Uzbekistán vs Portugal - 23 junio, 12:00 COL → UTC 17:00
   { fase: "grupos", grupo: "K", local: "Uzbekistán", visitante: "Portugal", fechaUTC: "2026-06-23T17:00:00Z" },
+   // Portugal vs Colombia - 27 junio, 18:30 COL → UTC 23:30 (colombia 18:30 = UTC 23:30)
+  { fase: "grupos", grupo: "K", local: "Portugal", visitante: "Colombia", fechaUTC: "2026-06-27T23:30:00Z" },
+  // RD Congo vs Uzbekistán - 27 junio, 18:30 COL → UTC 23:30
+  { fase: "grupos", grupo: "K", local: "RD Congo", visitante: "Uzbekistán", fechaUTC: "2026-06-27T23:30:00Z" },
 
   // =========================================
   // GRUPO L
@@ -182,12 +182,13 @@ export const todosLosPartidos = [
   { fase: "grupos", grupo: "L", local: "Inglaterra", visitante: "Croacia", fechaUTC: "2026-06-17T20:00:00Z" },
   // Panamá vs Ghana - 17 junio, 18:00 COL → UTC 23:00
   { fase: "grupos", grupo: "L", local: "Panamá", visitante: "Ghana", fechaUTC: "2026-06-17T23:00:00Z" },
+  // Ghana vs Inglaterra - 23 junio, 15:00 COL → UTC 20:00
+  { fase: "grupos", grupo: "L", local: "Inglaterra", visitante: "Ghana", fechaUTC: "2026-06-23T20:00:00Z" },
+  // Croacia vs Panamá - 23 junio, 18:00 COL → UTC 23:00
+  { fase: "grupos", grupo: "L", local: "Panamá", visitante: "Croacia", fechaUTC: "2026-06-23T23:00:00Z" }
   // Inglaterra vs Panamá - 27 junio, 16:00 COL → UTC 21:00
-  { fase: "grupos", grupo: "L", local: "Inglaterra", visitante: "Panamá", fechaUTC: "2026-06-27T21:00:00Z" },
+  { fase: "grupos", grupo: "L", local: "Panamá", visitante: "Inglaterra", fechaUTC: "2026-06-27T21:00:00Z" },
   // Croacia vs Ghana - 27 junio, 16:00 COL → UTC 21:00
   { fase: "grupos", grupo: "L", local: "Croacia", visitante: "Ghana", fechaUTC: "2026-06-27T21:00:00Z" },
-  // Ghana vs Inglaterra - 23 junio, 15:00 COL → UTC 20:00
-  { fase: "grupos", grupo: "L", local: "Ghana", visitante: "Inglaterra", fechaUTC: "2026-06-23T20:00:00Z" },
-  // Croacia vs Panamá - 23 junio, 18:00 COL → UTC 23:00
-  { fase: "grupos", grupo: "L", local: "Croacia", visitante: "Panamá", fechaUTC: "2026-06-23T23:00:00Z" }
+  
 ];
