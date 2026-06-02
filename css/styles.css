@@ -2128,3 +2128,20 @@ RESPONSIVE ADMIN PARTICIPANTES
     padding: 20px;
   }
 }
+.admin-btn.saving {
+  background: #facc15 !important;
+  color: #000 !important;
+  transition: 0.2s;
+}
+.admin-btn.finalized {
+  background: #22c55e !important;
+}
+@media (max-width: 640px) {
+  .admin-terceros-controls .tabla-posiciones {
+    font-size: 0.75rem;
+  }
+  .admin-terceros-controls th,
+  .admin-terceros-controls td {
+    padding: 6px 4px;
+  }
+}
