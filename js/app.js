@@ -997,19 +997,18 @@ async function generarFinal() {
 }
 
 // ======================================================
-// GENERAR TERCER PUESTO - CORREGIDO (PERDEDORES REALES)
+// GENERAR TERCER PUESTO - VERSIÓN "POR DEFINIR"
 // ======================================================
 async function generarTercerPuesto() {
   const container = document.getElementById("thirdPlaceContainer");
   if (!container) return;
-
   if (!currentUser) {
     container.innerHTML = `<div class="tabla-grupo-card" style="text-align:center; padding:30px;">🔒 Inicia sesión para ver el Tercer Puesto.</div>`;
     return;
   }
 
   try {
-    // ========== VALIDACIÓN DE ACCESO ==========
+    // Validar acceso KO
     const participantSnap = await getDoc(doc(db, "participants", currentUser.uid));
     if (!participantSnap.exists() || participantSnap.data().enabled_knockout !== true) {
       container.innerHTML = `<div class="tabla-grupo-card" style="text-align:center; padding:30px;">
@@ -1019,7 +1018,7 @@ async function generarTercerPuesto() {
       return;
     }
 
-    // ========== 1. OBTENER CLASIFICADOS DE CUARTOS (para saber quiénes jugaron las semifinales) ==========
+    // 1. Obtener clasificados de cuartos (para saber quiénes jugaron las semifinales)
     let clasificadosCuartos = {};
     try {
       const cuartosQuery = query(collection(db, "predictions_cuartos"), where("uid", "==", currentUser.uid));
@@ -1029,17 +1028,30 @@ async function generarTercerPuesto() {
         clasificadosCuartos[data.partido] = data.clasificado;
       });
     } catch (e) {
-      console.error("Error al cargar cuartos:", e);
+      console.error("Error cargando cuartos:", e);
     }
 
-    // ========== 2. CONSTRUIR LOS PARTIDOS DE SEMIFINALES (con los equipos que salieron de cuartos) ==========
-    // Estos son los mismos que se usan en generarSemifinales
-    const partidosSemis = [
-      { numero: 101, local: clasificadosCuartos[97] || "Ganador 97", visitante: clasificadosCuartos[98] || "Ganador 98" },
-      { numero: 102, local: clasificadosCuartos[99] || "Ganador 99", visitante: clasificadosCuartos[100] || "Ganador 100" }
-    ];
+    // Función para limpiar nombres: si empieza con "Ganador" o es undefined/null, retorna "Por definir"
+    const limpiarNombre = (nombre) => {
+      if (!nombre) return "Por definir";
+      if (nombre.startsWith("Ganador")) return "Por definir";
+      if (nombre.startsWith("Perdedor")) return "Por definir";
+      return nombre;
+    };
 
-    // ========== 3. OBTENER LOS GANADORES ELEGIDOS POR EL USUARIO EN SEMIFINALES ==========
+    // Definir los partidos de semifinales con nombres limpios
+    const semi101 = {
+      numero: 101,
+      local: limpiarNombre(clasificadosCuartos[97]),
+      visitante: limpiarNombre(clasificadosCuartos[98])
+    };
+    const semi102 = {
+      numero: 102,
+      local: limpiarNombre(clasificadosCuartos[99]),
+      visitante: limpiarNombre(clasificadosCuartos[100])
+    };
+
+    // 2. Obtener ganadores elegidos por el usuario en semifinales
     let ganadoresSemis = {};
     try {
       const semisQuery = query(collection(db, "predictions_semifinales"), where("uid", "==", currentUser.uid));
@@ -1049,45 +1061,37 @@ async function generarTercerPuesto() {
         ganadoresSemis[data.partido] = data.clasificado;
       });
     } catch (e) {
-      console.error("Error al cargar semifinales:", e);
+      console.error("Error cargando semifinales:", e);
     }
 
-    // ========== 4. DETERMINAR LOS PERDEDORES DE CADA SEMIFINAL ==========
-    let perdedorSemifinal1 = "Por definir";
-    let perdedorSemifinal2 = "Por definir";
+    // 3. Determinar perdedor de cada semifinal (el equipo que no fue elegido como ganador)
+    let perdedor1 = "Por definir";
+    let perdedor2 = "Por definir";
 
     // Semifinal 101
-    const partido101 = partidosSemis.find(p => p.numero === 101);
-    if (partido101 && ganadoresSemis[101]) {
+    if (semi101.local !== "Por definir" && semi101.visitante !== "Por definir" && ganadoresSemis[101]) {
       const ganador = ganadoresSemis[101];
-      perdedorSemifinal1 = (ganador === partido101.local) ? partido101.visitante : partido101.local;
-    } else if (partido101) {
-      perdedorSemifinal1 = `Perdedor de ${partido101.local} vs ${partido101.visitante}`;
+      perdedor1 = (ganador === semi101.local) ? semi101.visitante : semi101.local;
     }
 
     // Semifinal 102
-    const partido102 = partidosSemis.find(p => p.numero === 102);
-    if (partido102 && ganadoresSemis[102]) {
+    if (semi102.local !== "Por definir" && semi102.visitante !== "Por definir" && ganadoresSemis[102]) {
       const ganador = ganadoresSemis[102];
-      perdedorSemifinal2 = (ganador === partido102.local) ? partido102.visitante : partido102.local;
-    } else if (partido102) {
-      perdedorSemifinal2 = `Perdedor de ${partido102.local} vs ${partido102.visitante}`;
+      perdedor2 = (ganador === semi102.local) ? semi102.visitante : semi102.local;
     }
 
     const partido = {
       numero: 103,
-      local: perdedorSemifinal1,
-      visitante: perdedorSemifinal2
+      local: perdedor1,
+      visitante: perdedor2
     };
 
-    // ========== 5. RESULTADOS REALES Y DATOS DEL PARTIDO ==========
+    // 4. Resultados reales y datos del partido
     let resultadosMap = {};
     try {
       const resultadosSnap = await getDocs(collection(db, "knockout_results"));
       resultadosSnap.forEach(doc => { resultadosMap[doc.data().numero] = doc.data(); });
-    } catch (e) {
-      console.warn("No se pudieron cargar knockout_results:", e);
-    }
+    } catch (e) {}
 
     const horaPartido = obtenerHoraPartidoKnockout(103);
     const cierreApuestas = new Date(horaPartido.getTime() - 60 * 60 * 1000);
@@ -1096,7 +1100,7 @@ async function generarTercerPuesto() {
     const disabled = isClosed || isFinalizado;
     const fechaLocal = horaPartido.toLocaleString("es-CO", { timeZone: "America/Bogota" });
 
-    // ========== 6. PREDICCIÓN GUARDADA DEL USUARIO PARA EL TERCER PUESTO ==========
+    // 5. Predicción guardada del usuario
     let predLocal = "", predVisit = "", clasifGuardado = "";
     try {
       const thirdRef = doc(db, "predictions_third", `${currentUser.uid}_THIRD_103`);
@@ -1107,14 +1111,12 @@ async function generarTercerPuesto() {
         predVisit = data.pred_visitante ?? "";
         clasifGuardado = data.clasificado ?? "";
       }
-    } catch (e) {
-      console.error("Error al cargar predicción del tercer puesto:", e);
-    }
+    } catch (e) {}
 
     const radiosId = `radios_third_${partido.numero}`;
     const showRadios = (predLocal === predVisit && predLocal !== "");
 
-    // ========== 7. GENERAR HTML ==========
+    // 6. HTML
     let html = `<div class="tabla-grupo-card">
       <h3 class="tabla-title">🥉 Tercer Puesto</h3>
       <div class="puntuacion-info">
@@ -1122,12 +1124,11 @@ async function generarTercerPuesto() {
         Puntos: aciertas el marcador exacto → <strong>3 puntos</strong>. 
         Aciertas solo quién gana → <strong>1 punto</strong>. 
         En caso de <strong>empate</strong>, suma <strong>+1 punto</strong> si seleccionas correctamente el clasificado.
-        <span style="display:block; margin-top:6px; font-size:0.7rem; color:#facc15;">➡️ Cuando marques un empate, aparecerán las opciones para elegir quién avanza.</span>
       </div>
       <div class="grupos-tabs-wrapper" style="margin-bottom: 16px;">
-        <button id="scrollThirdLeft" class="scroll-btn" style="visibility: hidden;"><i class="fas fa-chevron-left"></i></button>
-        <div id="carouselThird" class="knockout-carousel" style="display: flex; overflow-x: auto; gap: 20px; scroll-behavior: smooth; padding-bottom: 10px; justify-content: center;"></div>
-        <button id="scrollThirdRight" class="scroll-btn" style="visibility: hidden;"><i class="fas fa-chevron-right"></i></button>
+        <button id="scrollThirdLeft" class="scroll-btn"><i class="fas fa-chevron-left"></i></button>
+        <div id="carouselThird" class="knockout-carousel" style="display: flex; overflow-x: auto; gap: 20px; scroll-behavior: smooth; padding-bottom: 10px;"></div>
+        <button id="scrollThirdRight" class="scroll-btn"><i class="fas fa-chevron-right"></i></button>
       </div>
     </div>`;
     
@@ -1141,12 +1142,12 @@ async function generarTercerPuesto() {
         <div class="match-teams">
           <div class="team-row">
             <img class="flag-icon" src="https://flagcdn.com/${obtenerCodigoPais(partido.local)}.svg" onerror="this.src='assets/img/default-flag.png'">
-            <span>${fifaCodes[partido.local] || partido.local}</span>
+            <span>${partido.local}</span>
           </div>
           <div class="vs-text">VS</div>
           <div class="team-row">
             <img class="flag-icon" src="https://flagcdn.com/${obtenerCodigoPais(partido.visitante)}.svg" onerror="this.src='assets/img/default-flag.png'">
-            <span>${fifaCodes[partido.visitante] || partido.visitante}</span>
+            <span>${partido.visitante}</span>
           </div>
         </div>
         <div class="prediction-area">
@@ -1155,8 +1156,8 @@ async function generarTercerPuesto() {
           <input type="number" id="third_visit_${partido.numero}" class="prediction-input visitor-score" value="${predVisit}" placeholder="0" ${disabled ? "disabled" : ""}>
         </div>
         <div id="${radiosId}" class="knockout-radios" style="display: ${showRadios ? "flex" : "none"};">
-          <label><input type="radio" name="third_clasificado_${partido.numero}" value="${partido.local}" ${clasifGuardado === partido.local ? "checked" : ""} ${disabled ? "disabled" : ""}> ${fifaCodes[partido.local] || partido.local}</label>
-          <label><input type="radio" name="third_clasificado_${partido.numero}" value="${partido.visitante}" ${clasifGuardado === partido.visitante ? "checked" : ""} ${disabled ? "disabled" : ""}> ${fifaCodes[partido.visitante] || partido.visitante}</label>
+          <label><input type="radio" name="third_clasificado_${partido.numero}" value="${partido.local}" ${clasifGuardado === partido.local ? "checked" : ""} ${disabled ? "disabled" : ""}> ${partido.local}</label>
+          <label><input type="radio" name="third_clasificado_${partido.numero}" value="${partido.visitante}" ${clasifGuardado === partido.visitante ? "checked" : ""} ${disabled ? "disabled" : ""}> ${partido.visitante}</label>
         </div>
         <button class="btn-guardar" onclick="window.saveThirdPlacePrediction('${partido.numero}')" ${disabled ? "disabled" : ""}>
           ${disabled ? (isFinalizado ? "🔒 Partido finalizado" : "🔒 Apuestas cerradas") : "Guardar"}
@@ -1169,7 +1170,15 @@ async function generarTercerPuesto() {
     `;
     carousel.insertAdjacentHTML('beforeend', tarjetaHTML);
 
-    // Listeners para radios en empate
+    // Listeners de scroll
+    const leftBtn = document.getElementById("scrollThirdLeft");
+    const rightBtn = document.getElementById("scrollThirdRight");
+    if (leftBtn && rightBtn) {
+      leftBtn.onclick = () => carousel.scrollBy({ left: -340, behavior: "smooth" });
+      rightBtn.onclick = () => carousel.scrollBy({ left: 340, behavior: "smooth" });
+    }
+
+    // Listeners para radios (empate)
     if (!disabled) {
       const localInput = document.getElementById(`third_local_${partido.numero}`);
       const visitInput = document.getElementById(`third_visit_${partido.numero}`);
@@ -1191,7 +1200,7 @@ async function generarTercerPuesto() {
     }
   } catch (error) {
     console.error("Error grave en generarTercerPuesto:", error);
-    container.innerHTML = `<div class="tabla-grupo-card" style="color:red; padding:20px;">❌ Error al cargar el Tercer Puesto: ${error.message}. Intenta recargar la página.</div>`;
+    container.innerHTML = `<div class="tabla-grupo-card" style="color:red; padding:20px;">❌ Error al cargar el Tercer Puesto.</div>`;
   }
 }
 // ======================================================
