@@ -2231,23 +2231,32 @@ async function generarDieciseisavos() {
   }
   // ==========================================
 
+  // Obtener asignación de terceros guardada por el admin
+  let tercerosMap = {};
+  try {
+    const asignacionDoc = await getDoc(doc(db, "settings", "terceros_asignacion"));
+    if (asignacionDoc.exists()) {
+      tercerosMap = asignacionDoc.data();
+    }
+  } catch(e) { console.error("Error al cargar terceros", e); }
 
+  // Definir los partidos, reemplazando los placeholders con los equipos asignados
   const partidos = [
     { numero: 73, local: clasificadosGlobales["2A"] || "2A", visitante: clasificadosGlobales["2B"] || "2B" },
-    { numero: 74, local: clasificadosGlobales["1E"] || "1E", visitante: "3A/B/C/D/F" },
+    { numero: 74, local: clasificadosGlobales["1E"] || "1E", visitante: tercerosMap[74] || "Tercero por definir" },
     { numero: 75, local: clasificadosGlobales["1F"] || "1F", visitante: clasificadosGlobales["2C"] || "2C" },
     { numero: 76, local: clasificadosGlobales["1C"] || "1C", visitante: clasificadosGlobales["2F"] || "2F" },
-    { numero: 77, local: clasificadosGlobales["1I"] || "1I", visitante: "3C/D/F/G/H" },
+    { numero: 77, local: clasificadosGlobales["1I"] || "1I", visitante: tercerosMap[77] || "Tercero por definir" },
     { numero: 78, local: clasificadosGlobales["2E"] || "2E", visitante: clasificadosGlobales["2I"] || "2I" },
-    { numero: 79, local: clasificadosGlobales["1A"] || "1A", visitante: "3C/E/F/H/I" },
-    { numero: 80, local: clasificadosGlobales["1L"] || "1L", visitante: "3E/H/I/J/K" },
-    { numero: 81, local: clasificadosGlobales["1D"] || "1D", visitante: "3B/E/F/I/J" },
-    { numero: 82, local: clasificadosGlobales["1G"] || "1G", visitante: "3A/E/H/I/J" },
+    { numero: 79, local: clasificadosGlobales["1A"] || "1A", visitante: tercerosMap[79] || "Tercero por definir" },
+    { numero: 80, local: clasificadosGlobales["1L"] || "1L", visitante: tercerosMap[80] || "Tercero por definir" },
+    { numero: 81, local: clasificadosGlobales["1D"] || "1D", visitante: tercerosMap[81] || "Tercero por definir" },
+    { numero: 82, local: clasificadosGlobales["1G"] || "1G", visitante: tercerosMap[82] || "Tercero por definir" },
     { numero: 83, local: clasificadosGlobales["2K"] || "2K", visitante: clasificadosGlobales["2L"] || "2L" },
     { numero: 84, local: clasificadosGlobales["1H"] || "1H", visitante: clasificadosGlobales["2J"] || "2J" },
-    { numero: 85, local: clasificadosGlobales["1B"] || "1B", visitante: "3E/F/G/I/J" },
+    { numero: 85, local: clasificadosGlobales["1B"] || "1B", visitante: tercerosMap[85] || "Tercero por definir" },
     { numero: 86, local: clasificadosGlobales["1J"] || "1J", visitante: clasificadosGlobales["2H"] || "2H" },
-    { numero: 87, local: clasificadosGlobales["1K"] || "1K", visitante: "3D/E/I/J/L" },
+    { numero: 87, local: clasificadosGlobales["1K"] || "1K", visitante: tercerosMap[87] || "Tercero por definir" },
     { numero: 88, local: clasificadosGlobales["2D"] || "2D", visitante: clasificadosGlobales["2G"] || "2G" }
   ];
 
@@ -3420,7 +3429,208 @@ document.getElementById("verGrupoBtn").onclick = () => {
     alert("No hay grupo activo");
   }
 };
+// ======================================================
+// GESTIÓN DE MEJORES TERCEROS (MANUAL)
+// ======================================================
 
+// Obtiene la tabla de terceros de todos los grupos basada en resultados reales finalizados
+async function obtenerTercerosConEstadisticas() {
+  const matchesSnap = await getDocs(collection(db, "matches"));
+  const grupos = { A: {}, B: {}, C: {}, D: {}, E: {}, F: {}, G: {}, H: {}, I: {}, J: {}, K: {}, L: {} };
+
+  // Inicializar
+  for (let g of Object.keys(grupos)) {
+    grupos[g] = {};
+  }
+
+  // Acumular estadísticas
+  matchesSnap.forEach(docSnap => {
+    const match = docSnap.data();
+    if (match.fase !== "grupos") return;
+    const grupo = match.grupo;
+    if (!grupos[grupo]) return;
+    const equipos = [match.equipo_local, match.equipo_visitante];
+    equipos.forEach(e => {
+      if (!grupos[grupo][e]) {
+        grupos[grupo][e] = { equipo: e, pj: 0, pg: 0, pe: 0, pp: 0, gf: 0, gc: 0, dg: 0, pts: 0 };
+      }
+    });
+    if (match.estado !== "finalizado") return;
+    const local = grupos[grupo][match.equipo_local];
+    const visit = grupos[grupo][match.equipo_visitante];
+    const gl = Number(match.resultado_local);
+    const gv = Number(match.resultado_visitante);
+    local.pj++; visit.pj++;
+    local.gf += gl; local.gc += gv;
+    visit.gf += gv; visit.gc += gl;
+    local.dg = local.gf - local.gc;
+    visit.dg = visit.gf - visit.gc;
+    if (gl > gv) {
+      local.pg++; local.pts += 3;
+      visit.pp++;
+    } else if (gv > gl) {
+      visit.pg++; visit.pts += 3;
+      local.pp++;
+    } else {
+      local.pe++; visit.pe++;
+      local.pts++; visit.pts++;
+    }
+  });
+
+  // Extraer terceros (posición 3) de cada grupo
+  const terceros = [];
+  for (let grupo in grupos) {
+    const tabla = Object.values(grupos[grupo]);
+    tabla.sort((a,b) => b.pts - a.pts || b.dg - a.dg || b.gf - a.gf);
+    if (tabla[2]) {
+      terceros.push({
+        grupo,
+        equipo: tabla[2].equipo,
+        pts: tabla[2].pts,
+        dg: tabla[2].dg,
+        gf: tabla[2].gf
+      });
+    }
+  }
+  return terceros;
+}
+
+// Cargar y renderizar el panel de administración de terceros
+async function cargarAdminTerceros() {
+  const container = document.getElementById("tercerosAdminContainer");
+  if (!container) return;
+
+  // Obtener lista de terceros con estadísticas
+  const tercerosList = await obtenerTercerosConEstadisticas();
+  // Obtener asignación guardada previamente
+  const asignacionDoc = await getDoc(doc(db, "settings", "terceros_asignacion"));
+  let asignacion = asignacionDoc.exists() ? asignacionDoc.data() : {};
+
+  // Los partidos que necesitan un tercero
+  const partidosTerceros = [
+    { numero: 74, label: "Partido 74 (1E vs ?)" },
+    { numero: 77, label: "Partido 77 (1I vs ?)" },
+    { numero: 79, label: "Partido 79 (1A vs ?)" },
+    { numero: 80, label: "Partido 80 (1L vs ?)" },
+    { numero: 81, label: "Partido 81 (1D vs ?)" },
+    { numero: 82, label: "Partido 82 (1G vs ?)" },
+    { numero: 85, label: "Partido 85 (1B vs ?)" },
+    { numero: 87, label: "Partido 87 (1K vs ?)" }
+  ];
+
+  // Tabla de equipos terceros (para selección)
+  let html = `<div class="admin-terceros-controls" style="margin-bottom: 20px;">
+    <h4>📌 Selecciona los 8 equipos que pasan (máximo 8)</h4>
+    <table class="tabla-posiciones" style="width:100%;">
+      <thead>
+        <tr><th>Grupo</th><th>Equipo</th><th>PTS</th><th>DG</th><th>GF</th><th>Seleccionar</th></tr>
+      </thead>
+      <tbody>`;
+
+  const seleccionadosPrev = asignacion.equiposSeleccionados || [];
+  for (const t of tercerosList) {
+    const checked = seleccionadosPrev.includes(t.equipo) ? "checked" : "";
+    html += `
+      <tr>
+        <td>${t.grupo}</td>
+        <td>${t.equipo}</td>
+        <td>${t.pts}</td>
+        <td>${t.dg}</td>
+        <td>${t.gf}</td>
+        <td><input type="checkbox" class="tercero-checkbox" value="${t.equipo}" ${checked}></td>
+      </tr>`;
+  }
+  html += `</tbody></table>`;
+
+  // Sección de asignación a partidos
+  html += `<div style="margin-top: 30px;">
+    <h4>🎯 Asignar los equipos seleccionados a cada partido</h4>
+    <p class="terceros-info" style="color:#facc15;">Selecciona primero los 8 equipos arriba, luego elige para cada partido qué equipo jugará como tercero.</p>
+    <div class="admin-terceros-partidos" style="display: grid; grid-template-columns: repeat(2,1fr); gap: 12px; margin-top: 15px;">`;
+
+  for (const p of partidosTerceros) {
+    const valorActual = asignacion[p.numero] || "";
+    html += `
+      <div>
+        <label>${p.label}</label>
+        <select id="tercero_partido_${p.numero}" class="admin-select" style="width:100%; padding:6px; border-radius:12px; background:#1e293b; color:white;">
+          <option value="">-- Ninguno / Pendiente --</option>
+          ${tercerosList.map(t => `<option value="${t.equipo}" ${valorActual === t.equipo ? "selected" : ""}>${t.equipo}</option>`).join('')}
+        </select>
+      </div>`;
+  }
+  html += `</div></div>
+    <div style="margin-top: 20px; display: flex; gap: 12px;">
+      <button id="btnGuardarAsignacionTerceros" class="admin-load-btn" style="background: #15803d;">💾 Guardar asignación</button>
+    </div>
+  </div>`;
+
+  container.innerHTML = html;
+
+  // Lógica para limitar checkboxes a 8 selecciones
+  const checkboxes = document.querySelectorAll(".tercero-checkbox");
+  const updateSelectOptions = () => {
+    const seleccionados = Array.from(checkboxes).filter(cb => cb.checked).map(cb => cb.value);
+    // Actualizar los dropdowns para mostrar solo los equipos seleccionados (además de la opción vacía)
+    for (const p of partidosTerceros) {
+      const select = document.getElementById(`tercero_partido_${p.numero}`);
+      if (select) {
+        const valorActual = select.value;
+        // Limpiar opciones excepto la primera
+        while (select.options.length > 1) select.remove(1);
+        for (const eq of seleccionados) {
+          const option = document.createElement("option");
+          option.value = eq;
+          option.textContent = eq;
+          if (eq === valorActual) option.selected = true;
+          select.appendChild(option);
+        }
+      }
+    }
+  };
+
+  const updateLimit = () => {
+    const checked = document.querySelectorAll(".tercero-checkbox:checked");
+    if (checked.length >= 8) {
+      checkboxes.forEach(cb => { if (!cb.checked) cb.disabled = true; });
+    } else {
+      checkboxes.forEach(cb => cb.disabled = false);
+    }
+    updateSelectOptions();
+  };
+
+  checkboxes.forEach(cb => cb.addEventListener("change", updateLimit));
+  updateLimit();
+
+  // Botón guardar asignación
+  const btnGuardar = document.getElementById("btnGuardarAsignacionTerceros");
+  if (btnGuardar) {
+    btnGuardar.onclick = async () => {
+      const seleccionados = Array.from(checkboxes).filter(cb => cb.checked).map(cb => cb.value);
+      if (seleccionados.length !== 8) {
+        alert("Debes seleccionar exactamente 8 equipos.");
+        return;
+      }
+      const asignacionMap = {};
+      for (const p of partidosTerceros) {
+        const select = document.getElementById(`tercero_partido_${p.numero}`);
+        if (select && select.value) {
+          asignacionMap[p.numero] = select.value;
+        } else {
+          alert(`Debes asignar un equipo al ${p.label}`);
+          return;
+        }
+      }
+      await setDoc(doc(db, "settings", "terceros_asignacion"), {
+        equiposSeleccionados: seleccionados,
+        ...asignacionMap,
+        actualizado: serverTimestamp()
+      });
+      alert("✅ Asignación de terceros guardada. Los dieciseisavos se actualizarán.");
+      generarDieciseisavos(); // Refrescar bracket
+    };
+  }
+}
 // ======================================================
 // ADMIN PANEL: RESULTADOS REALES DE KNOCKOUT
 // ======================================================
@@ -3701,10 +3911,11 @@ onAuthStateChanged(auth, async (user) => {
       loadAdminMatches();
       loadAdminParticipants();
       console.log("CARGANDO PARTICIPANTES ADMIN");
-      setupUploadButton();
+      setupUploadButton();      
      // agregarBotonResetKnockout();   // ← esta línea debe estar presente
       agregarBotonesReset();          // ← COMENTA O ELIMINA
       loadAdminKnockoutMatches();     // ← COMENTA O ELIMINA
+      cargarTercerosAdmin();
     } else {
       adminPanel.classList.add("hidden");
     }
