@@ -3275,7 +3275,6 @@ function agregarBotonesReset() {
       btnGrupos.textContent = "🧹 Resetear pruebas GRUPOS";
       btnGrupos.className = "admin-load-btn";
       btnGrupos.style.background = "linear-gradient(90deg, #dc2626, #b91c1c)";
-      btnGrupos.style.marginLeft = "10px";
       btnGrupos.onclick = window.resetearPruebasGrupos;
       adminBottom.appendChild(btnGrupos);
     }
@@ -3287,7 +3286,6 @@ function agregarBotonesReset() {
       btnKnockout.textContent = "🧹 Resetear pruebas KO";
       btnKnockout.className = "admin-load-btn";
       btnKnockout.style.background = "linear-gradient(90deg, #dc2626, #b91c1c)";
-      btnKnockout.style.marginLeft = "10px";
       btnKnockout.onclick = window.resetearPruebasKnockout;
       adminBottom.appendChild(btnKnockout);
     }
