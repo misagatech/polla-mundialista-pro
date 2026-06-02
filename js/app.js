@@ -833,254 +833,325 @@ window.saveThirdPlacePrediction = async (partidoNumero) => {
 };
 
 // ======================================================
-// GENERAR FINAL (CARRUSEL HORIZONTAL)
+// GENERAR FINAL (CARRUSEL HORIZONTAL) - VERSIÓN CORREGIDA
 // ======================================================
 async function generarFinal() {
   const container = document.getElementById("finalContainer");
   if (!container) return;
 
-  // ========== VALIDACIÓN DE ACCESO ==========
-  const participantSnap = await getDoc(doc(db, "participants", currentUser.uid));
-  if (!participantSnap.exists() || participantSnap.data().enabled_knockout !== true) {
-    container.innerHTML = `<div class="tabla-grupo-card" style="text-align:center; padding:30px;">
-      <h3>🔒 Acceso restringido</h3>
-      <p>No tienes habilitada la participación en la fase eliminatoria.<br>Contacta al administrador para obtener acceso.</p>
-    </div>`;
+  // Validar usuario logueado
+  if (!currentUser) {
+    container.innerHTML = `<div class="tabla-grupo-card" style="text-align:center; padding:30px;">🔒 Inicia sesión para ver la Final.</div>`;
     return;
   }
-  // ==========================================
 
-  // Cargar resultados de knockout
-  const resultadosSnap = await getDocs(collection(db, "knockout_results"));
-  const resultadosMap = {};
-  resultadosSnap.forEach(doc => { resultadosMap[doc.data().numero] = doc.data(); });
-
-  const semisQuery = query(collection(db, "predictions_semifinales"), where("uid", "==", currentUser.uid));
-  const semisSnap = await getDocs(semisQuery);
-  const clasificados = {};
-  semisSnap.forEach(doc => {
-    const data = doc.data();
-    clasificados[data.partido] = data.clasificado;
-  });
-
-  const partido = { numero: 104, local: clasificados[101] || "Ganador 101", visitante: clasificados[102] || "Ganador 102" };
-
-  const horaPartido = obtenerHoraPartidoKnockout(104);
-  const cierreApuestas = new Date(horaPartido.getTime() - 60 * 60 * 1000);
-  const isClosed = new Date() >= cierreApuestas;
-  const isFinalizado = resultadosMap[partido.numero]?.finalizado === true;
-  const disabled = isClosed || isFinalizado;
-  const fechaLocal = horaPartido.toLocaleString("es-CO", { timeZone: "America/Bogota" });
-
-  const finalRef = doc(db, "predictions_final", `${currentUser.uid}_FINAL_104`);
-  const finalSnap = await getDoc(finalRef);
-  const pred = finalSnap.exists() ? finalSnap.data() : {};
-  const predLocal = pred.pred_local ?? "";
-  const predVisit = pred.pred_visitante ?? "";
-  const clasifGuardado = pred.clasificado ?? "";
-
-  const radiosId = `radios_final_${partido.numero}`;
-  const showRadios = (predLocal === predVisit && predLocal !== "");
-
-  let html = `<div class="tabla-grupo-card">
-    <h3 class="tabla-title">🏆 GRAN FINAL</h3>
-   <div class="puntuacion-info">
-  ⚽ <strong>Reglas de puntuación:</strong> Se toma el marcador de los 90 minutos. 
-  Puntos: aciertas el marcador exacto → <strong>3 puntos</strong>. 
-  Aciertas solo quién gana → <strong>1 punto</strong>. 
-  En caso de <strong>empate</strong>, suma <strong>+1 punto</strong> si seleccionas correctamente el clasificado.
-  <span style="display:block; margin-top:6px; font-size:0.7rem; color:#facc15;">➡️ Cuando marques un empate, aparecerán las opciones para elegir quién avanza.</span>
-</div>
-    <div class="grupos-tabs-wrapper" style="margin-bottom: 16px;">
-      <button id="scrollFinalLeft" class="scroll-btn" style="visibility: hidden;"><i class="fas fa-chevron-left"></i></button>
-      <div id="carouselFinal" class="knockout-carousel" style="display: flex; overflow-x: auto; gap: 20px; scroll-behavior: smooth; padding-bottom: 10px; justify-content: center;"></div>
-      <button id="scrollFinalRight" class="scroll-btn" style="visibility: hidden;"><i class="fas fa-chevron-right"></i></button>
-    </div>
-  </div>`;
-  
-  container.innerHTML = html;
-  const carousel = document.getElementById("carouselFinal");
-
-  const tarjetaHTML = `
-    <div class="knockout-card" data-partido-final="${partido.numero}" data-local="${partido.local}" data-visitante="${partido.visitante}" style="min-width: 340px;">
-      <div class="knockout-match-number">Partido ${partido.numero} - FINAL</div>
-      <div class="match-teams">
-        <div class="team-row">
-          <img class="flag-icon" src="https://flagcdn.com/${obtenerCodigoPais(partido.local)}.svg">
-          <span>${fifaCodes[partido.local] || partido.local}</span>
-        </div>
-        <div class="vs-text">VS</div>
-        <div class="team-row">
-          <img class="flag-icon" src="https://flagcdn.com/${obtenerCodigoPais(partido.visitante)}.svg">
-          <span>${fifaCodes[partido.visitante] || partido.visitante}</span>
-        </div>
-      </div>
-      <div class="prediction-area">
-        <input type="number" id="final_local_${partido.numero}" class="prediction-input local-score" value="${predLocal}" placeholder="0" ${disabled ? "disabled" : ""}>
-        <span class="score-separator">-</span>
-        <input type="number" id="final_visit_${partido.numero}" class="prediction-input visitor-score" value="${predVisit}" placeholder="0" ${disabled ? "disabled" : ""}>
-      </div>
-      <div id="${radiosId}" class="knockout-radios" style="display: ${showRadios ? "flex" : "none"};">
-        <label><input type="radio" name="final_clasificado_${partido.numero}" value="${partido.local}" ${clasifGuardado === partido.local ? "checked" : ""} ${disabled ? "disabled" : ""}> ${fifaCodes[partido.local] || partido.local}</label>
-        <label><input type="radio" name="final_clasificado_${partido.numero}" value="${partido.visitante}" ${clasifGuardado === partido.visitante ? "checked" : ""} ${disabled ? "disabled" : ""}> ${fifaCodes[partido.visitante] || partido.visitante}</label>
-      </div>
-      <button class="btn-guardar" onclick="window.saveFinalPrediction('${partido.numero}')" ${disabled ? "disabled" : ""}>
-        ${disabled ? (isFinalizado ? "🔒 Partido finalizado" : "🔒 Apuestas cerradas") : "Guardar"}
-      </button>
-      <div class="match-timer" data-cierre="${cierreApuestas.toISOString()}">
-        ⏰ Resultados se bloquean en: <span class="timer-value">${formatearTiempoRestante(cierreApuestas)}</span>
-      </div>
-      <div class="match-date">📅 ${fechaLocal}</div>
-    </div>
-  `;
-  carousel.insertAdjacentHTML('beforeend', tarjetaHTML);
-
-  // Listeners para radios
-  if (!disabled) {
-    const localInput = document.getElementById(`final_local_${partido.numero}`);
-    const visitInput = document.getElementById(`final_visit_${partido.numero}`);
-    const radiosDiv = document.getElementById(`radios_final_${partido.numero}`);
-    if (localInput && visitInput && radiosDiv) {
-      const updateRadios = () => {
-        const localVal = parseInt(localInput.value);
-        const visitVal = parseInt(visitInput.value);
-        if (!isNaN(localVal) && !isNaN(visitVal) && localVal === visitVal) {
-          radiosDiv.style.display = "flex";
-        } else {
-          radiosDiv.style.display = "none";
-        }
-      };
-      localInput.addEventListener("input", updateRadios);
-      visitInput.addEventListener("input", updateRadios);
-      updateRadios();
+  try {
+    // ========== VALIDACIÓN DE ACCESO ==========
+    const participantSnap = await getDoc(doc(db, "participants", currentUser.uid));
+    if (!participantSnap.exists() || participantSnap.data().enabled_knockout !== true) {
+      container.innerHTML = `<div class="tabla-grupo-card" style="text-align:center; padding:30px;">
+        <h3>🔒 Acceso restringido</h3>
+        <p>No tienes habilitada la participación en la fase eliminatoria.<br>Contacta al administrador para obtener acceso.</p>
+      </div>`;
+      return;
     }
+
+    // ========== CARGAR RESULTADOS REALES (para saber si está finalizado) ==========
+    let resultadosMap = {};
+    try {
+      const resultadosSnap = await getDocs(collection(db, "knockout_results"));
+      resultadosSnap.forEach(doc => { resultadosMap[doc.data().numero] = doc.data(); });
+    } catch (e) {
+      console.warn("No se pudieron cargar knockout_results:", e);
+      // Si falla, asumimos que ningún partido está finalizado
+    }
+
+    // ========== OBTENER CLASIFICADOS DE SEMIFINALES ==========
+    let clasificados = {};
+    try {
+      const semisQuery = query(collection(db, "predictions_semifinales"), where("uid", "==", currentUser.uid));
+      const semisSnap = await getDocs(semisQuery);
+      semisSnap.forEach(doc => {
+        const data = doc.data();
+        clasificados[data.partido] = data.clasificado;
+      });
+    } catch (e) {
+      console.error("Error al cargar predicciones de semifinales:", e);
+      // Si falla, clasificados queda vacío
+    }
+
+    // Determinar los equipos finalistas
+    const finalista1 = clasificados[101] || "Por definir";
+    const finalista2 = clasificados[102] || "Por definir";
+    const partido = {
+      numero: 104,
+      local: finalista1,
+      visitante: finalista2
+    };
+
+    // ========== DATOS DEL PARTIDO ==========
+    const horaPartido = obtenerHoraPartidoKnockout(104);
+    const cierreApuestas = new Date(horaPartido.getTime() - 60 * 60 * 1000);
+    const isClosed = new Date() >= cierreApuestas;
+    const isFinalizado = resultadosMap[partido.numero]?.finalizado === true;
+    const disabled = isClosed || isFinalizado;
+    const fechaLocal = horaPartido.toLocaleString("es-CO", { timeZone: "America/Bogota" });
+
+    // ========== PREDICCIÓN GUARDADA DEL USUARIO ==========
+    let predLocal = "", predVisit = "", clasifGuardado = "";
+    try {
+      const finalRef = doc(db, "predictions_final", `${currentUser.uid}_FINAL_104`);
+      const finalSnap = await getDoc(finalRef);
+      if (finalSnap.exists()) {
+        const data = finalSnap.data();
+        predLocal = data.pred_local ?? "";
+        predVisit = data.pred_visitante ?? "";
+        clasifGuardado = data.clasificado ?? "";
+      }
+    } catch (e) {
+      console.error("Error al cargar predicción de la final:", e);
+    }
+
+    const radiosId = `radios_final_${partido.numero}`;
+    const showRadios = (predLocal === predVisit && predLocal !== "");
+
+    // ========== CONSTRUIR HTML ==========
+    let html = `<div class="tabla-grupo-card">
+      <h3 class="tabla-title">🏆 GRAN FINAL</h3>
+      <div class="puntuacion-info">
+        ⚽ <strong>Reglas de puntuación:</strong> Se toma el marcador de los 90 minutos. 
+        Puntos: aciertas el marcador exacto → <strong>3 puntos</strong>. 
+        Aciertas solo quién gana → <strong>1 punto</strong>. 
+        En caso de <strong>empate</strong>, suma <strong>+1 punto</strong> si seleccionas correctamente el clasificado.
+        <span style="display:block; margin-top:6px; font-size:0.7rem; color:#facc15;">➡️ Cuando marques un empate, aparecerán las opciones para elegir quién avanza.</span>
+      </div>
+      <div class="grupos-tabs-wrapper" style="margin-bottom: 16px;">
+        <button id="scrollFinalLeft" class="scroll-btn" style="visibility: hidden;"><i class="fas fa-chevron-left"></i></button>
+        <div id="carouselFinal" class="knockout-carousel" style="display: flex; overflow-x: auto; gap: 20px; scroll-behavior: smooth; padding-bottom: 10px; justify-content: center;"></div>
+        <button id="scrollFinalRight" class="scroll-btn" style="visibility: hidden;"><i class="fas fa-chevron-right"></i></button>
+      </div>
+    </div>`;
+    
+    container.innerHTML = html;
+    const carousel = document.getElementById("carouselFinal");
+    if (!carousel) return;
+
+    const tarjetaHTML = `
+      <div class="knockout-card" data-partido-final="${partido.numero}" data-local="${partido.local}" data-visitante="${partido.visitante}" style="min-width: 340px;">
+        <div class="knockout-match-number">Partido ${partido.numero} - FINAL</div>
+        <div class="match-teams">
+          <div class="team-row">
+            <img class="flag-icon" src="https://flagcdn.com/${obtenerCodigoPais(partido.local)}.svg" onerror="this.src='assets/img/default-flag.png'">
+            <span>${fifaCodes[partido.local] || partido.local}</span>
+          </div>
+          <div class="vs-text">VS</div>
+          <div class="team-row">
+            <img class="flag-icon" src="https://flagcdn.com/${obtenerCodigoPais(partido.visitante)}.svg" onerror="this.src='assets/img/default-flag.png'">
+            <span>${fifaCodes[partido.visitante] || partido.visitante}</span>
+          </div>
+        </div>
+        <div class="prediction-area">
+          <input type="number" id="final_local_${partido.numero}" class="prediction-input local-score" value="${predLocal}" placeholder="0" ${disabled ? "disabled" : ""}>
+          <span class="score-separator">-</span>
+          <input type="number" id="final_visit_${partido.numero}" class="prediction-input visitor-score" value="${predVisit}" placeholder="0" ${disabled ? "disabled" : ""}>
+        </div>
+        <div id="${radiosId}" class="knockout-radios" style="display: ${showRadios ? "flex" : "none"};">
+          <label><input type="radio" name="final_clasificado_${partido.numero}" value="${partido.local}" ${clasifGuardado === partido.local ? "checked" : ""} ${disabled ? "disabled" : ""}> ${fifaCodes[partido.local] || partido.local}</label>
+          <label><input type="radio" name="final_clasificado_${partido.numero}" value="${partido.visitante}" ${clasifGuardado === partido.visitante ? "checked" : ""} ${disabled ? "disabled" : ""}> ${fifaCodes[partido.visitante] || partido.visitante}</label>
+        </div>
+        <button class="btn-guardar" onclick="window.saveFinalPrediction('${partido.numero}')" ${disabled ? "disabled" : ""}>
+          ${disabled ? (isFinalizado ? "🔒 Partido finalizado" : "🔒 Apuestas cerradas") : "Guardar"}
+        </button>
+        <div class="match-timer" data-cierre="${cierreApuestas.toISOString()}">
+          ⏰ Resultados se bloquean en: <span class="timer-value">${formatearTiempoRestante(cierreApuestas)}</span>
+        </div>
+        <div class="match-date">📅 ${fechaLocal}</div>
+      </div>
+    `;
+    carousel.insertAdjacentHTML('beforeend', tarjetaHTML);
+
+    // Listeners para mostrar radios en caso de empate
+    if (!disabled) {
+      const localInput = document.getElementById(`final_local_${partido.numero}`);
+      const visitInput = document.getElementById(`final_visit_${partido.numero}`);
+      const radiosDiv = document.getElementById(radiosId);
+      if (localInput && visitInput && radiosDiv) {
+        const updateRadios = () => {
+          const localVal = parseInt(localInput.value);
+          const visitVal = parseInt(visitInput.value);
+          if (!isNaN(localVal) && !isNaN(visitVal) && localVal === visitVal) {
+            radiosDiv.style.display = "flex";
+          } else {
+            radiosDiv.style.display = "none";
+          }
+        };
+        localInput.addEventListener("input", updateRadios);
+        visitInput.addEventListener("input", updateRadios);
+        updateRadios();
+      }
+    }
+  } catch (error) {
+    console.error("Error grave en generarFinal:", error);
+    container.innerHTML = `<div class="tabla-grupo-card" style="color:red; padding:20px;">❌ Error al cargar la Final: ${error.message}. Intenta recargar la página.</div>`;
   }
 }
+
 // ======================================================
-// GENERAR TERCER PUESTO (CARRUSEL HORIZONTAL)
+// GENERAR TERCER PUESTO - VERSIÓN CORREGIDA
 // ======================================================
 async function generarTercerPuesto() {
   const container = document.getElementById("thirdPlaceContainer");
   if (!container) return;
 
-  // ========== VALIDACIÓN DE ACCESO ==========
-  const participantSnap = await getDoc(doc(db, "participants", currentUser.uid));
-  if (!participantSnap.exists() || participantSnap.data().enabled_knockout !== true) {
-    container.innerHTML = `<div class="tabla-grupo-card" style="text-align:center; padding:30px;">
-      <h3>🔒 Acceso restringido</h3>
-      <p>No tienes habilitada la participación en la fase eliminatoria.<br>Contacta al administrador para obtener acceso.</p>
-    </div>`;
+  if (!currentUser) {
+    container.innerHTML = `<div class="tabla-grupo-card" style="text-align:center; padding:30px;">🔒 Inicia sesión para ver el Tercer Puesto.</div>`;
     return;
   }
-  // ==========================================
 
-  // Cargar resultados de knockout
-  const resultadosSnap = await getDocs(collection(db, "knockout_results"));
-  const resultadosMap = {};
-  resultadosSnap.forEach(doc => { resultadosMap[doc.data().numero] = doc.data(); });
-
-  const semisQuery = query(collection(db, "predictions_semifinales"), where("uid", "==", currentUser.uid));
-  const semisSnap = await getDocs(semisQuery);
-  const clasificados = {};
-  semisSnap.forEach(doc => {
-    const data = doc.data();
-    clasificados[data.partido] = data.clasificado;
-  });
-
-  const partido = {
-    numero: 103,
-    local: clasificados[101] ? `Perdedor ${clasificados[101]}` : "Perdedor 101",
-    visitante: clasificados[102] ? `Perdedor ${clasificados[102]}` : "Perdedor 102"
-  };
-
-  const horaPartido = obtenerHoraPartidoKnockout(103);
-  const cierreApuestas = new Date(horaPartido.getTime() - 60 * 60 * 1000);
-  const isClosed = new Date() >= cierreApuestas;
-  const isFinalizado = resultadosMap[partido.numero]?.finalizado === true;
-  const disabled = isClosed || isFinalizado;
-  const fechaLocal = horaPartido.toLocaleString("es-CO", { timeZone: "America/Bogota" });
-
-  const thirdRef = doc(db, "predictions_third", `${currentUser.uid}_THIRD_103`);
-  const thirdSnap = await getDoc(thirdRef);
-  const pred = thirdSnap.exists() ? thirdSnap.data() : {};
-  const predLocal = pred.pred_local ?? "";
-  const predVisit = pred.pred_visitante ?? "";
-  const clasifGuardado = pred.clasificado ?? "";
-
-  const radiosId = `radios_third_${partido.numero}`;
-  const showRadios = (predLocal === predVisit && predLocal !== "");
-
-  let html = `<div class="tabla-grupo-card">
-    <h3 class="tabla-title">🥉 Tercer Puesto</h3>
-   <div class="puntuacion-info">
-  ⚽ <strong>Reglas de puntuación:</strong> Se toma el marcador de los 90 minutos. 
-  Puntos: aciertas el marcador exacto → <strong>3 puntos</strong>. 
-  Aciertas solo quién gana → <strong>1 punto</strong>. 
-  En caso de <strong>empate</strong>, suma <strong>+1 punto</strong> si seleccionas correctamente el clasificado.
-  <span style="display:block; margin-top:6px; font-size:0.7rem; color:#facc15;">➡️ Cuando marques un empate, aparecerán las opciones para elegir quién avanza.</span>
-</div>
-    <div class="grupos-tabs-wrapper" style="margin-bottom: 16px;">
-      <button id="scrollThirdLeft" class="scroll-btn" style="visibility: hidden;"><i class="fas fa-chevron-left"></i></button>
-      <div id="carouselThird" class="knockout-carousel" style="display: flex; overflow-x: auto; gap: 20px; scroll-behavior: smooth; padding-bottom: 10px; justify-content: center;"></div>
-      <button id="scrollThirdRight" class="scroll-btn" style="visibility: hidden;"><i class="fas fa-chevron-right"></i></button>
-    </div>
-  </div>`;
-  
-  container.innerHTML = html;
-  const carousel = document.getElementById("carouselThird");
-
-  const tarjetaHTML = `
-    <div class="knockout-card" data-partido-third="${partido.numero}" data-local="${partido.local}" data-visitante="${partido.visitante}" style="min-width: 340px;">
-      <div class="knockout-match-number">Partido ${partido.numero}</div>
-      <div class="match-teams">
-        <div class="team-row">
-          <img class="flag-icon" src="https://flagcdn.com/${obtenerCodigoPais(partido.local)}.svg">
-          <span>${fifaCodes[partido.local] || partido.local}</span>
-        </div>
-        <div class="vs-text">VS</div>
-        <div class="team-row">
-          <img class="flag-icon" src="https://flagcdn.com/${obtenerCodigoPais(partido.visitante)}.svg">
-          <span>${fifaCodes[partido.visitante] || partido.visitante}</span>
-        </div>
-      </div>
-      <div class="prediction-area">
-        <input type="number" id="third_local_${partido.numero}" class="prediction-input local-score" value="${predLocal}" placeholder="0" ${disabled ? "disabled" : ""}>
-        <span class="score-separator">-</span>
-        <input type="number" id="third_visit_${partido.numero}" class="prediction-input visitor-score" value="${predVisit}" placeholder="0" ${disabled ? "disabled" : ""}>
-      </div>
-      <div id="${radiosId}" class="knockout-radios" style="display: ${showRadios ? "flex" : "none"};">
-        <label><input type="radio" name="third_clasificado_${partido.numero}" value="${partido.local}" ${clasifGuardado === partido.local ? "checked" : ""} ${disabled ? "disabled" : ""}> ${fifaCodes[partido.local] || partido.local}</label>
-        <label><input type="radio" name="third_clasificado_${partido.numero}" value="${partido.visitante}" ${clasifGuardado === partido.visitante ? "checked" : ""} ${disabled ? "disabled" : ""}> ${fifaCodes[partido.visitante] || partido.visitante}</label>
-      </div>
-      <button class="btn-guardar" onclick="window.saveThirdPlacePrediction('${partido.numero}')" ${disabled ? "disabled" : ""}>
-        ${disabled ? (isFinalizado ? "🔒 Partido finalizado" : "🔒 Apuestas cerradas") : "Guardar"}
-      </button>
-      <div class="match-timer" data-cierre="${cierreApuestas.toISOString()}">
-        ⏰ Resultados se bloquean en: <span class="timer-value">${formatearTiempoRestante(cierreApuestas)}</span>
-      </div>
-      <div class="match-date">📅 ${fechaLocal}</div>
-    </div>
-  `;
-  carousel.insertAdjacentHTML('beforeend', tarjetaHTML);
-
-  if (!disabled) {
-    const localInput = document.getElementById(`third_local_${partido.numero}`);
-    const visitInput = document.getElementById(`third_visit_${partido.numero}`);
-    const radiosDiv = document.getElementById(`radios_third_${partido.numero}`);
-    if (localInput && visitInput && radiosDiv) {
-      const updateRadios = () => {
-        const localVal = parseInt(localInput.value);
-        const visitVal = parseInt(visitInput.value);
-        if (!isNaN(localVal) && !isNaN(visitVal) && localVal === visitVal) {
-          radiosDiv.style.display = "flex";
-        } else {
-          radiosDiv.style.display = "none";
-        }
-      };
-      localInput.addEventListener("input", updateRadios);
-      visitInput.addEventListener("input", updateRadios);
-      updateRadios();
+  try {
+    // ========== VALIDACIÓN DE ACCESO ==========
+    const participantSnap = await getDoc(doc(db, "participants", currentUser.uid));
+    if (!participantSnap.exists() || participantSnap.data().enabled_knockout !== true) {
+      container.innerHTML = `<div class="tabla-grupo-card" style="text-align:center; padding:30px;">
+        <h3>🔒 Acceso restringido</h3>
+        <p>No tienes habilitada la participación en la fase eliminatoria.<br>Contacta al administrador para obtener acceso.</p>
+      </div>`;
+      return;
     }
+
+    // ========== CARGAR RESULTADOS REALES ==========
+    let resultadosMap = {};
+    try {
+      const resultadosSnap = await getDocs(collection(db, "knockout_results"));
+      resultadosSnap.forEach(doc => { resultadosMap[doc.data().numero] = doc.data(); });
+    } catch (e) {
+      console.warn("No se pudieron cargar knockout_results:", e);
+    }
+
+    // ========== OBTENER CLASIFICADOS DE SEMIFINALES ==========
+    let clasificados = {};
+    try {
+      const semisQuery = query(collection(db, "predictions_semifinales"), where("uid", "==", currentUser.uid));
+      const semisSnap = await getDocs(semisQuery);
+      semisSnap.forEach(doc => {
+        const data = doc.data();
+        clasificados[data.partido] = data.clasificado;
+      });
+    } catch (e) {
+      console.error("Error al cargar predicciones de semifinales:", e);
+    }
+
+    // Equipos para el tercer puesto: los perdedores de las semifinales
+    const perdedor1 = clasificados[101] ? `Perdedor ${clasificados[101]}` : "Perdedor Semifinal 1";
+    const perdedor2 = clasificados[102] ? `Perdedor ${clasificados[102]}` : "Perdedor Semifinal 2";
+    const partido = {
+      numero: 103,
+      local: perdedor1,
+      visitante: perdedor2
+    };
+
+    const horaPartido = obtenerHoraPartidoKnockout(103);
+    const cierreApuestas = new Date(horaPartido.getTime() - 60 * 60 * 1000);
+    const isClosed = new Date() >= cierreApuestas;
+    const isFinalizado = resultadosMap[partido.numero]?.finalizado === true;
+    const disabled = isClosed || isFinalizado;
+    const fechaLocal = horaPartido.toLocaleString("es-CO", { timeZone: "America/Bogota" });
+
+    // ========== PREDICCIÓN GUARDADA ==========
+    let predLocal = "", predVisit = "", clasifGuardado = "";
+    try {
+      const thirdRef = doc(db, "predictions_third", `${currentUser.uid}_THIRD_103`);
+      const thirdSnap = await getDoc(thirdRef);
+      if (thirdSnap.exists()) {
+        const data = thirdSnap.data();
+        predLocal = data.pred_local ?? "";
+        predVisit = data.pred_visitante ?? "";
+        clasifGuardado = data.clasificado ?? "";
+      }
+    } catch (e) {
+      console.error("Error al cargar predicción del tercer puesto:", e);
+    }
+
+    const radiosId = `radios_third_${partido.numero}`;
+    const showRadios = (predLocal === predVisit && predLocal !== "");
+
+    // ========== HTML ==========
+    let html = `<div class="tabla-grupo-card">
+      <h3 class="tabla-title">🥉 Tercer Puesto</h3>
+      <div class="puntuacion-info">
+        ⚽ <strong>Reglas de puntuación:</strong> Se toma el marcador de los 90 minutos. 
+        Puntos: aciertas el marcador exacto → <strong>3 puntos</strong>. 
+        Aciertas solo quién gana → <strong>1 punto</strong>. 
+        En caso de <strong>empate</strong>, suma <strong>+1 punto</strong> si seleccionas correctamente el clasificado.
+        <span style="display:block; margin-top:6px; font-size:0.7rem; color:#facc15;">➡️ Cuando marques un empate, aparecerán las opciones para elegir quién avanza.</span>
+      </div>
+      <div class="grupos-tabs-wrapper" style="margin-bottom: 16px;">
+        <button id="scrollThirdLeft" class="scroll-btn" style="visibility: hidden;"><i class="fas fa-chevron-left"></i></button>
+        <div id="carouselThird" class="knockout-carousel" style="display: flex; overflow-x: auto; gap: 20px; scroll-behavior: smooth; padding-bottom: 10px; justify-content: center;"></div>
+        <button id="scrollThirdRight" class="scroll-btn" style="visibility: hidden;"><i class="fas fa-chevron-right"></i></button>
+      </div>
+    </div>`;
+    
+    container.innerHTML = html;
+    const carousel = document.getElementById("carouselThird");
+    if (!carousel) return;
+
+    const tarjetaHTML = `
+      <div class="knockout-card" data-partido-third="${partido.numero}" data-local="${partido.local}" data-visitante="${partido.visitante}" style="min-width: 340px;">
+        <div class="knockout-match-number">Partido ${partido.numero}</div>
+        <div class="match-teams">
+          <div class="team-row">
+            <img class="flag-icon" src="https://flagcdn.com/${obtenerCodigoPais(partido.local)}.svg" onerror="this.src='assets/img/default-flag.png'">
+            <span>${fifaCodes[partido.local] || partido.local}</span>
+          </div>
+          <div class="vs-text">VS</div>
+          <div class="team-row">
+            <img class="flag-icon" src="https://flagcdn.com/${obtenerCodigoPais(partido.visitante)}.svg" onerror="this.src='assets/img/default-flag.png'">
+            <span>${fifaCodes[partido.visitante] || partido.visitante}</span>
+          </div>
+        </div>
+        <div class="prediction-area">
+          <input type="number" id="third_local_${partido.numero}" class="prediction-input local-score" value="${predLocal}" placeholder="0" ${disabled ? "disabled" : ""}>
+          <span class="score-separator">-</span>
+          <input type="number" id="third_visit_${partido.numero}" class="prediction-input visitor-score" value="${predVisit}" placeholder="0" ${disabled ? "disabled" : ""}>
+        </div>
+        <div id="${radiosId}" class="knockout-radios" style="display: ${showRadios ? "flex" : "none"};">
+          <label><input type="radio" name="third_clasificado_${partido.numero}" value="${partido.local}" ${clasifGuardado === partido.local ? "checked" : ""} ${disabled ? "disabled" : ""}> ${fifaCodes[partido.local] || partido.local}</label>
+          <label><input type="radio" name="third_clasificado_${partido.numero}" value="${partido.visitante}" ${clasifGuardado === partido.visitante ? "checked" : ""} ${disabled ? "disabled" : ""}> ${fifaCodes[partido.visitante] || partido.visitante}</label>
+        </div>
+        <button class="btn-guardar" onclick="window.saveThirdPlacePrediction('${partido.numero}')" ${disabled ? "disabled" : ""}>
+          ${disabled ? (isFinalizado ? "🔒 Partido finalizado" : "🔒 Apuestas cerradas") : "Guardar"}
+        </button>
+        <div class="match-timer" data-cierre="${cierreApuestas.toISOString()}">
+          ⏰ Resultados se bloquean en: <span class="timer-value">${formatearTiempoRestante(cierreApuestas)}</span>
+        </div>
+        <div class="match-date">📅 ${fechaLocal}</div>
+      </div>
+    `;
+    carousel.insertAdjacentHTML('beforeend', tarjetaHTML);
+
+    if (!disabled) {
+      const localInput = document.getElementById(`third_local_${partido.numero}`);
+      const visitInput = document.getElementById(`third_visit_${partido.numero}`);
+      const radiosDiv = document.getElementById(radiosId);
+      if (localInput && visitInput && radiosDiv) {
+        const updateRadios = () => {
+          const localVal = parseInt(localInput.value);
+          const visitVal = parseInt(visitInput.value);
+          if (!isNaN(localVal) && !isNaN(visitVal) && localVal === visitVal) {
+            radiosDiv.style.display = "flex";
+          } else {
+            radiosDiv.style.display = "none";
+          }
+        };
+        localInput.addEventListener("input", updateRadios);
+        visitInput.addEventListener("input", updateRadios);
+        updateRadios();
+      }
+    }
+  } catch (error) {
+    console.error("Error grave en generarTercerPuesto:", error);
+    container.innerHTML = `<div class="tabla-grupo-card" style="color:red; padding:20px;">❌ Error al cargar el Tercer Puesto: ${error.message}. Intenta recargar la página.</div>`;
   }
 }
 // ======================================================
