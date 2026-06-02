@@ -3571,7 +3571,7 @@ async function cargarAdminTerceros() {
   const checkboxes = document.querySelectorAll(".tercero-checkbox");
   const updateSelectOptions = () => {
     const seleccionados = Array.from(checkboxes).filter(cb => cb.checked).map(cb => cb.value);
-    // Actualizar los dropdowns para mostrar solo los equipos seleccionados (además de la opción vacía)
+    // Actualizar los dropdowns para mostrar solo los equipos seleccionados
     for (const p of partidosTerceros) {
       const select = document.getElementById(`tercero_partido_${p.numero}`);
       if (select) {
@@ -3915,7 +3915,7 @@ onAuthStateChanged(auth, async (user) => {
      // agregarBotonResetKnockout();   // ← esta línea debe estar presente
       agregarBotonesReset();          // ← COMENTA O ELIMINA
       loadAdminKnockoutMatches();     // ← COMENTA O ELIMINA
-      cargarTercerosAdmin();
+      cargarAdminTerceros();
     } else {
       adminPanel.classList.add("hidden");
     }
