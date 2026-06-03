@@ -82,7 +82,9 @@ AUTH SCREEN
 }
 
 .auth-logo {
-  width: 120px;
+  width: 180px;          /* Más grande */
+  display: block;
+  margin: 0 auto;        /* Centrado horizontal */
 }
 
 .auth-title {
@@ -231,7 +233,7 @@ TOPBAR
 }
 
 .hero-logo {
-  width: 220px;
+  width: 280px;
 
   object-fit: contain;
 
@@ -1566,7 +1568,7 @@ MOBILE
   }
 
   .hero-logo {
-    width: 160px;
+    width: 200px;
   }
 
   .user-actions {
@@ -2114,8 +2116,11 @@ RESPONSIVE ADMIN PARTICIPANTES
 }
 @media (max-width: 640px) {
   .hero-logo {
-    max-width: 60px;
+    max-width: 140px;
   }
+  .auth-logo {
+  width: 140px;
+}
   .hero-header .topbar {
     flex-direction: column;
     gap: 10px;
