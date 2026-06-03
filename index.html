@@ -307,10 +307,15 @@
             -
           </div>
 
-          <div class="sidebar-points">
-            <span id="misPuntos">0</span> PTS
+          <!-- Botón y tabla de puntos -->
+          <div class="sidebar-card" style="padding: 16px;">
+            <button id="btnMisPuntosSidebar" class="sidebar-btn" style="background: #22c55e;">
+              📊 Ver mis puntos por partido
+            </button>
+            <div id="tablaPuntosSidebar" style="margin-top: 15px; max-height: 400px; overflow: auto;">
+              <!-- Aquí se cargará la tabla -->
+            </div>
           </div>
-
         </div>
 
         <!-- PRÓXIMO PARTIDO -->
@@ -417,21 +422,7 @@
   </footer>
 
   </div>
-  <!-- ======= MODAL DE PUNTOS ======= -->
-  <div id="modalPuntos" class="modal hidden">
-    <div class="modal-content">
-      <span class="close-modal">&times;</span>
-      <h3>📋 Mis puntos por partido</h3>
-      <div class="puntos-tabs">
-        <button id="tabGruposBtn" class="puntos-tab active">📌 Fase de Grupos</button>
-        <button id="tabEliminatoriasBtn" class="puntos-tab">🏆 Eliminatorias</button>
-      </div>
-      <div id="tablaGruposContainer" style="overflow-x: auto;"></div>
-      <div id="tablaEliminatoriasContainer" style="overflow-x: auto; display: none;"></div>
-    </div>
-  </div>
-
-
+  
   <!-- ===================================================== -->
   <!-- SCRIPTS -->
   <!-- ===================================================== -->

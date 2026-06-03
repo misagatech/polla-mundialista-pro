@@ -270,7 +270,7 @@ function mostrarTodosLosGrupos() {
     `;
   });
   gruposCarousel.innerHTML = tabsHTML;
-  
+
   // Mostrar solo el grupo activo
   let html = "";
   const partidosGrupo = gruposData[grupoActivo] || [];
@@ -419,7 +419,7 @@ async function loadMatchesAndPredictions() {
     gruposData = agruparPartidos(partidosGrupos);
     mostrarTodosLosGrupos();
     await generarTablaGrupos();
-    
+
 
     // Próximo partido (el más cercano en el futuro)
     const ahora = new Date();
@@ -591,8 +591,8 @@ window.savePrediction = async (matchId) => {
       );
     }
     if (matchData.estado === "finalizado") {
-  return alert("Este partido ya fue finalizado. No puedes cambiar tu predicción.");
-}
+      return alert("Este partido ya fue finalizado. No puedes cambiar tu predicción.");
+    }
 
     // =========================================
     // ID INTELIGENTE
@@ -931,7 +931,7 @@ async function generarFinal() {
         <button id="scrollFinalRight" class="scroll-btn" style="visibility: hidden;"><i class="fas fa-chevron-right"></i></button>
       </div>
     </div>`;
-    
+
     container.innerHTML = html;
     const carousel = document.getElementById("carouselFinal");
     if (!carousel) return;
@@ -1091,7 +1091,7 @@ async function generarTercerPuesto() {
     try {
       const resultadosSnap = await getDocs(collection(db, "knockout_results"));
       resultadosSnap.forEach(doc => { resultadosMap[doc.data().numero] = doc.data(); });
-    } catch (e) {}
+    } catch (e) { }
 
     const horaPartido = obtenerHoraPartidoKnockout(103);
     const cierreApuestas = new Date(horaPartido.getTime() - 60 * 60 * 1000);
@@ -1111,7 +1111,7 @@ async function generarTercerPuesto() {
         predVisit = data.pred_visitante ?? "";
         clasifGuardado = data.clasificado ?? "";
       }
-    } catch (e) {}
+    } catch (e) { }
 
     const radiosId = `radios_third_${partido.numero}`;
     const showRadios = (predLocal === predVisit && predLocal !== "");
@@ -1131,7 +1131,7 @@ async function generarTercerPuesto() {
         <button id="scrollThirdRight" class="scroll-btn"><i class="fas fa-chevron-right"></i></button>
       </div>
     </div>`;
-    
+
     container.innerHTML = html;
     const carousel = document.getElementById("carouselThird");
     if (!carousel) return;
@@ -1409,7 +1409,7 @@ function loadRankingKnockout() {
       else if (pos === 3) medalla = "🥉";
       else medalla = `#${pos}`;
       html += `<div style="display:flex; justify-content:space-between; padding:8px 0;"><span>${medalla} ${nombre}</span><strong>${data.puntos} pts</strong></div>`;
-      
+
       // Actualizar mi posición KO si es el usuario actual
       if (data.user_id === currentUser.uid) {
         document.getElementById("miPosicionKO").innerText = pos + "°";
@@ -1722,7 +1722,7 @@ function setupUploadButton() {
     }
   };
 }
-    // ======================================================
+// ======================================================
 // CALCULAR PUNTOS (CON REINTENTOS)
 // ======================================================
 async function calcularPuntos(matchId) {
@@ -1950,7 +1950,7 @@ async function generarDieciseisavos() {
     if (asignacionDoc.exists()) {
       tercerosMap = asignacionDoc.data();
     }
-  } catch(e) { console.error("Error al cargar terceros", e); }
+  } catch (e) { console.error("Error al cargar terceros", e); }
 
   const partidos = [
     { numero: 73, local: clasificadosGlobales["2A"] || "2A", visitante: clasificadosGlobales["2B"] || "2B" },
@@ -1986,7 +1986,7 @@ async function generarDieciseisavos() {
       <button id="scrollKnockoutRight" class="scroll-btn"><i class="fas fa-chevron-right"></i></button>
     </div>
   </div>`;
-  
+
   container.innerHTML = html;
   const carousel = document.getElementById("knockoutCarousel");
 
@@ -2496,7 +2496,7 @@ async function generarCuartos() {
       <button id="scrollCuartosRight" class="scroll-btn"><i class="fas fa-chevron-right"></i></button>
     </div>
   </div>`;
-  
+
   container.innerHTML = html;
   const carousel = document.getElementById("carouselCuartos");
 
@@ -2644,7 +2644,7 @@ async function generarSemifinales() {
       <button id="scrollSemisRight" class="scroll-btn"><i class="fas fa-chevron-right"></i></button>
     </div>
   </div>`;
-  
+
   container.innerHTML = html;
   const carousel = document.getElementById("carouselSemis");
 
@@ -2869,7 +2869,7 @@ function loadPrizePoolRealtime() {
 
 // Función auxiliar para escapar HTML
 function escapeHtml(str) {
-  return str.replace(/[&<>]/g, function(m) {
+  return str.replace(/[&<>]/g, function (m) {
     if (m === '&') return '&amp;';
     if (m === '<') return '&lt;';
     if (m === '>') return '&gt;';
@@ -3245,7 +3245,7 @@ async function obtenerTercerosConEstadisticas() {
   const terceros = [];
   for (let grupo in grupos) {
     const tabla = Object.values(grupos[grupo]);
-    tabla.sort((a,b) => b.pts - a.pts || b.dg - a.dg || b.gf - a.gf);
+    tabla.sort((a, b) => b.pts - a.pts || b.dg - a.dg || b.gf - a.gf);
     if (tabla[2]) {
       terceros.push({
         grupo,
@@ -3283,7 +3283,7 @@ async function cargarAdminTerceros() {
   ];
 
   // Tabla de equipos terceros (para selección)
-     let html = `<div class="admin-terceros-controls" style="margin-bottom: 20px;">
+  let html = `<div class="admin-terceros-controls" style="margin-bottom: 20px;">
     <h4>📌 Selecciona los 8 equipos que pasan (máximo 8)</h4>
     <div style="overflow-x: auto;">
     <table class="tabla-posiciones" style="width:100%;">
@@ -3295,7 +3295,7 @@ async function cargarAdminTerceros() {
   const seleccionadosPrev = asignacion.equiposSeleccionados || [];
   for (const t of tercerosList) {
     const checked = seleccionadosPrev.includes(t.equipo) ? "checked" : "";
-    const nombreCorto = fifaCodes[t.equipo] || t.equipo.substring(0,3).toUpperCase();
+    const nombreCorto = fifaCodes[t.equipo] || t.equipo.substring(0, 3).toUpperCase();
     html += `
       <tr>
         <td>${t.grupo}</td>
@@ -3323,9 +3323,9 @@ async function cargarAdminTerceros() {
         <select id="tercero_partido_${p.numero}" class="admin-select" style="width:100%; padding:6px; border-radius:12px; background:#1e293b; color:white;">
           <option value="">-- Ninguno / Pendiente --</option>
           ${tercerosList.map(t => {
-            const nombreCorto = fifaCodes[t.equipo] || t.equipo.substring(0,3).toUpperCase();
-            return `<option value="${t.equipo}" ${valorActual === t.equipo ? "selected" : ""}>${nombreCorto}</option>`;
-          }).join('')}
+      const nombreCorto = fifaCodes[t.equipo] || t.equipo.substring(0, 3).toUpperCase();
+      return `<option value="${t.equipo}" ${valorActual === t.equipo ? "selected" : ""}>${nombreCorto}</option>`;
+    }).join('')}
         </select>
       </div>`;
   }
@@ -3427,7 +3427,7 @@ async function loadAdminKnockoutMatches() {
   try {
     const asignacionDoc = await getDoc(doc(db, "settings", "terceros_asignacion"));
     if (asignacionDoc.exists()) tercerosMap = asignacionDoc.data();
-  } catch(e) {}
+  } catch (e) { }
 
   // Definir partidos de dieciseisavos (igual que en generarDieciseisavos)
   const partidosDieciseisavos = [
@@ -3845,19 +3845,25 @@ async function crearRankingKOparaTodos() {
 // ======================================================
 // MOSTRAR PUNTOS POR PARTIDO (MODAL CON PESTAÑAS)
 // ======================================================
-async function mostrarPuntosPorPartido() {
-  const modal = document.getElementById("modalPuntos");
-  const contenedorGrupos = document.getElementById("tablaGruposContainer");
-  const contenedorElim = document.getElementById("tablaEliminatoriasContainer");
-  if (!modal || !contenedorGrupos || !contenedorElim) return;
-
-  modal.classList.remove("hidden");
-  contenedorGrupos.innerHTML = "<p>Cargando puntos de grupos...</p>";
-  contenedorElim.innerHTML = "<p>Cargando puntos de eliminatorias...</p>";
+async function mostrarPuntosEnSidebar() {
+  const container = document.getElementById("tablaPuntosSidebar");
+  if (!container) return;
+  container.innerHTML = "<p style='text-align:center;'>Cargando...</p>";
 
   try {
-    // ----- GRUPOS -----
-    let htmlGrupos = `<table class="tabla-puntos"><thead><tr><th>Partido</th><th>Mi predicción</th><th>Resultado real</th><th>Puntos</th></tr></thead><tbody>`;
+    let html = `<div class="puntos-tabs" style="display:flex; gap:8px; margin-bottom:10px;">
+                  <button id="tabGruposSidebar" class="puntos-tab active">Grupos</button>
+                  <button id="tabElimSidebar" class="puntos-tab">Eliminatorias</button>
+                </div>
+                <div id="tablaGruposSidebar"></div>
+                <div id="tablaElimSidebar" style="display:none;"></div>`;
+    container.innerHTML = html;
+
+    const divGrupos = document.getElementById("tablaGruposSidebar");
+    const divElim = document.getElementById("tablaElimSidebar");
+
+    // Cargar grupos
+    let htmlGrupos = `<table class="tabla-puntos"><thead><tr><th>Partido</th><th>Predicción</th><th>Real</th><th>Pts</th></tr></thead><tbody>`;
     const groupsSnap = await getDocs(query(collection(db, "predictions_groups"), where("uid", "==", currentUser.uid)));
     for (const docSnap of groupsSnap.docs) {
       const pred = docSnap.data();
@@ -3865,31 +3871,29 @@ async function mostrarPuntosPorPartido() {
       if (!matchDoc.exists()) continue;
       const match = matchDoc.data();
       if (match.estado !== "finalizado") continue;
-
-      const localCode = fifaCodes[match.equipo_local] || match.equipo_local.substring(0,3);
-      const visitCode = fifaCodes[match.equipo_visitante] || match.equipo_visitante.substring(0,3);
+      const localCode = fifaCodes[match.equipo_local] || match.equipo_local.substring(0, 3);
+      const visitCode = fifaCodes[match.equipo_visitante] || match.equipo_visitante.substring(0, 3);
       const localFlag = obtenerCodigoPais(match.equipo_local);
       const visitFlag = obtenerCodigoPais(match.equipo_visitante);
-
       htmlGrupos += `<tr>
         <td><img class="flag-mini" src="https://flagcdn.com/${localFlag}.svg"> ${localCode} vs <img class="flag-mini" src="https://flagcdn.com/${visitFlag}.svg"> ${visitCode}</td>
-        <td>${pred.pred_local} - ${pred.pred_visitante}</td>
-        <td>${match.resultado_local} - ${match.resultado_visitante}</td>
+        <td>${pred.pred_local}-${pred.pred_visitante}</td>
+        <td>${match.resultado_local}-${match.resultado_visitante}</td>
         <td class="punto-badge">${pred.points || 0}</td>
       </tr>`;
     }
-    htmlGrupos += `</tbody></table>`;
-    contenedorGrupos.innerHTML = htmlGrupos || "<p>No hay partidos de grupos finalizados.</p>";
+    htmlGrupos += `</tbody>${'自语'}`;
+    divGrupos.innerHTML = htmlGrupos || "<p>Sin partidos de grupos finalizados.</p>";
 
-    // ----- ELIMINATORIAS -----
-    let htmlElim = `<table class="tabla-puntos"><thead><tr><th>Fase</th><th>Partido</th><th>Mi predicción</th><th>Resultado real</th><th>Puntos</th></tr></thead><tbody>`;
+    // Cargar eliminatorias
+    let htmlElim = `<table class="tabla-puntos"><thead><tr><th>Fase</th><th>Partido</th><th>Pred.</th><th>Real</th><th>Pts</th></tr></thead><tbody>`;
     const fasesKO = [
-      { col: "predictions_knockout", nombre: "Dieciseisavos" },
+      { col: "predictions_knockout", nombre: "D16" },
       { col: "predictions_octavos", nombre: "Octavos" },
       { col: "predictions_cuartos", nombre: "Cuartos" },
-      { col: "predictions_semifinales", nombre: "Semifinales" },
+      { col: "predictions_semifinales", nombre: "Semis" },
       { col: "predictions_final", nombre: "Final" },
-      { col: "predictions_third", nombre: "Tercer puesto" }
+      { col: "predictions_third", nombre: "3er Puesto" }
     ];
     for (const fase of fasesKO) {
       const snap = await getDocs(query(collection(db, fase.col), where("uid", "==", currentUser.uid)));
@@ -3901,53 +3905,39 @@ async function mostrarPuntosPorPartido() {
         if (!real.finalizado) continue;
         htmlElim += `<tr>
           <td>${fase.nombre}</td>
-          <td>Partido ${pred.partido}</td>
-          <td>${pred.pred_local} - ${pred.pred_visitante}</td>
-          <td>${real.resultado_local} - ${real.resultado_visitante}</td>
+          <td>P${pred.partido}</td>
+          <td>${pred.pred_local}-${pred.pred_visitante}</td>
+          <td>${real.resultado_local}-${real.resultado_visitante}</td>
           <td class="punto-badge">${pred.points || 0}</td>
         </tr>`;
       }
     }
-    htmlElim += `</tbody></table>`;
-    contenedorElim.innerHTML = htmlElim || "<p>No hay partidos de eliminatorias finalizados.</p>";
+    htmlElim += `</tbody>${'知道'}`;
+    divElim.innerHTML = htmlElim || "<p>Sin partidos de eliminatorias finalizados.</p>";
 
     // Pestañas
-    const tabGrupos = document.getElementById("tabGruposBtn");
-    const tabElim = document.getElementById("tabEliminatoriasBtn");
-    const divGrupos = document.getElementById("tablaGruposContainer");
-    const divElim = document.getElementById("tablaEliminatoriasContainer");
-    const activar = (tipo) => {
-      if (tipo === 'grupos') {
-        tabGrupos.classList.add("active");
-        tabElim.classList.remove("active");
-        divGrupos.style.display = "block";
-        divElim.style.display = "none";
-      } else {
-        tabElim.classList.add("active");
-        tabGrupos.classList.remove("active");
-        divElim.style.display = "block";
-        divGrupos.style.display = "none";
-      }
+    const btnGrupos = document.getElementById("tabGruposSidebar");
+    const btnElim = document.getElementById("tabElimSidebar");
+    btnGrupos.onclick = () => {
+      btnGrupos.classList.add("active");
+      btnElim.classList.remove("active");
+      divGrupos.style.display = "block";
+      divElim.style.display = "none";
     };
-    tabGrupos.onclick = () => activar('grupos');
-    tabElim.onclick = () => activar('eliminatorias');
-    activar('grupos');
-
-    // Cerrar modal
-    document.querySelector(".close-modal").onclick = () => modal.classList.add("hidden");
-    modal.onclick = (e) => { if (e.target === modal) modal.classList.add("hidden"); };
+    btnElim.onclick = () => {
+      btnElim.classList.add("active");
+      btnGrupos.classList.remove("active");
+      divElim.style.display = "block";
+      divGrupos.style.display = "none";
+    };
   } catch (error) {
     console.error(error);
-    contenedorGrupos.innerHTML = "<p>Error al cargar puntos.</p>";
+    container.innerHTML = "<p>Error al cargar puntos.</p>";
   }
 }
 
-// Asignar evento al botón (se ejecutará cuando el DOM esté listo)
-document.addEventListener("DOMContentLoaded", () => {
-  const btn = document.getElementById("btnMisPuntos");
-  if (btn) btn.addEventListener("click", mostrarPuntosPorPartido);
-});
-
+// Evento del botón (ahora en sidebar)
+document.getElementById("btnMisPuntosSidebar")?.addEventListener("click", mostrarPuntosEnSidebar);
 // ======================================================
 // ADMIN: AUDITORÍA DE PUNTOS POR USUARIO
 // ======================================================
@@ -3982,9 +3972,9 @@ async function cargarAuditoriaUsuario(uid) {
       if (!matchDoc.exists()) continue;
       const match = matchDoc.data();
       if (match.estado !== "finalizado") continue;
-      const localCode = fifaCodes[match.equipo_local] || match.equipo_local.substring(0,3);
-      const visitCode = fifaCodes[match.equipo_visitante] || match.equipo_visitante.substring(0,3);
-      html += `<tr><td>Grupos</td><td>${localCode} vs ${visitCode}</td><td>${pred.pred_local}-${pred.pred_visitante}</td><td>${match.resultado_local}-${match.resultado_visitante}</td><td class="punto-badge">${pred.points||0}</td></tr>`;
+      const localCode = fifaCodes[match.equipo_local] || match.equipo_local.substring(0, 3);
+      const visitCode = fifaCodes[match.equipo_visitante] || match.equipo_visitante.substring(0, 3);
+      html += `<tr><td>Grupos</td><td>${localCode} vs ${visitCode}</td><td>${pred.pred_local}-${pred.pred_visitante}</td><td>${match.resultado_local}-${match.resultado_visitante}</td><td class="punto-badge">${pred.points || 0}</td></tr>`;
     }
 
     // Eliminatorias
@@ -4004,7 +3994,7 @@ async function cargarAuditoriaUsuario(uid) {
         if (!realDoc.exists()) continue;
         const real = realDoc.data();
         if (!real.finalizado) continue;
-        html += `<tr><td>${fase.nombre}</td><td>Partido ${pred.partido}</td><td>${pred.pred_local}-${pred.pred_visitante}</td><td>${real.resultado_local}-${real.resultado_visitante}</td><td class="punto-badge">${pred.points||0}</td></tr>`;
+        html += `<tr><td>${fase.nombre}</td><td>Partido ${pred.partido}</td><td>${pred.pred_local}-${pred.pred_visitante}</td><td>${real.resultado_local}-${real.resultado_visitante}</td><td class="punto-badge">${pred.points || 0}</td></tr>`;
       }
     }
 
@@ -4072,8 +4062,8 @@ onAuthStateChanged(auth, async (user) => {
       loadAdminMatches();
       loadAdminParticipants();
       console.log("CARGANDO PARTICIPANTES ADMIN");
-      setupUploadButton();      
-     // agregarBotonResetKnockout();   // ← esta línea debe estar presente
+      setupUploadButton();
+      // agregarBotonResetKnockout();   // ← esta línea debe estar presente
       agregarBotonesReset();          // ← COMENTA O ELIMINA
       loadAdminKnockoutMatches();     // ← COMENTA O ELIMINA
       cargarAdminTerceros();
@@ -4084,7 +4074,7 @@ onAuthStateChanged(auth, async (user) => {
       adminPanel.classList.add("hidden");
     }
     loadMatchesAndPredictions();
-     // ======================================================
+    // ======================================================
     // INICIAR TEMPORIZADORES GLOBALES (UNA SOLA VEZ)
     // ======================================================
     if (!window.timerInterval) {
@@ -4092,19 +4082,19 @@ onAuthStateChanged(auth, async (user) => {
     }
     loadRanking();
     // Crear automáticamente el documento en ranking_knockout si el usuario tiene KO habilitado
-const participantSnapKO = await getDoc(doc(db, "participants", currentUser.uid));
-if (participantSnapKO.exists() && participantSnapKO.data().enabled_knockout === true) {
-  const rankingKORef = doc(db, "ranking_knockout", currentUser.uid);
-  const rankingKOSnap = await getDoc(rankingKORef);
-  if (!rankingKOSnap.exists()) {
-    await setDoc(rankingKORef, {
-      user_id: currentUser.uid,
-      puntos: 0,
-      updated_at: serverTimestamp()
-    });
-    console.log("✅ Ranking KO creado para", currentUser.uid);
-  }
-}
+    const participantSnapKO = await getDoc(doc(db, "participants", currentUser.uid));
+    if (participantSnapKO.exists() && participantSnapKO.data().enabled_knockout === true) {
+      const rankingKORef = doc(db, "ranking_knockout", currentUser.uid);
+      const rankingKOSnap = await getDoc(rankingKORef);
+      if (!rankingKOSnap.exists()) {
+        await setDoc(rankingKORef, {
+          user_id: currentUser.uid,
+          puntos: 0,
+          updated_at: serverTimestamp()
+        });
+        console.log("✅ Ranking KO creado para", currentUser.uid);
+      }
+    }
     loadRankingKnockout();
     loadPrizePoolRealtime();
     await generarOctavos();

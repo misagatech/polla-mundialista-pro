@@ -2272,3 +2272,28 @@ RESPONSIVE ADMIN PARTICIPANTES
   font-weight: bold;
   color: #22c55e;
 }
+/* Tabla dentro del sidebar */
+#tablaPuntosSidebar {
+  overflow-x: auto;
+  overflow-y: auto;
+  max-height: 400px;
+  font-size: 0.75rem;
+}
+#tablaPuntosSidebar .tabla-puntos {
+  width: 100%;
+  border-collapse: collapse;
+  min-width: 500px; /* fuerza scroll horizontal */
+}
+#tablaPuntosSidebar .tabla-puntos th,
+#tablaPuntosSidebar .tabla-puntos td {
+  padding: 6px 4px;
+  white-space: nowrap;
+}
+.main-layout {
+  grid-template-columns: minmax(0, 1fr) 380px; /* antes 320px, ahora más ancho */
+}
+@media (max-width: 1200px) {
+  .main-layout {
+    grid-template-columns: 1fr;
+  }
+}
