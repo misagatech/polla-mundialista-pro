@@ -2999,6 +2999,22 @@ document.getElementById("btnRegister").onclick = async () => {
         created_at: serverTimestamp()
       }
     );
+    // 👇 NUEVO CÓDIGO: Crear documentos en rankings con 0 puntos
+    const rankingRef = doc(db, "ranking", cred.user.uid);
+    await setDoc(rankingRef, {
+      user_id: cred.user.uid,
+      puntos: 0,
+      updated_at: serverTimestamp()
+    });
+
+    const rankingKORef = doc(db, "ranking_knockout", cred.user.uid);
+    await setDoc(rankingKORef, {
+      user_id: cred.user.uid,
+      puntos: 0,
+      updated_at: serverTimestamp()
+    });
+    // 👆 FIN NUEVO CÓDIGO
+
     alert("✅ Registro exitoso. Ahora inicia sesión.");
   } catch (error) {
     alert(error.message);
@@ -3137,12 +3153,13 @@ window.toggleHabilitadoKO = async (uid) => {
 };
 
 
-// ======================================================
-// RESET DE PRUEBAS PARA KNOCKOUT (VERSIÓN ROBUSTA)
+/// ======================================================
+// RESET DE PRUEBAS PARA KNOCKOUT (CON REINICIO DE PUNTOS)
 // ======================================================
 window.resetearPruebasKnockout = async () => {
   if (!confirm("⚠️ ¿Eliminar TODAS las predicciones de knockout y reiniciar resultados reales? Esta acción no se puede deshacer.")) return;
 
+  // 1. Borrar predicciones de knockout (todas las fases)
   const colecciones = [
     "predictions_knockout",
     "predictions_octavos",
@@ -3164,6 +3181,7 @@ window.resetearPruebasKnockout = async () => {
     }
   }
 
+  // 2. Reiniciar resultados reales de knockout
   const resultadosRef = collection(db, "knockout_results");
   try {
     const resultadosSnapshot = await getDocs(resultadosRef);
@@ -3183,10 +3201,17 @@ window.resetearPruebasKnockout = async () => {
     console.warn("No se pudo acceder a knockout_results", error);
   }
 
-  alert("✅ Predicciones de knockout eliminadas y resultados reales reiniciados.");
+  // 3. 👇 NUEVO: Reiniciar puntos en ranking_knockout a cero
+  const rankingKOSnap = await getDocs(collection(db, "ranking_knockout"));
+  const batchKO = writeBatch(db);
+  rankingKOSnap.forEach(doc => {
+    batchKO.update(doc.ref, { puntos: 0, updated_at: serverTimestamp() });
+  });
+  await batchKO.commit();
+
+  alert("✅ Predicciones de knockout eliminadas, resultados reales reiniciados y puntos KO a cero.");
   location.reload();
 };
-
 // ======================================================
 // RESET DE PRUEBAS PARA GRUPOS
 // ======================================================
@@ -3209,6 +3234,13 @@ window.resetearPruebasGrupos = async () => {
     });
   });
   await batchMatches.commit();
+  // 3. 👇 NUEVO: Reiniciar puntos en ranking global a cero
+  const rankingSnap = await getDocs(collection(db, "ranking"));
+  const batchRanking = writeBatch(db);
+  rankingSnap.forEach(doc => {
+    batchRanking.update(doc.ref, { puntos: 0, updated_at: serverTimestamp() });
+  });
+  await batchRanking.commit();
 
   alert("✅ Predicciones de grupos eliminadas y resultados reiniciados.");
   location.reload();
@@ -3972,6 +4004,54 @@ async function calcularPuntosKnockout(partidoNumero, fase) {
   }
 }
 // ======================================================
+// CREAR RANKING GLOBAL PARA TODOS LOS USUARIOS (grupos)
+// ======================================================
+async function crearRankingGlobalParaTodos() {
+  const participantsSnap = await getDocs(collection(db, "participants"));
+  const batch = writeBatch(db);
+  let cambios = 0;
+  for (const docSnap of participantsSnap.docs) {
+    const uid = docSnap.id;
+    const rankingRef = doc(db, "ranking", uid);
+    const rankingSnap = await getDoc(rankingRef);
+    if (!rankingSnap.exists()) {
+      batch.set(rankingRef, {
+        user_id: uid,
+        puntos: 0,
+        updated_at: serverTimestamp()
+      });
+      cambios++;
+    }
+  }
+  if (cambios > 0) await batch.commit();
+  console.log(`✅ Creados ${cambios} documentos en ranking global`);
+}
+// ======================================================
+// CREAR RANKING_KNOCKOUT PARA TODOS LOS USUARIOS HABILITADOS
+// ======================================================
+async function crearRankingKOparaTodos() {
+  const participantsSnap = await getDocs(collection(db, "participants"));
+  const batch = writeBatch(db);
+  let cambios = 0;
+  for (const docSnap of participantsSnap.docs) {
+    const data = docSnap.data();
+    if (data.enabled_knockout === true) {
+      const rankingRef = doc(db, "ranking_knockout", data.uid);
+      const rankingSnap = await getDoc(rankingRef);
+      if (!rankingSnap.exists()) {
+        batch.set(rankingRef, {
+          user_id: data.uid,
+          puntos: 0,
+          updated_at: serverTimestamp()
+        });
+        cambios++;
+      }
+    }
+  }
+  if (cambios > 0) await batch.commit();
+  console.log(`✅ Creados ${cambios} documentos en ranking_knockout`);
+}
+// ======================================================
 // ESTADO DE AUTENTICACIÓN (CORAZÓN DE LA APP)
 // ======================================================
 onAuthStateChanged(auth, async (user) => {
@@ -4020,6 +4100,8 @@ onAuthStateChanged(auth, async (user) => {
       agregarBotonesReset();          // ← COMENTA O ELIMINA
       loadAdminKnockoutMatches();     // ← COMENTA O ELIMINA
       cargarAdminTerceros();
+      await crearRankingKOparaTodos();   // 👈 NUEVA LÍNEA
+      await crearRankingGlobalParaTodos();   // 👈 NUEVA LÍNEA
     } else {
       adminPanel.classList.add("hidden");
     }
