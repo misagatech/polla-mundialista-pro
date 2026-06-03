@@ -1608,62 +1608,124 @@ window.submitResult = async (matchId) => {
 // ======================================================
 // FINALIZAR PARTIDO (ADMIN)
 // ======================================================
-
 window.finalizarPartido = async (matchId) => {
-
   try {
-
-    const matchRef =
-      doc(db, "matches", matchId);
-
-    const matchSnap =
-      await getDoc(matchRef);
-
+    const matchRef = doc(db, "matches", matchId);
+    const matchSnap = await getDoc(matchRef);
     if (!matchSnap.exists()) {
-
-      return alert(
-        "Partido no encontrado"
-      );
-
+      return alert("Partido no encontrado");
     }
+    const match = matchSnap.data();
 
-    const match =
-      matchSnap.data();
-
-    // VALIDAR RESULTADOS
-
-    if (
-      match.resultado_local === null ||
-      match.resultado_visitante === null
-    ) {
-
-      return alert(
-        "Debes guardar resultados primero"
-      );
-
+    if (match.resultado_local === null || match.resultado_visitante === null) {
+      return alert("Debes guardar resultados primero");
     }
-
-    // EVITAR DOBLE FINALIZACIÓN
-
     if (match.estado === "finalizado") {
-
-      return alert(
-        "Este partido ya fue finalizado"
-      );
-
+      return alert("Este partido ya fue finalizado");
     }
 
-    // CAMBIAR ESTADO
+    // Cambiar estado a finalizado
+    await updateDoc(matchRef, { estado: "finalizado" });
 
+    // CALCULAR PUNTOS (llamada a la función externa)
+    await calcularPuntos(matchId);
+
+    alert("✅ Partido finalizado y puntos calculados");
+    loadAdminMatches();
+  } catch (error) {
+    console.error(error);
+    alert("Error al finalizar partido");
+  }
+};
+
+// ======================================================
+// REABRIR PARTIDO (ADMIN)
+// ======================================================
+window.reabrirPartido = async (matchId) => {
+  try {
+    const matchRef = doc(db, "matches", matchId);
+    const matchSnap = await getDoc(matchRef);
+    if (!matchSnap.exists()) return alert("Partido no encontrado");
+
+    const match = matchSnap.data();
+    if (match.estado !== "finalizado") return alert("Este partido no está finalizado");
+
+    // Obtener predicciones
+    const predictionsQuery = query(collection(db, "predictions_groups"), where("match_id", "==", matchId));
+    const predictionsSnap = await getDocs(predictionsQuery);
+
+    for (const predDoc of predictionsSnap.docs) {
+      const pred = predDoc.data();
+      if (pred.points_assigned === true) {
+        const puntosARestar = Number(pred.points || 0);
+        const rankingRef = doc(db, "ranking", pred.uid);
+        const rankingSnap = await getDoc(rankingRef);
+        if (rankingSnap.exists()) {
+          const rankingData = rankingSnap.data();
+          await updateDoc(rankingRef, {
+            puntos: Math.max(0, (rankingData.puntos || 0) - puntosARestar),
+            updated_at: serverTimestamp()
+          });
+        }
+        await updateDoc(predDoc.ref, { points_assigned: false, points: 0 });
+      }
+    }
+
+    // Reabrir: limpiar resultados y dejar en estado "resultado_cargado" (sin puntos calculados)
     await updateDoc(matchRef, {
-
-      estado: "finalizado"
-
+      resultado_local: null,
+      resultado_visitante: null,
+      estado: "pendiente",           // Ahora el admin debe volver a guardar
+      puntos_calculados: false
     });
 
-    // CALCULAR PUNTOS
+    alert("✅ Partido reabierto correctamente. Debes ingresar nuevos resultados y finalizar de nuevo.");
+    loadAdminMatches();
+  } catch (error) {
+    console.error(error);
+    alert("Error al reabrir partido");
+  }
+};
+// ======================================================
+// CARGAR TODOS LOS PARTIDOS DESDE partidos.js (ADMIN)
+// ======================================================
+async function cargarTodosLosPartidos() {
+  const existingMatches = await getDocs(collection(db, "matches"));
+  const batchDelete = writeBatch(db);
+  existingMatches.forEach(docItem => batchDelete.delete(docItem.ref));
+  await batchDelete.commit();
 
-    async function calcularPuntos(matchId) {
+  for (const p of todosLosPartidos) {
+    await addDoc(collection(db, "matches"), {
+      equipo_local: p.local,
+      equipo_visitante: p.visitante,
+      hora_partido: new Date(p.fechaUTC),
+      fase: p.fase,
+      grupo: p.grupo || null,
+      estado: "pendiente",
+      resultado_local: null,
+      resultado_visitante: null,
+      puntos_calculados: false
+    });
+  }
+  console.log("✅ Partidos cargados");
+}
+
+function setupUploadButton() {
+  const btn = document.getElementById("btnCargarPartidos");
+  if (!btn) return;
+  btn.onclick = async () => {
+    if (confirm("¿Cargar partidos nuevamente? Se borrarán los existentes.")) {
+      await cargarTodosLosPartidos();
+      alert("✅ Partidos cargados. La página se recargará.");
+      location.reload();
+    }
+  };
+}
+    // ======================================================
+// CALCULAR PUNTOS (CON REINTENTOS)
+// ======================================================
+async function calcularPuntos(matchId) {
   const matchRef = doc(db, "matches", matchId);
   const matchSnap = await getDoc(matchRef);
   if (!matchSnap.exists()) return;
@@ -1715,7 +1777,6 @@ window.finalizarPartido = async (matchId) => {
     return false;
   };
 
-  // Procesar cada predicción
   let algunError = false;
   for (const predDoc of predictionsSnap.docs) {
     const pred = predDoc.data();
@@ -1744,7 +1805,7 @@ window.finalizarPartido = async (matchId) => {
       console.log(`🔸 Usuario ${pred.uid}: 0 puntos`);
     }
 
-    // Marcar predicción como procesada (aunque falle el ranking, marcamos para no reintentar después)
+    // Marcar predicción como procesada
     try {
       await updateDoc(predDoc.ref, {
         points_assigned: true,
@@ -1756,368 +1817,12 @@ window.finalizarPartido = async (matchId) => {
     }
   }
 
-  // Marcar partido como calculado (aunque algunos reintentos fallaran, se evita recalcular)
   await updateDoc(matchRef, { puntos_calculados: true });
   if (algunError) {
-    console.warn("⚠️ Algunas operaciones fallaron, pero el partido se marcó como calculado. Revisa los logs.");
+    console.warn("⚠️ Algunas operaciones fallaron, pero el partido se marcó como calculado.");
   } else {
     console.log("✅ Puntos calculados correctamente para todos los usuarios.");
   }
-}
-// ======================================================
-// REABRIR PARTIDO (ADMIN)
-// ======================================================
-
-window.reabrirPartido = async (matchId) => {
-
-  try {
-
-    const matchRef =
-      doc(db, "matches", matchId);
-
-    const matchSnap =
-      await getDoc(matchRef);
-
-    if (!matchSnap.exists()) {
-
-      return alert(
-        "Partido no encontrado"
-      );
-
-    }
-
-    const match =
-      matchSnap.data();
-
-    // =====================================
-    // VALIDAR FINALIZADO
-    // =====================================
-
-    if (match.estado !== "finalizado") {
-
-      return alert(
-        "Este partido no está finalizado"
-      );
-
-    }
-
-    // =====================================
-    // BUSCAR PREDICCIONES
-    // =====================================
-
-    const predictionsQuery =
-      query(
-        collection(db, "predictions_groups"),
-        where("match_id", "==", matchId)
-      );
-
-    const predictionsSnap =
-      await getDocs(predictionsQuery);
-
-    // =====================================
-    // RECORRER PREDICCIONES
-    // =====================================
-
-    for (const predDoc of predictionsSnap.docs) {
-
-      const pred =
-        predDoc.data();
-
-      const predLocal =
-        Number(pred.pred_local);
-
-      const predVisit =
-        Number(pred.pred_visitante);
-
-      if (pred.points_assigned === true) {
-
-        const puntosARestar =
-          Number(pred.points || 0);
-
-        // =================================
-        // ACTUALIZAR RANKING
-        // =================================
-
-        const rankingRef =
-          doc(db, "ranking", pred.uid);
-
-        const rankingSnap =
-          await getDoc(rankingRef);
-
-        if (rankingSnap.exists()) {
-
-          const rankingData =
-            rankingSnap.data();
-
-          await updateDoc(rankingRef, {
-
-            puntos:
-              Math.max(
-                0,
-                (rankingData.puntos || 0)
-                - puntosARestar
-              ),
-
-            updated_at:
-              serverTimestamp()
-
-          });
-
-        }
-
-        // =================================
-        // LIMPIAR PREDICCIÓN
-        // =================================
-
-        await updateDoc(predDoc.ref, {
-
-          points_assigned: false,
-
-          points: 0
-
-        });
-
-      }
-
-    }
-
-    // =====================================
-    // REABRIR PARTIDO
-    // =====================================
-
-    await updateDoc(matchRef, {
-
-      estado: "resultado_cargado",
-
-      puntos_calculados: false
-
-    });
-
-    alert(
-      "✅ Partido reabierto correctamente"
-    );
-
-    loadAdminMatches();
-
-  } catch (error) {
-
-    console.error(error);
-
-    alert(
-      "Error al reabrir partido"
-    );
-
-  }
-
-};
-// ======================================================
-// CARGAR TODOS LOS PARTIDOS DESDE partidos.js (ADMIN)
-// ======================================================
-async function cargarTodosLosPartidos() {
-  const existingMatches = await getDocs(collection(db, "matches"));
-  const batchDelete = writeBatch(db);
-  existingMatches.forEach(docItem => batchDelete.delete(docItem.ref));
-  await batchDelete.commit();
-
-  for (const p of todosLosPartidos) {
-    await addDoc(collection(db, "matches"), {
-      equipo_local: p.local,
-      equipo_visitante: p.visitante,
-      hora_partido: new Date(p.fechaUTC),
-      fase: p.fase,
-      grupo: p.grupo || null,
-      estado: "pendiente",
-      resultado_local: null,
-      resultado_visitante: null,
-      puntos_calculados: false
-    });
-  }
-  console.log("✅ Partidos cargados");
-}
-
-function setupUploadButton() {
-  const btn = document.getElementById("btnCargarPartidos");
-  if (!btn) return;
-  btn.onclick = async () => {
-    if (confirm("¿Cargar partidos nuevamente? Se borrarán los existentes.")) {
-      await cargarTodosLosPartidos();
-      alert("✅ Partidos cargados. La página se recargará.");
-      location.reload();
-    }
-  };
-}
-// ======================================================
-// CALCULAR PUNTOS
-// ======================================================
-
-async function calcularPuntos(matchId) {
-
-  const matchRef =
-    doc(db, "matches", matchId);
-
-  const matchSnap =
-    await getDoc(matchRef);
-
-  if (!matchSnap.exists()) return;
-
-  const match =
-    matchSnap.data();
-  // =====================================
-  // EVITAR RECALCULAR PARTIDO
-  // =====================================
-
-  if (match.puntos_calculados === true) {
-
-    console.log(
-      "⚠️ Este partido ya calculó puntos"
-    );
-
-    return;
-
-  }
-
-  const local =
-    Number(match.resultado_local);
-
-  const visit =
-    Number(match.resultado_visitante);
-
-  const predictionsQuery =
-    query(
-      collection(db, "predictions_groups"),
-      where("match_id", "==", matchId)
-    );
-
-  const predictionsSnap =
-    await getDocs(predictionsQuery);
-
-  for (const predDoc of predictionsSnap.docs) {
-
-    const pred =
-      predDoc.data();
-
-    const predLocal =
-      Number(pred.pred_local);
-
-    const predVisit =
-      Number(pred.pred_visitante);
-
-    // =====================================
-    // EVITAR DUPLICAR PUNTOS
-    // =====================================
-
-    if (pred.points_assigned === true) {
-      continue;
-    }
-
-    let puntos = 0;
-
-    // =====================================
-    // MARCADOR EXACTO
-    // =====================================
-
-    if (
-      predLocal === local &&
-      predVisit === visit
-    ) {
-
-      puntos = 3;
-
-    }
-
-    else {
-
-      // =====================================
-      // GANADOR O EMPATE
-      // =====================================
-
-      const real =
-        local > visit
-          ? "L"
-          : local < visit
-            ? "V"
-            : "E";
-
-      const usuario =
-        predLocal > predVisit
-          ? "L"
-          : predLocal < predVisit
-            ? "V"
-            : "E";
-
-      if (real === usuario) {
-
-        puntos = 1;
-
-      }
-
-
-    }
-
-    // =====================================
-    // RANKING
-    // =====================================
-
-    const rankingRef =
-      doc(db, "ranking", pred.uid);
-
-    const rankingSnap =
-      await getDoc(rankingRef);
-
-    if (!rankingSnap.exists()) {
-
-      await setDoc(rankingRef, {
-
-        user_id: pred.uid,
-
-        puntos: puntos,
-
-        updated_at: serverTimestamp()
-
-      });
-
-    } else {
-
-      const rankingData =
-        rankingSnap.data();
-
-      await updateDoc(rankingRef, {
-
-        user_id: pred.uid,
-
-        puntos:
-          (rankingData.puntos || 0)
-          + puntos,
-
-        updated_at:
-          serverTimestamp()
-
-      });
-
-    }
-
-    // =====================================
-    // MARCAR PUNTOS
-    // =====================================
-
-    await updateDoc(predDoc.ref, {
-
-      points_assigned: true,
-
-      points: puntos
-
-    });
-
-  }
-  // =====================================
-  // MARCAR PARTIDO CALCULADO
-  // =====================================
-
-  await updateDoc(matchRef, {
-
-    puntos_calculados: true
-
-  });
 }
 // ======================================================
 // TABLA DE POSICIONES
