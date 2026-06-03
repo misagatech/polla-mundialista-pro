@@ -2208,9 +2208,9 @@ RESPONSIVE ADMIN PARTICIPANTES
   border-radius: 24px;
   padding: 20px;
   max-width: 95%;
-  width: 900px;
-  max-height: 85%;
-  overflow-y: auto;
+  width: 1000px;
+  max-height: 80vh;          /* altura máxima relativa a la ventana */
+  overflow-y: auto;          /* scroll vertical si el contenido excede */
   border: 1px solid #facc15;
 }
 .close-modal {
@@ -2228,10 +2228,11 @@ RESPONSIVE ADMIN PARTICIPANTES
   gap: 12px;
   margin: 15px 0;
 }
+/* Estilos para pestañas de puntos (ya las tienes, pero reforzamos) */
 .puntos-tab {
   background: #1e293b;
   border: none;
-  padding: 8px 20px;
+  padding: 6px 12px;
   border-radius: 30px;
   color: white;
   cursor: pointer;
@@ -2242,17 +2243,31 @@ RESPONSIVE ADMIN PARTICIPANTES
   background: #facc15;
   color: black;
 }
+.tabla-puntos-compacta {
+  width: 100%;
+  border-collapse: collapse;
+  font-size: 0.7rem;
+}
+.tabla-puntos-compacta th, .tabla-puntos-compacta td {
+  padding: 5px 3px;
+  border-bottom: 1px solid #334155;
+  text-align: center;
+}
+.tabla-puntos-compacta th {
+  background: #0f172a;
+  color: #facc15;
+  position: sticky;
+  top: 0;
+}
 .tabla-puntos {
   width: 100%;
   border-collapse: collapse;
   font-size: 0.8rem;
-  margin-top: 10px;
+  min-width: 600px;        /* para que el scroll horizontal aparezca si es necesario */
 }
 .tabla-puntos th, .tabla-puntos td {
-  padding: 8px 6px;
-  border-bottom: 1px solid #334155;
-  text-align: center;
-  vertical-align: middle;
+ padding: 8px 6px;
+  white-space: nowrap;     /* evita saltos de línea, fuerza scroll horizontal */
 }
 .tabla-puntos th {
   background: #0f172a;
@@ -2261,13 +2276,27 @@ RESPONSIVE ADMIN PARTICIPANTES
   top: 0;
 }
 .flag-mini {
-  width: 22px;
-  height: 15px;
+  width: 20px;
+  height: 14px;
   object-fit: cover;
   border-radius: 2px;
-  margin-right: 5px;
   vertical-align: middle;
 }
+.subpestana-grupo {
+  background: #1e293b;
+  border: none;
+  padding: 4px 10px;
+  border-radius: 20px;
+  color: white;
+  font-size: 0.7rem;
+  cursor: pointer;
+  white-space: nowrap;
+}
+.subpestana-grupo.active {
+  background: #facc15;
+  color: black;
+}
+/* Scroll rankings ya incluido en los divs */
 .punto-badge {
   font-weight: bold;
   color: #22c55e;

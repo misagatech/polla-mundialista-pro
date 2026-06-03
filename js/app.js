@@ -3033,6 +3033,127 @@ window.resetearPruebasGrupos = async () => {
   location.reload();
 };
 
+//MODAL
+async function cargarPuntosUsuarioSidebar() {
+  const contenedorGrupos = document.getElementById("contenedorGruposPuntos");
+  const contenedorElim = document.getElementById("contenedorElimPuntos");
+  const tabGrupos = document.getElementById("tabGruposPuntos");
+  const tabElim = document.getElementById("tabElimPuntos");
+  const subpestanasDiv = document.getElementById("subpestanasGrupos");
+  const tablaGruposDiv = document.getElementById("tablaGruposPuntos");
+  const tablaElimDiv = document.getElementById("tablaElimPuntos");
+  if (!contenedorGrupos) return;
+
+  tablaGruposDiv.innerHTML = "<p>Cargando...</p>";
+  tablaElimDiv.innerHTML = "<p>Cargando...</p>";
+
+  try {
+    // ---- GRUPOS ----
+    const groupsSnap = await getDocs(query(collection(db, "predictions_groups"), where("uid", "==", currentUser.uid)));
+    const partidosPorGrupo = {};
+    for (const docSnap of groupsSnap.docs) {
+      const pred = docSnap.data();
+      const matchDoc = await getDoc(doc(db, "matches", pred.match_id));
+      if (!matchDoc.exists()) continue;
+      const match = matchDoc.data();
+      if (match.estado !== "finalizado") continue;
+      const grupo = match.grupo;
+      if (!partidosPorGrupo[grupo]) partidosPorGrupo[grupo] = [];
+      partidosPorGrupo[grupo].push({
+        local: match.equipo_local,
+        visitante: match.equipo_visitante,
+        predLocal: pred.pred_local,
+        predVisit: pred.pred_visitante,
+        realLocal: match.resultado_local,
+        realVisit: match.resultado_visitante,
+        puntos: pred.points || 0
+      });
+    }
+    const gruposOrdenados = Object.keys(partidosPorGrupo).sort();
+    subpestanasDiv.innerHTML = '';
+    gruposOrdenados.forEach(grupo => {
+      const btn = document.createElement('button');
+      btn.textContent = `Grupo ${grupo}`;
+      btn.className = 'subpestana-grupo';
+      btn.dataset.grupo = grupo;
+      btn.onclick = () => mostrarTablaGrupo(grupo, partidosPorGrupo[grupo]);
+      subpestanasDiv.appendChild(btn);
+    });
+    if (gruposOrdenados.length > 0) mostrarTablaGrupo(gruposOrdenados[0], partidosPorGrupo[gruposOrdenados[0]]);
+
+    function mostrarTablaGrupo(grupo, partidos) {
+      let html = `<table class="tabla-puntos-compacta"><thead><tr><th>Partido</th><th>Pred</th><th>Real</th><th>Pts</th></tr></thead><tbody>`;
+      for (const p of partidos) {
+        const localCode = fifaCodes[p.local] || p.local.substring(0,3);
+        const visitCode = fifaCodes[p.visitante] || p.visitante.substring(0,3);
+        const localFlag = obtenerCodigoPais(p.local);
+        const visitFlag = obtenerCodigoPais(p.visitante);
+        html += `<tr>
+          <td><img class="flag-mini" src="https://flagcdn.com/${localFlag}.svg"> ${localCode} vs <img class="flag-mini" src="https://flagcdn.com/${visitFlag}.svg"> ${visitCode}</td>
+          <td>${p.predLocal}-${p.predVisit}</td>
+          <td>${p.realLocal}-${p.realVisit}</td>
+          <td class="punto-badge">${p.puntos}</td>
+        </tr>`;
+      }
+      html += `</tbody></table>`;
+      tablaGruposDiv.innerHTML = html;
+      document.querySelectorAll('.subpestana-grupo').forEach(btn => {
+        if (btn.dataset.grupo === grupo) btn.classList.add('active');
+        else btn.classList.remove('active');
+      });
+    }
+
+    // ---- ELIMINATORIAS ----
+    let htmlElim = `<table class="tabla-puntos-compacta"><thead><tr><th>Fase</th><th>Partido</th><th>Pred</th><th>Real</th><th>Pts</th></tr></thead><tbody>`;
+    const fasesKO = [
+      { col: "predictions_knockout", nombre: "16" },
+      { col: "predictions_octavos", nombre: "8" },
+      { col: "predictions_cuartos", nombre: "4" },
+      { col: "predictions_semifinales", nombre: "2" },
+      { col: "predictions_final", nombre: "F" },
+      { col: "predictions_third", nombre: "3º" }
+    ];
+    for (const fase of fasesKO) {
+      const snap = await getDocs(query(collection(db, fase.col), where("uid", "==", currentUser.uid)));
+      for (const docSnap of snap.docs) {
+        const pred = docSnap.data();
+        const realDoc = await getDoc(doc(db, "knockout_results", pred.partido.toString()));
+        if (!realDoc.exists()) continue;
+        const real = realDoc.data();
+        if (!real.finalizado) continue;
+        htmlElim += `<tr>
+          <td>${fase.nombre}</td>
+          <td>P${pred.partido}</td>
+          <td>${pred.pred_local}-${pred.pred_visitante}</td>
+          <td>${real.resultado_local}-${real.resultado_visitante}</td>
+          <td class="punto-badge">${pred.points || 0}</td>
+        </tr>`;
+      }
+    }
+    htmlElim += `</tbody></table>`;
+    tablaElimDiv.innerHTML = htmlElim || "<p>Sin partidos de eliminatorias finalizados.</p>";
+
+    // Cambio de pestañas
+    tabGrupos.onclick = () => {
+      tabGrupos.classList.add('active');
+      tabElim.classList.remove('active');
+      contenedorGrupos.style.display = 'block';
+      contenedorElim.style.display = 'none';
+    };
+    tabElim.onclick = () => {
+      tabElim.classList.add('active');
+      tabGrupos.classList.remove('active');
+      contenedorElim.style.display = 'block';
+      contenedorGrupos.style.display = 'none';
+    };
+    contenedorGrupos.style.display = 'block';
+    contenedorElim.style.display = 'none';
+  } catch (error) {
+    console.error(error);
+    tablaGruposDiv.innerHTML = "<p>Error al cargar puntos.</p>";
+  }
+}
+
 // ======================================================
 // AGREGAR BOTONES DE RESET (GRUPOS Y KNOCKOUT) EN EL PANEL ADMIN
 // ======================================================
@@ -3842,102 +3963,7 @@ async function crearRankingKOparaTodos() {
   if (cambios > 0) await batch.commit();
   console.log(`✅ Creados ${cambios} documentos en ranking_knockout`);
 }
-// ======================================================
-// MOSTRAR PUNTOS POR PARTIDO (MODAL CON PESTAÑAS)
-// ======================================================
-async function mostrarPuntosEnSidebar() {
-  const container = document.getElementById("tablaPuntosSidebar");
-  if (!container) return;
-  container.innerHTML = "<p style='text-align:center;'>Cargando...</p>";
 
-  try {
-    let html = `<div class="puntos-tabs" style="display:flex; gap:8px; margin-bottom:10px;">
-                  <button id="tabGruposSidebar" class="puntos-tab active">Grupos</button>
-                  <button id="tabElimSidebar" class="puntos-tab">Eliminatorias</button>
-                </div>
-                <div id="tablaGruposSidebar"></div>
-                <div id="tablaElimSidebar" style="display:none;"></div>`;
-    container.innerHTML = html;
-
-    const divGrupos = document.getElementById("tablaGruposSidebar");
-    const divElim = document.getElementById("tablaElimSidebar");
-
-    // Cargar grupos
-    let htmlGrupos = `<table class="tabla-puntos"><thead><tr><th>Partido</th><th>Predicción</th><th>Real</th><th>Pts</th></tr></thead><tbody>`;
-    const groupsSnap = await getDocs(query(collection(db, "predictions_groups"), where("uid", "==", currentUser.uid)));
-    for (const docSnap of groupsSnap.docs) {
-      const pred = docSnap.data();
-      const matchDoc = await getDoc(doc(db, "matches", pred.match_id));
-      if (!matchDoc.exists()) continue;
-      const match = matchDoc.data();
-      if (match.estado !== "finalizado") continue;
-      const localCode = fifaCodes[match.equipo_local] || match.equipo_local.substring(0, 3);
-      const visitCode = fifaCodes[match.equipo_visitante] || match.equipo_visitante.substring(0, 3);
-      const localFlag = obtenerCodigoPais(match.equipo_local);
-      const visitFlag = obtenerCodigoPais(match.equipo_visitante);
-      htmlGrupos += `<tr>
-        <td><img class="flag-mini" src="https://flagcdn.com/${localFlag}.svg"> ${localCode} vs <img class="flag-mini" src="https://flagcdn.com/${visitFlag}.svg"> ${visitCode}</td>
-        <td>${pred.pred_local}-${pred.pred_visitante}</td>
-        <td>${match.resultado_local}-${match.resultado_visitante}</td>
-        <td class="punto-badge">${pred.points || 0}</td>
-      </tr>`;
-    }
-    htmlGrupos += `</tbody>${'自语'}`;
-    divGrupos.innerHTML = htmlGrupos || "<p>Sin partidos de grupos finalizados.</p>";
-
-    // Cargar eliminatorias
-    let htmlElim = `<table class="tabla-puntos"><thead><tr><th>Fase</th><th>Partido</th><th>Pred.</th><th>Real</th><th>Pts</th></tr></thead><tbody>`;
-    const fasesKO = [
-      { col: "predictions_knockout", nombre: "D16" },
-      { col: "predictions_octavos", nombre: "Octavos" },
-      { col: "predictions_cuartos", nombre: "Cuartos" },
-      { col: "predictions_semifinales", nombre: "Semis" },
-      { col: "predictions_final", nombre: "Final" },
-      { col: "predictions_third", nombre: "3er Puesto" }
-    ];
-    for (const fase of fasesKO) {
-      const snap = await getDocs(query(collection(db, fase.col), where("uid", "==", currentUser.uid)));
-      for (const docSnap of snap.docs) {
-        const pred = docSnap.data();
-        const realDoc = await getDoc(doc(db, "knockout_results", pred.partido.toString()));
-        if (!realDoc.exists()) continue;
-        const real = realDoc.data();
-        if (!real.finalizado) continue;
-        htmlElim += `<tr>
-          <td>${fase.nombre}</td>
-          <td>P${pred.partido}</td>
-          <td>${pred.pred_local}-${pred.pred_visitante}</td>
-          <td>${real.resultado_local}-${real.resultado_visitante}</td>
-          <td class="punto-badge">${pred.points || 0}</td>
-        </tr>`;
-      }
-    }
-    htmlElim += `</tbody>${'知道'}`;
-    divElim.innerHTML = htmlElim || "<p>Sin partidos de eliminatorias finalizados.</p>";
-
-    // Pestañas
-    const btnGrupos = document.getElementById("tabGruposSidebar");
-    const btnElim = document.getElementById("tabElimSidebar");
-    btnGrupos.onclick = () => {
-      btnGrupos.classList.add("active");
-      btnElim.classList.remove("active");
-      divGrupos.style.display = "block";
-      divElim.style.display = "none";
-    };
-    btnElim.onclick = () => {
-      btnElim.classList.add("active");
-      btnGrupos.classList.remove("active");
-      divElim.style.display = "block";
-      divGrupos.style.display = "none";
-    };
-  } catch (error) {
-    console.error(error);
-    container.innerHTML = "<p>Error al cargar puntos.</p>";
-  }
-}
-
-// Evento del botón (ahora en sidebar)
-document.getElementById("btnMisPuntosSidebar")?.addEventListener("click", mostrarPuntosEnSidebar);
 // ======================================================
 // ADMIN: AUDITORÍA DE PUNTOS POR USUARIO
 // ======================================================
@@ -4067,6 +4093,7 @@ onAuthStateChanged(auth, async (user) => {
       agregarBotonesReset();          // ← COMENTA O ELIMINA
       loadAdminKnockoutMatches();     // ← COMENTA O ELIMINA
       cargarAdminTerceros();
+      cargarPuntosUsuarioSidebar();
       await crearRankingKOparaTodos();   // 👈 NUEVA LÍNEA
       await crearRankingGlobalParaTodos();   // 👈 NUEVA LÍNEA
       inicializarAuditoriaAdmin();

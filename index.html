@@ -294,76 +294,30 @@
       <!-- ===================================================== -->
 
       <aside class="sidebar-area">
-
-        <!-- POSICIÓN -->
-
+        <!-- ========== POSICIÓN USUARIO ========== -->
         <div class="sidebar-card">
-
-          <h3 class="sidebar-small-title">
-            Mi posición actual
-          </h3>
-
-          <div class="sidebar-big-number" id="miPosicion">
-            -
-          </div>
-
-          <!-- Botón y tabla de puntos -->
-          <div class="sidebar-card" style="padding: 16px;">
-            <button id="btnMisPuntosSidebar" class="sidebar-btn" style="background: #22c55e;">
-              📊 Ver mis puntos por partido
-            </button>
-            <div id="tablaPuntosSidebar" style="margin-top: 15px; max-height: 400px; overflow: auto;">
-              <!-- Aquí se cargará la tabla -->
-            </div>
-          </div>
+          <h3 class="sidebar-small-title">Mi posición actual</h3>
+          <div class="sidebar-big-number" id="miPosicion">-</div>
+          <div class="sidebar-points"><span id="misPuntos">0</span> PTS</div>
         </div>
 
-        <!-- PRÓXIMO PARTIDO -->
-
+        <!-- ========== PRÓXIMO PARTIDO ========== -->
         <div class="sidebar-card">
-
-          <h3 class="sidebar-small-title">
-            Próximo Partido
-          </h3>
-
+          <h3 class="sidebar-small-title">Próximo Partido</h3>
           <div class="next-match">
-
-            <span id="proxLocal">---</span>
-
-            <strong>VS</strong>
-
-            <span id="proxVisit">---</span>
-
+            <span id="proxLocal">---</span> <strong>VS</strong> <span id="proxVisit">---</span>
           </div>
-
-          <div class="next-date" id="proxFecha">
-            --/--/----
-          </div>
-
-          <button id="verGrupoBtn" class="sidebar-btn">
-            Ver grupo
-          </button>
-
+          <div class="next-date" id="proxFecha">--/--/----</div>
+          <button id="verGrupoBtn" class="sidebar-btn">Ver grupo</button>
         </div>
-        <!-- RANKING GLOBAL -->
 
+        <!-- ========== RANKING GLOBAL ========== -->
         <div class="sidebar-card">
-
-          <h3 class="sidebar-small-title">
-            Ranking Global
-          </h3>
-
-          <div id="rankingList">
-
-            <div style="margin-top:15px;">
-              Cargando ranking...
-            </div>
-
-          </div>
-
+          <h3 class="sidebar-small-title">Ranking Global</h3>
+          <div id="rankingList" style="max-height: 280px; overflow-y: auto;">Cargando...</div>
         </div>
 
-        <!-- PREMIOS GRUPOS -->
+        <!-- ========== PREMIOS GRUPOS ========== -->
         <div class="sidebar-card sidebar-trophy">
           <i class="fas fa-trophy trophy-icon"></i>
           <h3>Polla Grupos</h3>
@@ -373,14 +327,15 @@
           <div class="prize-item">🧑‍💼 Administración (15%): <strong id="premioGruposAdmin">$0</strong></div>
           <div class="prize-item">💻 Plataforma (10%): <strong id="premioGruposPlataforma">$0</strong></div>
         </div>
-        <!-- MI POSICIÓN EN KNOCKOUT -->
+
+        <!-- ========== MI POSICIÓN KO ========== -->
         <div class="sidebar-card">
           <h3 class="sidebar-small-title">Mi posición en KO</h3>
           <div class="sidebar-big-number" id="miPosicionKO">-</div>
           <div class="sidebar-points"><span id="misPuntosKO">0</span> PTS</div>
         </div>
 
-        <!-- PREMIOS KNOCKOUT -->
+        <!-- ========== PREMIOS KNOCKOUT ========== -->
         <div class="sidebar-card sidebar-trophy">
           <i class="fas fa-trophy trophy-icon"></i>
           <h3>Polla Eliminatorias</h3>
@@ -391,35 +346,56 @@
           <div class="prize-item">💻 Plataforma (10%): <strong id="premioKOPlataforma">$0</strong></div>
         </div>
 
-        <!-- RANKING ELIMINATORIAS (nuevo) -->
+        <!-- ========== RANKING ELIMINATORIAS ========== -->
         <div class="sidebar-card">
           <h3 class="sidebar-small-title">Ranking Eliminatorias</h3>
-          <div id="rankingKnockoutList">Cargando...</div>
+          <div id="rankingKnockoutList" style="max-height: 280px; overflow-y: auto;">Cargando...</div>
         </div>
-      
+
+        <!-- ========== PUNTOS DEL USUARIO (SIEMPRE VISIBLE) ========== -->
+        <div class="sidebar-card">
+          <div style="display: flex; gap: 8px; margin-bottom: 12px;">
+            <button id="tabGruposPuntos" class="puntos-tab active" style="flex:1;">📌 Grupos</button>
+            <button id="tabElimPuntos" class="puntos-tab" style="flex:1;">🏆 Eliminatorias</button>
+          </div>
+          <div id="contenedorGruposPuntos">
+            <div id="subpestanasGrupos"
+              style="display: flex; gap: 6px; overflow-x: auto; margin-bottom: 12px; padding-bottom: 5px;"></div>
+            <div id="tablaGruposPuntos" style="max-height: 300px; overflow-y: auto;"></div>
+          </div>
+          <div id="contenedorElimPuntos" style="display: none;">
+            <div id="tablaElimPuntos" style="max-height: 300px; overflow-y: auto;"></div>
+          </div>
+        </div>
+
+        <!-- ========== AUDITORÍA PARA ADMIN (se muestra solo con rol admin) ========== -->
+        <div id="adminAuditoriaSidebar" class="sidebar-card" style="display: none;">
+          <h3 class="sidebar-small-title">🔍 Auditoría de puntos</h3>
+          <label for="selectUserAuditSidebar">Usuario:</label>
+          <select id="selectUserAuditSidebar"
+            style="width:100%; padding:6px; border-radius:12px; background:#1e293b; color:white; margin:8px 0;">
+            <option value="">-- Seleccionar --</option>
+          </select>
+          <button id="btnCargarAuditoriaSidebar" class="admin-load-btn" style="background:#15803d; width:100%;">📊
+            Cargar puntos</button>
+          <div id="auditoriaResultadosSidebar" style="max-height: 300px; overflow-y: auto; margin-top: 10px;"></div>
+        </div>
+      </aside>
+
+    </main>
+
+    <!-- ===================================================== -->
+    <!-- FOOTER -->
+    <!-- ===================================================== -->
+
+    <footer class="site-footer">
+
+      © 2026 MISAGATECH www.misagatech.com · Polla Mundialista FIFA 2026
+
+    </footer>
 
   </div>
 
-
-
-
-
-  </aside>
-
-  </main>
-
-  <!-- ===================================================== -->
-  <!-- FOOTER -->
-  <!-- ===================================================== -->
-
-  <footer class="site-footer">
-
-    © 2026 MISAGATECH www.misagatech.com · Polla Mundialista FIFA 2026
-
-  </footer>
-
-  </div>
-  
   <!-- ===================================================== -->
   <!-- SCRIPTS -->
   <!-- ===================================================== -->
