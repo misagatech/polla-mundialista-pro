@@ -52,6 +52,10 @@ let rankingUnsubscribe = null;
 let rankingUnsubscribeKO = null;
 let participantsUnsubscribe = null;
 let adminParticipantsUnsubscribe = null;
+let rankingKODisplayData = [];
+let rankingKOFiltro = "";
+let rankingGlobalData = [];
+let rankingGlobalFiltro = "";
 let gruposData = {};
 let clasificadosGlobales = {};
 let bracket = {
@@ -1208,223 +1212,182 @@ async function generarTercerPuesto() {
 // ======================================================
 
 function loadRanking() {
+  if (rankingUnsubscribe) rankingUnsubscribe();
 
-  if (rankingUnsubscribe)
-    rankingUnsubscribe();
-
-  const rankingRef =
-    collection(db, "ranking");
-
-  rankingUnsubscribe =
-    onSnapshot(
-
-      query(
-        rankingRef,
-        orderBy("puntos", "desc")
-      ),
-
-      async (snapshot) => {
-
-        let pos = 1;
-
-        let encontrado = false;
-
-        let rankingHTML = "";
-
-        for (const docSnap of snapshot.docs) {
-
-          const data =
-            docSnap.data();
-          if (!data.user_id) {
-            console.log("⚠️ Ranking corrupto:", docSnap.id);
-            continue;
-          }
-
-          // =====================================
-          // DATOS USER
-          // =====================================
-
-          const userRef =
-            doc(db, "users", data.user_id);
-
-          const userSnap =
-            await getDoc(userRef);
-
-          let nombre =
-            "Usuario";
-
-          if (userSnap.exists()) {
-
-            nombre =
-              userSnap.data().nombre ||
-              "Usuario";
-
-          }
-
-          // =====================================
-          // MI POSICIÓN
-          // =====================================
-
-          if (
-            data.user_id === currentUser.uid
-          ) {
-
-            miPosicionSpan.innerText =
-              pos + "°";
-
-            misPuntosSpan.innerText =
-              data.puntos;
-
-            encontrado = true;
-
-          }
-
-          // =====================================
-          // MEDALLAS
-          // =====================================
-
-          let medalla = "";
-
-          if (pos === 1)
-            medalla = "🥇";
-
-          else if (pos === 2)
-            medalla = "🥈";
-
-          else if (pos === 3)
-            medalla = "🥉";
-
-          // =====================================
-          // HTML RANKING
-          // =====================================
-
-          rankingHTML += `
-
-            <div
-              style="
-                display:flex;
-                justify-content:space-between;
-                align-items:center;
-                padding:10px 0;
-                border-bottom:1px solid rgba(255,255,255,0.08);
-                gap:10px;
-              "
-            >
-
-              <div
-                style="
-                  display:flex;
-                  align-items:center;
-                  gap:10px;
-                  min-width:0;
-                "
-              >
-
-                <span>
-                  ${medalla || "#" + pos}
-                </span>
-
-                <span
-                  style="
-                    white-space:nowrap;
-                    overflow:hidden;
-                    text-overflow:ellipsis;
-                  "
-                >
-                  ${nombre}
-                </span>
-
-              </div>
-
-              <strong>
-                ${data.puntos} pts
-              </strong>
-
-            </div>
-
-          `;
-
-          pos++;
-
-        }
-
-        // =====================================
-        // SIN RANKING
-        // =====================================
-
-        if (!encontrado) {
-
-          miPosicionSpan.innerText =
-            "-";
-
-          misPuntosSpan.innerText =
-            "0";
-
-        }
-
-        // =====================================
-        // INSERTAR HTML
-        // =====================================
-
-        const rankingList =
-          document.getElementById(
-            "rankingList"
-          );
-
-        if (rankingList) {
-
-          rankingList.innerHTML =
-            rankingHTML || `
-              <div style="margin-top:10px;">
-                No hay ranking aún
-              </div>
-            `;
-
-        }
-
+  const rankingRef = collection(db, "ranking");
+  rankingUnsubscribe = onSnapshot(
+    query(rankingRef, orderBy("puntos", "desc")),
+    async (snapshot) => {
+      rankingGlobalData = [];
+      for (const docSnap of snapshot.docs) {
+        const data = docSnap.data();
+        if (!data.user_id) continue;
+        const userSnap = await getDoc(doc(db, "users", data.user_id));
+        const nombre = userSnap.exists() ? userSnap.data().nombre : "Usuario";
+        rankingGlobalData.push({
+          uid: data.user_id,
+          nombre: nombre,
+          puntos: data.puntos
+        });
       }
-
-    );
-
+      // Actualizar contador total
+      document.getElementById("totalRankingGlobal").innerText = rankingGlobalData.length;
+      // Renderizar con el filtro actual
+      renderRankingGlobal();
+    }
+  );
 }
 
+function renderRankingGlobal() {
+  const container = document.getElementById("rankingList");
+  if (!container) return;
+
+  let filtrados = rankingGlobalData;
+  if (rankingGlobalFiltro.trim() !== "") {
+    const term = rankingGlobalFiltro.toLowerCase();
+    filtrados = rankingGlobalData.filter(item => item.nombre.toLowerCase().includes(term));
+  }
+
+  if (filtrados.length === 0) {
+    container.innerHTML = "<div style='margin-top:10px;'>No hay resultados</div>";
+    return;
+  }
+
+  let html = "";
+  let pos = 1;
+  let encontrado = false;
+
+  for (const item of filtrados) {
+    let medalla = "";
+    if (pos === 1) medalla = "🥇";
+    else if (pos === 2) medalla = "🥈";
+    else if (pos === 3) medalla = "🥉";
+    else medalla = `#${pos}`;
+
+    html += `
+      <div style="display:flex; justify-content:space-between; align-items:center; padding:8px 0; border-bottom:1px solid rgba(255,255,255,0.08); gap:10px;">
+        <div style="display:flex; align-items:center; gap:10px; min-width:0;">
+          <span>${medalla}</span>
+          <span style="white-space:nowrap; overflow:hidden; text-overflow:ellipsis;">${item.nombre}</span>
+        </div>
+        <strong>${item.puntos} pts</strong>
+      </div>
+    `;
+    if (item.uid === currentUser?.uid) {
+      miPosicionSpan.innerText = pos + "°";
+      misPuntosSpan.innerText = item.puntos;
+      encontrado = true;
+    }
+    pos++;
+  }
+
+  if (!encontrado && currentUser) {
+    // Buscar posición real del usuario en el ranking completo (no filtrado)
+    const idx = rankingGlobalData.findIndex(u => u.uid === currentUser.uid);
+    if (idx !== -1) {
+      miPosicionSpan.innerText = (idx + 1) + "°";
+      misPuntosSpan.innerText = rankingGlobalData[idx].puntos;
+    } else {
+      miPosicionSpan.innerText = "-";
+      misPuntosSpan.innerText = "0";
+    }
+  }
+
+  container.innerHTML = html;
+}
+
+// Evento para el buscador del ranking global
+document.getElementById("buscarRankingGlobal")?.addEventListener("input", (e) => {
+  rankingGlobalFiltro = e.target.value;
+  renderRankingGlobal();
+});
 // ======================================================
 // LOAD RANKING
 // ======================================================
 function loadRankingKnockout() {
   const rankingRef = collection(db, "ranking_knockout");
-  rankingUnsubscribeKO = onSnapshot(query(rankingRef, orderBy("puntos", "desc")), async (snapshot) => {
-    const container = document.getElementById("rankingKnockoutList");
-    if (!container) return;
-    let pos = 1;
-    let encontrado = false;
-    let html = "";
-    for (const docSnap of snapshot.docs) {
-      const data = docSnap.data();
-      const userSnap = await getDoc(doc(db, "users", data.user_id));
-      const nombre = userSnap.exists() ? userSnap.data().nombre : "Usuario";
-      let medalla = "";
-      if (pos === 1) medalla = "🥇";
-      else if (pos === 2) medalla = "🥈";
-      else if (pos === 3) medalla = "🥉";
-      else medalla = `#${pos}`;
-      html += `<div style="display:flex; justify-content:space-between; padding:8px 0;"><span>${medalla} ${nombre}</span><strong>${data.puntos} pts</strong></div>`;
-
-      // Actualizar mi posición KO si es el usuario actual
-      if (data.user_id === currentUser.uid) {
-        document.getElementById("miPosicionKO").innerText = pos + "°";
-        document.getElementById("misPuntosKO").innerText = data.puntos;
-        encontrado = true;
+  rankingUnsubscribeKO = onSnapshot(
+    query(rankingRef, orderBy("puntos", "desc")),
+    async (snapshot) => {
+      rankingKODisplayData = [];
+      for (const docSnap of snapshot.docs) {
+        const data = docSnap.data();
+        const userSnap = await getDoc(doc(db, "users", data.user_id));
+        const nombre = userSnap.exists() ? userSnap.data().nombre : "Usuario";
+        rankingKODisplayData.push({
+          uid: data.user_id,
+          nombre: nombre,
+          puntos: data.puntos
+        });
       }
-      pos++;
+      document.getElementById("totalRankingKO").innerText = rankingKODisplayData.length;
+      renderRankingKnockout();
     }
-    if (!encontrado) {
+  );
+}
+
+function renderRankingKnockout() {
+  const container = document.getElementById("rankingKnockoutList");
+  if (!container) return;
+
+  let filtrados = rankingKODisplayData;
+  if (rankingKOFiltro.trim() !== "") {
+    const term = rankingKOFiltro.toLowerCase();
+    filtrados = rankingKODisplayData.filter(item => item.nombre.toLowerCase().includes(term));
+  }
+
+  if (filtrados.length === 0) {
+    container.innerHTML = "<div>No hay resultados</div>";
+    return;
+  }
+
+  let html = "";
+  let pos = 1;
+  let encontrado = false;
+
+  for (const item of filtrados) {
+    let medalla = "";
+    if (pos === 1) medalla = "🥇";
+    else if (pos === 2) medalla = "🥈";
+    else if (pos === 3) medalla = "🥉";
+    else medalla = `#${pos}`;
+
+    html += `
+      <div style="display:flex; justify-content:space-between; align-items:center; padding:8px 0; border-bottom:1px solid rgba(255,255,255,0.08); gap:10px;">
+        <div style="display:flex; align-items:center; gap:10px; min-width:0;">
+          <span>${medalla}</span>
+          <span style="white-space:nowrap; overflow:hidden; text-overflow:ellipsis;">${item.nombre}</span>
+        </div>
+        <strong>${item.puntos} pts</strong>
+      </div>
+    `;
+    if (item.uid === currentUser?.uid) {
+      document.getElementById("miPosicionKO").innerText = pos + "°";
+      document.getElementById("misPuntosKO").innerText = item.puntos;
+      encontrado = true;
+    }
+    pos++;
+  }
+
+  if (!encontrado && currentUser) {
+    const idx = rankingKODisplayData.findIndex(u => u.uid === currentUser.uid);
+    if (idx !== -1) {
+      document.getElementById("miPosicionKO").innerText = (idx + 1) + "°";
+      document.getElementById("misPuntosKO").innerText = rankingKODisplayData[idx].puntos;
+    } else {
       document.getElementById("miPosicionKO").innerText = "-";
       document.getElementById("misPuntosKO").innerText = "0";
     }
-    container.innerHTML = html || "<div>No hay datos aún</div>";
-  });
+  }
+
+  container.innerHTML = html;
 }
+
+// Evento para el buscador del ranking knockout
+document.getElementById("buscarRankingKO")?.addEventListener("input", (e) => {
+  rankingKOFiltro = e.target.value;
+  renderRankingKnockout();
+});
 // ======================================================
 // PANEL ADMINISTRADOR (con grupos y filtro)
 // ======================================================
@@ -4085,6 +4048,7 @@ onAuthStateChanged(auth, async (user) => {
 
     if (currentUserRol === "admin") {
       adminPanel.classList.remove("hidden");
+      document.getElementById("adminAuditoriaSidebar").style.display = "block";
       loadAdminMatches();
       loadAdminParticipants();
       console.log("CARGANDO PARTICIPANTES ADMIN");
@@ -4098,6 +4062,7 @@ onAuthStateChanged(auth, async (user) => {
       inicializarAuditoriaAdmin();
     } else {
       adminPanel.classList.add("hidden");
+      document.getElementById("adminAuditoriaSidebar").style.display = "none";
       cargarPuntosUsuarioSidebar();
     }
     loadMatchesAndPredictions();

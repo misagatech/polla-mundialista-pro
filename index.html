@@ -182,22 +182,7 @@
           </div>
           <!-- ADMIN KNOCKOUT RESULTS -->
           <div id="adminKnockoutMatchesList" class="admin-knockout-list"></div>
-          <!-- Auditoría de puntos para admin -->
-          <div class="admin-participants-section" style="margin-top: 30px;">
-            <div class="admin-section-header">
-              <h3 class="admin-section-title">🔍 Auditoría de puntos por usuario</h3>
-            </div>
-            <div style="margin-bottom: 20px;">
-              <label for="selectUserAudit">Seleccionar usuario: </label>
-              <select id="selectUserAudit"
-                style="padding: 8px; border-radius: 12px; background: #1e293b; color: white; border: 1px solid #facc15;">
-                <option value="">-- Cargando usuarios --</option>
-              </select>
-              <button id="btnCargarAuditoria" class="admin-load-btn" style="background: #15803d; margin-left: 10px;">📊
-                Cargar puntos</button>
-            </div>
-            <div id="auditoriaResultados" style="overflow-x: auto;"></div>
-          </div>
+
 
           <!-- BTN -->
 
@@ -308,12 +293,15 @@
             <span id="proxLocal">---</span> <strong>VS</strong> <span id="proxVisit">---</span>
           </div>
           <div class="next-date" id="proxFecha">--/--/----</div>
-          <button id="verGrupoBtn" class="sidebar-btn">Ver grupo</button>
         </div>
 
         <!-- ========== RANKING GLOBAL ========== -->
         <div class="sidebar-card">
-          <h3 class="sidebar-small-title">Ranking Global</h3>
+          <h3 class="sidebar-small-title">Ranking Grupos</h3>
+          <div style="margin-bottom: 8px; font-size: 0.8rem;">👥 Total participantes: <span
+              id="totalRankingGlobal">0</span></div>
+          <input type="text" id="buscarRankingGlobal" placeholder="🔍 Buscar usuario..."
+            style="width:100%; padding:6px; margin-bottom:8px; border-radius:20px; border:1px solid #facc15; background:#1e293b; color:white;">
           <div id="rankingList" style="max-height: 280px; overflow-y: auto;">Cargando...</div>
         </div>
 
@@ -349,7 +337,24 @@
         <!-- ========== RANKING ELIMINATORIAS ========== -->
         <div class="sidebar-card">
           <h3 class="sidebar-small-title">Ranking Eliminatorias</h3>
+          <div style="margin-bottom: 8px; font-size: 0.8rem;">👥 Total participantes: <span id="totalRankingKO">0</span>
+          </div>
+          <input type="text" id="buscarRankingKO" placeholder="🔍 Buscar usuario..."
+            style="width:100%; padding:6px; margin-bottom:8px; border-radius:20px; border:1px solid #facc15; background:#1e293b; color:white;">
           <div id="rankingKnockoutList" style="max-height: 280px; overflow-y: auto;">Cargando...</div>
+        </div>
+
+        <!-- ========== AUDITORÍA PARA ADMIN (solo visible para admin) ========== -->
+        <div id="adminAuditoriaSidebar" class="sidebar-card" style="display: none;">
+          <h3 class="sidebar-small-title">🔍 Auditoría de puntos</h3>
+          <label for="selectUserAudit">Usuario:</label>
+          <select id="selectUserAudit"
+            style="width:100%; padding:6px; border-radius:12px; background:#1e293b; color:white; margin:8px 0;">
+            <option value="">-- Seleccionar --</option>
+          </select>
+          <button id="btnCargarAuditoria" class="admin-load-btn" style="background:#15803d; width:100%;">📊 Cargar
+            puntos</button>
+          <div id="auditoriaResultados" style="max-height: 300px; overflow-y: auto; margin-top: 10px;"></div>
         </div>
 
         <!-- ========== PUNTOS DEL USUARIO (SIEMPRE VISIBLE) ========== -->
@@ -368,7 +373,7 @@
           </div>
         </div>
 
-        
+
       </aside>
 
     </main>
