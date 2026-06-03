@@ -2843,8 +2843,8 @@ function loadPrizePoolRealtime() {
 
     if (gruposTotal) gruposTotal.innerText = totalGrupos;
     if (gruposAcumulado) gruposAcumulado.innerText = formatearCOP(acumuladoGrupos);
-    if (gruposPrimer) gruposPrimer.innerText = formatearCOP(acumuladoGrupos * 0.7);
-    if (gruposAdmin) gruposAdmin.innerText = formatearCOP(acumuladoGrupos * 0.2);
+    if (gruposPrimer) gruposPrimer.innerText = formatearCOP(acumuladoGrupos * 0.75);
+    if (gruposAdmin) gruposAdmin.innerText = formatearCOP(acumuladoGrupos * 0.15);
     if (gruposPlataforma) gruposPlataforma.innerText = formatearCOP(acumuladoGrupos * 0.1);
 
     // Actualizar elementos de knockout
@@ -2856,8 +2856,8 @@ function loadPrizePoolRealtime() {
 
     if (koTotal) koTotal.innerText = totalKO;
     if (koAcumulado) koAcumulado.innerText = formatearCOP(acumuladoKO);
-    if (koPrimer) koPrimer.innerText = formatearCOP(acumuladoKO * 0.7);
-    if (koAdmin) koAdmin.innerText = formatearCOP(acumuladoKO * 0.2);
+    if (koPrimer) koPrimer.innerText = formatearCOP(acumuladoKO * 0.75);
+    if (koAdmin) koAdmin.innerText = formatearCOP(acumuladoKO * 0.15);
     if (koPlataforma) koPlataforma.innerText = formatearCOP(acumuladoKO * 0.1);
   });
 }
@@ -2888,7 +2888,7 @@ window.togglePago = async (uid) => {
   const nuevoEstado = !data.paid_groups;
   await updateDoc(participantRef, {
     paid_groups: nuevoEstado,
-    amount_groups: nuevoEstado ? 55000 : 0,
+    amount_groups: nuevoEstado ? 35000 : 0,
     groups_status: nuevoEstado ? "approved" : "pending"
   });
 };
@@ -2924,7 +2924,7 @@ window.togglePagoKO = async (uid) => {
   const nuevoEstado = !data.paid_knockout;
   await updateDoc(participantRef, {
     paid_knockout: nuevoEstado,
-    amount_knockout: nuevoEstado ? 55000 : 0,
+    amount_knockout: nuevoEstado ? 35000 : 0,
     knockout_status: nuevoEstado ? "approved" : "pending"
   });
 };
