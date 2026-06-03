@@ -2188,3 +2188,87 @@ RESPONSIVE ADMIN PARTICIPANTES
     width: 100%;
   }
 }
+/* ===================================================== */
+/* MODAL DE PUNTOS Y PESTAÑAS */
+/* ===================================================== */
+.modal {
+  position: fixed;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  background: rgba(0,0,0,0.85);
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  z-index: 1000;
+}
+.modal-content {
+  background: linear-gradient(145deg, #1e293b, #0f172a);
+  border-radius: 24px;
+  padding: 20px;
+  max-width: 95%;
+  width: 900px;
+  max-height: 85%;
+  overflow-y: auto;
+  border: 1px solid #facc15;
+}
+.close-modal {
+  float: right;
+  font-size: 28px;
+  font-weight: bold;
+  cursor: pointer;
+  color: #facc15;
+}
+.close-modal:hover {
+  color: #fff;
+}
+.puntos-tabs {
+  display: flex;
+  gap: 12px;
+  margin: 15px 0;
+}
+.puntos-tab {
+  background: #1e293b;
+  border: none;
+  padding: 8px 20px;
+  border-radius: 30px;
+  color: white;
+  cursor: pointer;
+  font-weight: 600;
+  transition: 0.2s;
+}
+.puntos-tab.active {
+  background: #facc15;
+  color: black;
+}
+.tabla-puntos {
+  width: 100%;
+  border-collapse: collapse;
+  font-size: 0.8rem;
+  margin-top: 10px;
+}
+.tabla-puntos th, .tabla-puntos td {
+  padding: 8px 6px;
+  border-bottom: 1px solid #334155;
+  text-align: center;
+  vertical-align: middle;
+}
+.tabla-puntos th {
+  background: #0f172a;
+  color: #facc15;
+  position: sticky;
+  top: 0;
+}
+.flag-mini {
+  width: 22px;
+  height: 15px;
+  object-fit: cover;
+  border-radius: 2px;
+  margin-right: 5px;
+  vertical-align: middle;
+}
+.punto-badge {
+  font-weight: bold;
+  color: #22c55e;
+}
