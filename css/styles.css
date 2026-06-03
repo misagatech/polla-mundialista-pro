@@ -2145,3 +2145,41 @@ RESPONSIVE ADMIN PARTICIPANTES
     padding: 6px 4px;
   }
 }
+/* Estilos para la información de contacto en el header */
+.contact-info {
+  background: rgba(0, 0, 0, 0.6);
+  padding: 6px 12px;
+  border-radius: 30px;
+  font-size: 0.75rem;
+  color: #facc15;
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  flex-wrap: wrap;
+  margin: 0 10px;
+}
+
+.contact-info i {
+  margin-right: 4px;
+  color: #ffffff;
+}
+
+/* Responsive para móvil */
+@media (max-width: 640px) {
+  .topbar {
+    flex-direction: column;
+    align-items: center;
+    gap: 8px;
+  }
+  .contact-info {
+    margin: 5px 0;
+    font-size: 0.7rem;
+    justify-content: center;
+    width: 90%;
+    text-align: center;
+  }
+  .user-actions {
+    justify-content: center;
+    width: 100%;
+  }
+}
