@@ -4093,12 +4093,12 @@ onAuthStateChanged(auth, async (user) => {
       agregarBotonesReset();          // ← COMENTA O ELIMINA
       loadAdminKnockoutMatches();     // ← COMENTA O ELIMINA
       cargarAdminTerceros();
-      cargarPuntosUsuarioSidebar();
       await crearRankingKOparaTodos();   // 👈 NUEVA LÍNEA
       await crearRankingGlobalParaTodos();   // 👈 NUEVA LÍNEA
       inicializarAuditoriaAdmin();
     } else {
       adminPanel.classList.add("hidden");
+      cargarPuntosUsuarioSidebar();
     }
     loadMatchesAndPredictions();
     // ======================================================
