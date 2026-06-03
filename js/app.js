@@ -1663,25 +1663,107 @@ window.finalizarPartido = async (matchId) => {
 
     // CALCULAR PUNTOS
 
-    await calcularPuntos(matchId);
-
-    alert(
-      "✅ Partido finalizado y puntos calculados"
-    );
-
-    loadAdminMatches();
-
-  } catch (error) {
-
-    console.error(error);
-
-    alert(
-      "Error al finalizar partido"
-    );
-
+    async function calcularPuntos(matchId) {
+  const matchRef = doc(db, "matches", matchId);
+  const matchSnap = await getDoc(matchRef);
+  if (!matchSnap.exists()) return;
+  const match = matchSnap.data();
+  if (match.puntos_calculados === true) {
+    console.log("⚠️ Este partido ya calculó puntos");
+    return;
   }
 
-};
+  const local = Number(match.resultado_local);
+  const visit = Number(match.resultado_visitante);
+  const predictionsQuery = query(
+    collection(db, "predictions_groups"),
+    where("match_id", "==", matchId)
+  );
+  const predictionsSnap = await getDocs(predictionsQuery);
+  console.log(`📊 Procesando ${predictionsSnap.size} predicciones para partido ${matchId}`);
+
+  // Función auxiliar con reintentos
+  const actualizarRankingConReintentos = async (uid, puntosAGanar, esKnockout = false) => {
+    const coleccion = esKnockout ? "ranking_knockout" : "ranking";
+    const rankingRef = doc(db, coleccion, uid);
+    for (let intento = 1; intento <= 3; intento++) {
+      try {
+        const rankingSnap = await getDoc(rankingRef);
+        if (!rankingSnap.exists()) {
+          await setDoc(rankingRef, {
+            user_id: uid,
+            puntos: puntosAGanar,
+            updated_at: serverTimestamp()
+          });
+        } else {
+          const rankingData = rankingSnap.data();
+          await updateDoc(rankingRef, {
+            puntos: (rankingData.puntos || 0) + puntosAGanar,
+            updated_at: serverTimestamp()
+          });
+        }
+        return true; // éxito
+      } catch (err) {
+        console.warn(`Intento ${intento} fallido para usuario ${uid} en ranking ${coleccion}:`, err);
+        if (intento === 3) {
+          console.error(`❌ No se pudo actualizar ranking para ${uid} después de 3 intentos`);
+          return false;
+        }
+        await new Promise(r => setTimeout(r, 1000 * intento)); // espera 1s, 2s, 3s
+      }
+    }
+    return false;
+  };
+
+  // Procesar cada predicción
+  let algunError = false;
+  for (const predDoc of predictionsSnap.docs) {
+    const pred = predDoc.data();
+    if (pred.points_assigned === true) {
+      console.log(`⏭️ Usuario ${pred.uid} ya tenía puntos asignados, saltando`);
+      continue;
+    }
+
+    const predLocal = Number(pred.pred_local);
+    const predVisit = Number(pred.pred_visitante);
+
+    let puntos = 0;
+    if (predLocal === local && predVisit === visit) {
+      puntos = 3;
+    } else {
+      const real = local > visit ? "L" : local < visit ? "V" : "E";
+      const usuario = predLocal > predVisit ? "L" : predLocal < predVisit ? "V" : "E";
+      if (real === usuario) puntos = 1;
+    }
+
+    if (puntos > 0) {
+      console.log(`🔹 Usuario ${pred.uid}: ganó ${puntos} puntos`);
+      const ok = await actualizarRankingConReintentos(pred.uid, puntos, false);
+      if (!ok) algunError = true;
+    } else {
+      console.log(`🔸 Usuario ${pred.uid}: 0 puntos`);
+    }
+
+    // Marcar predicción como procesada (aunque falle el ranking, marcamos para no reintentar después)
+    try {
+      await updateDoc(predDoc.ref, {
+        points_assigned: true,
+        points: puntos
+      });
+    } catch (err) {
+      console.error(`Error marcando points_assigned para ${pred.uid}:`, err);
+      algunError = true;
+    }
+  }
+
+  // Marcar partido como calculado (aunque algunos reintentos fallaran, se evita recalcular)
+  await updateDoc(matchRef, { puntos_calculados: true });
+  if (algunError) {
+    console.warn("⚠️ Algunas operaciones fallaron, pero el partido se marcó como calculado. Revisa los logs.");
+  } else {
+    console.log("✅ Puntos calculados correctamente para todos los usuarios.");
+  }
+}
 // ======================================================
 // REABRIR PARTIDO (ADMIN)
 // ======================================================
@@ -3943,6 +4025,31 @@ async function calcularPuntosKnockout(partidoNumero, fase) {
   }
 
   const prediccionesSnap = await getDocs(query(collection(db, collectionName), where("partido", "==", partidoNumero)));
+  console.log(`📊 Procesando ${prediccionesSnap.size} predicciones para KO ${partidoNumero}`);
+
+  const actualizarRankingConReintentos = async (uid, puntosAGanar, esKnockout = true) => {
+    const coleccion = esKnockout ? "ranking_knockout" : "ranking";
+    const rankingRef = doc(db, coleccion, uid);
+    for (let intento = 1; intento <= 3; intento++) {
+      try {
+        const rankingSnap = await getDoc(rankingRef);
+        if (!rankingSnap.exists()) {
+          await setDoc(rankingRef, { user_id: uid, puntos: puntosAGanar, updated_at: serverTimestamp() });
+        } else {
+          const rankingData = rankingSnap.data();
+          await updateDoc(rankingRef, { puntos: (rankingData.puntos || 0) + puntosAGanar, updated_at: serverTimestamp() });
+        }
+        return true;
+      } catch (err) {
+        console.warn(`Intento ${intento} fallido para ${uid} en ${coleccion}:`, err);
+        if (intento === 3) return false;
+        await new Promise(r => setTimeout(r, 1000 * intento));
+      }
+    }
+    return false;
+  };
+
+  let algunError = false;
   for (const docSnap of prediccionesSnap.docs) {
     const pred = docSnap.data();
     const uid = pred.uid;
@@ -3966,42 +4073,19 @@ async function calcularPuntosKnockout(partidoNumero, fase) {
     }
 
     if (puntos > 0) {
-      // Ranking global
-      const rankingRef = doc(db, "ranking", uid);
-      const rankingSnap = await getDoc(rankingRef);
-      if (rankingSnap.exists()) {
-        await updateDoc(rankingRef, {
-          puntos: (rankingSnap.data().puntos || 0) + puntos,
-          updated_at: serverTimestamp()
-        });
-      } else {
-        await setDoc(rankingRef, {
-          user_id: uid,
-          puntos: puntos,
-          updated_at: serverTimestamp()
-        });
-      }
-
-      // Ranking solo knockout
-      const rankingKORef = doc(db, "ranking_knockout", uid);
-      const rankingKOSnap = await getDoc(rankingKORef);
-      if (rankingKOSnap.exists()) {
-        await updateDoc(rankingKORef, {
-          puntos: (rankingKOSnap.data().puntos || 0) + puntos,
-          updated_at: serverTimestamp()
-        });
-      } else {
-        await setDoc(rankingKORef, {
-          user_id: uid,
-          puntos: puntos,
-          updated_at: serverTimestamp()
-        });
-      }
+      const okGlobal = await actualizarRankingConReintentos(uid, puntos, false);
+      const okKO = await actualizarRankingConReintentos(uid, puntos, true);
+      if (!okGlobal || !okKO) algunError = true;
     }
-
-    // Marcar que ya se asignaron puntos
-    await updateDoc(docSnap.ref, { points_assigned: true, points: puntos });
+    // Marcar predicción como procesada
+    try {
+      await updateDoc(docSnap.ref, { points_assigned: true, points: puntos });
+    } catch (err) {
+      console.error(`Error marcando points_assigned para ${uid}:`, err);
+      algunError = true;
+    }
   }
+  if (algunError) console.warn("⚠️ Algunas operaciones fallaron en knockout");
 }
 // ======================================================
 // CREAR RANKING GLOBAL PARA TODOS LOS USUARIOS (grupos)
