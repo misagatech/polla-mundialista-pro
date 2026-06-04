@@ -833,12 +833,62 @@ window.saveThirdPlacePrediction = async (partidoNumero) => {
     }, { merge: true });
 
     alert("✅ Predicción guardada");
+    await generarTercerPuesto();
   } catch (error) {
     console.error(error);
     alert(error.message);
   }
 };
+// ======================================================
+// GUARDAR PREDICCIÓN DE LA FINAL
+// ======================================================
+window.saveFinalPrediction = async (partidoNumero) => {
+  try {
+    if (!currentUser) return alert("Debes iniciar sesión");
 
+    const localInput = document.getElementById(`final_local_${partidoNumero}`);
+    const visitInput = document.getElementById(`final_visit_${partidoNumero}`);
+    if (!localInput || !visitInput) return alert("Inputs no encontrados");
+
+    const local = parseInt(localInput.value);
+    const visit = parseInt(visitInput.value);
+    if (isNaN(local) || isNaN(visit)) return alert("Ingresa números válidos");
+
+    const card = document.querySelector(`[data-partido-final="${partidoNumero}"]`);
+    if (!card) return alert("Partido no encontrado");
+    const equipoLocal = card.dataset.local;
+    const equipoVisit = card.dataset.visitante;
+
+    let clasificado = null;
+    if (local > visit) {
+      clasificado = equipoLocal;
+    } else if (visit > local) {
+      clasificado = equipoVisit;
+    } else {
+      const selected = document.querySelector(`input[name="final_clasificado_${partidoNumero}"]:checked`);
+      if (!selected) return alert("Debes elegir quién clasifica en caso de empate");
+      clasificado = selected.value;
+    }
+
+    const predictionId = `${currentUser.uid}_FINAL_${partidoNumero}`;
+    await setDoc(doc(db, "predictions_final", predictionId), {
+      uid: currentUser.uid,
+      partido: partidoNumero,
+      pred_local: local,
+      pred_visitante: visit,
+      clasificado: clasificado,
+      fase: "final",
+      updated_at: serverTimestamp()
+    }, { merge: true });
+
+    alert("✅ Predicción guardada");
+    // Refrescar la vista de la final para mostrar lo guardado
+    await generarFinal();
+  } catch (error) {
+    console.error(error);
+    alert(error.message);
+  }
+};
 // ======================================================
 // GENERAR FINAL (CARRUSEL HORIZONTAL) - VERSIÓN CORREGIDA
 // ======================================================
