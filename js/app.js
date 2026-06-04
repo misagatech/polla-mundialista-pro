@@ -4107,7 +4107,6 @@ onAuthStateChanged(auth, async (user) => {
 
     if (currentUserRol === "admin") {
       adminPanel.classList.remove("hidden");
-      document.getElementById("adminAuditoriaSidebar").style.display = "block";
       loadAdminMatches();
       loadAdminParticipants();
       console.log("CARGANDO PARTICIPANTES ADMIN");
@@ -4121,7 +4120,6 @@ onAuthStateChanged(auth, async (user) => {
       inicializarAuditoriaAdmin();
     } else {
       adminPanel.classList.add("hidden");
-      document.getElementById("adminAuditoriaSidebar").style.display = "none";
       cargarPuntosUsuarioSidebar();
     }
     loadMatchesAndPredictions();
