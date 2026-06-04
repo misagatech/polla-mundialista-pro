@@ -1131,6 +1131,7 @@ async function generarTercerPuesto() {
         Puntos: aciertas el marcador exacto → <strong>3 puntos</strong>. 
         Aciertas solo quién gana → <strong>1 punto</strong>. 
         En caso de <strong>empate</strong>, suma <strong>+1 punto</strong> si seleccionas correctamente el clasificado.
+        <span style="display:block; margin-top:6px; font-size:0.7rem; color:#facc15;">➡️ Cuando marques un empate, aparecerán las opciones para elegir quién avanza.</span>
       </div>
       <div class="grupos-tabs-wrapper" style="margin-bottom: 16px;">
         <button id="scrollThirdLeft" class="scroll-btn"><i class="fas fa-chevron-left"></i></button>
