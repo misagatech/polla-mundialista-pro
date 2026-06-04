@@ -956,10 +956,12 @@ async function generarFinal() {
 
     // ========== PREDICCIÓN GUARDADA DEL USUARIO ==========
     let predLocal = "", predVisit = "", clasifGuardado = "";
+    let hasPrediction = false;
     try {
       const finalRef = doc(db, "predictions_final", `${currentUser.uid}_FINAL_104`);
       const finalSnap = await getDoc(finalRef);
       if (finalSnap.exists()) {
+        hasPrediction = true;
         const data = finalSnap.data();
         predLocal = data.pred_local ?? "";
         predVisit = data.pred_visitante ?? "";
@@ -1017,8 +1019,8 @@ async function generarFinal() {
           <label><input type="radio" name="final_clasificado_${partido.numero}" value="${partido.visitante}" ${clasifGuardado === partido.visitante ? "checked" : ""} ${disabled ? "disabled" : ""}> ${fifaCodes[partido.visitante] || partido.visitante}</label>
         </div>
         <button class="btn-guardar" onclick="window.saveFinalPrediction('${partido.numero}')" ${disabled ? "disabled" : ""}>
-          ${disabled ? (isFinalizado ? "🔒 Partido finalizado" : "🔒 Apuestas cerradas") : "Guardar"}
-        </button>
+  ${disabled ? (isFinalizado ? "🔒 Partido finalizado" : "🔒 Apuestas cerradas") : (hasPrediction ? "Actualizar" : "Guardar")}
+</button>
         <div class="match-timer" data-cierre="${cierreApuestas.toISOString()}">
           ⏰ Resultados se bloquean en: <span class="timer-value">${formatearTiempoRestante(cierreApuestas)}</span>
         </div>
@@ -2023,7 +2025,9 @@ async function generarDieciseisavos() {
     const predictionId = `${currentUser.uid}_${partido.numero}`;
     const predictionSnap = await getDoc(doc(db, "predictions_knockout", predictionId));
     let predLocal = "", predVisit = "", clasifGuardado = "";
+    let hasPrediction = false;
     if (predictionSnap.exists()) {
+      hasPrediction = true;
       const data = predictionSnap.data();
       predLocal = data.pred_local ?? "";
       predVisit = data.pred_visitante ?? "";
@@ -2057,8 +2061,8 @@ async function generarDieciseisavos() {
           <label><input type="radio" name="clasificado_${partido.numero}" value="${partido.visitante}" ${clasifGuardado === partido.visitante ? "checked" : ""} ${disabled ? "disabled" : ""}> ${fifaCodes[partido.visitante] || partido.visitante}</label>
         </div>
         <button class="btn-guardar" onclick="window.saveKnockoutPrediction('${partido.numero}')" ${disabled ? "disabled" : ""}>
-          ${disabled ? (isFinalizado ? "🔒 Partido finalizado" : "🔒 Apuestas cerradas") : "Guardar"}
-        </button>
+  ${disabled ? (isFinalizado ? "🔒 Partido finalizado" : "🔒 Apuestas cerradas") : (hasPrediction ? "Actualizar" : "Guardar")}
+</button>
         <div class="match-timer" data-cierre="${cierreApuestas.toISOString()}">
           ⏰ Resultados se bloquean en: <span class="timer-value">${formatearTiempoRestante(cierreApuestas)}</span>
         </div>
@@ -2353,6 +2357,7 @@ async function generarOctavos() {
     const fechaLocal = horaPartido.toLocaleString("es-CO", { timeZone: "America/Bogota" });
 
     const pred = predicciones[partido.numero] || {};
+    const hasPrediction = !!pred.pred_local; // true si existe predicción (pred_local no es undefined)
     const predLocal = pred.pred_local ?? "";
     const predVisit = pred.pred_visitante ?? "";
     const clasifGuardado = pred.clasificado ?? "";
@@ -2383,9 +2388,9 @@ async function generarOctavos() {
           <label><input type="radio" name="oct_clasificado_${partido.numero}" value="${partido.local}" ${clasifGuardado === partido.local ? "checked" : ""} ${disabled ? "disabled" : ""}> ${fifaCodes[partido.local] || partido.local}</label>
           <label><input type="radio" name="oct_clasificado_${partido.numero}" value="${partido.visitante}" ${clasifGuardado === partido.visitante ? "checked" : ""} ${disabled ? "disabled" : ""}> ${fifaCodes[partido.visitante] || partido.visitante}</label>
         </div>
-        <button class="btn-guardar" onclick="window.saveOctavosPrediction('${partido.numero}')" ${disabled ? "disabled" : ""}>
-          ${disabled ? (isFinalizado ? "🔒 Partido finalizado" : "🔒 Apuestas cerradas") : "Guardar"}
-        </button>
+      <button class="btn-guardar" onclick="window.saveOctavosPrediction('${partido.numero}')" ${disabled ? "disabled" : ""}>
+  ${disabled ? (isFinalizado ? "🔒 Partido finalizado" : "🔒 Apuestas cerradas") : (hasPrediction ? "Actualizar" : "Guardar")}
+</button>
         <div class="match-timer" data-cierre="${cierreApuestas.toISOString()}">
           ⏰ Resultados se bloquean en: <span class="timer-value">${formatearTiempoRestante(cierreApuestas)}</span>
         </div>
@@ -2505,6 +2510,7 @@ async function generarCuartos() {
     const fechaLocal = horaPartido.toLocaleString("es-CO", { timeZone: "America/Bogota" });
 
     const pred = predicciones[partido.numero] || {};
+    const hasPrediction = !!pred.pred_local;
     const predLocal = pred.pred_local ?? "";
     const predVisit = pred.pred_visitante ?? "";
     const clasifGuardado = pred.clasificado ?? "";
@@ -2536,8 +2542,8 @@ async function generarCuartos() {
           <label><input type="radio" name="cuartos_clasificado_${partido.numero}" value="${partido.visitante}" ${clasifGuardado === partido.visitante ? "checked" : ""} ${disabled ? "disabled" : ""}> ${fifaCodes[partido.visitante] || partido.visitante}</label>
         </div>
         <button class="btn-guardar" onclick="window.saveCuartosPrediction('${partido.numero}')" ${disabled ? "disabled" : ""}>
-          ${disabled ? (isFinalizado ? "🔒 Partido finalizado" : "🔒 Apuestas cerradas") : "Guardar"}
-        </button>
+  ${disabled ? (isFinalizado ? "🔒 Partido finalizado" : "🔒 Apuestas cerradas") : (hasPrediction ? "Actualizar" : "Guardar")}
+</button>
         <div class="match-timer" data-cierre="${cierreApuestas.toISOString()}">
           ⏰ Resultados se bloquean en: <span class="timer-value">${formatearTiempoRestante(cierreApuestas)}</span>
         </div>
@@ -2653,6 +2659,7 @@ async function generarSemifinales() {
     const fechaLocal = horaPartido.toLocaleString("es-CO", { timeZone: "America/Bogota" });
 
     const pred = predicciones[partido.numero] || {};
+    const hasPrediction = !!pred.pred_local;
     const predLocal = pred.pred_local ?? "";
     const predVisit = pred.pred_visitante ?? "";
     const clasifGuardado = pred.clasificado ?? "";
@@ -2684,8 +2691,8 @@ async function generarSemifinales() {
           <label><input type="radio" name="semis_clasificado_${partido.numero}" value="${partido.visitante}" ${clasifGuardado === partido.visitante ? "checked" : ""} ${disabled ? "disabled" : ""}> ${fifaCodes[partido.visitante] || partido.visitante}</label>
         </div>
         <button class="btn-guardar" onclick="window.saveSemifinalPrediction('${partido.numero}')" ${disabled ? "disabled" : ""}>
-          ${disabled ? (isFinalizado ? "🔒 Partido finalizado" : "🔒 Apuestas cerradas") : "Guardar"}
-        </button>
+  ${disabled ? (isFinalizado ? "🔒 Partido finalizado" : "🔒 Apuestas cerradas") : (hasPrediction ? "Actualizar" : "Guardar")}
+</button>
         <div class="match-timer" data-cierre="${cierreApuestas.toISOString()}">
           ⏰ Resultados se bloquean en: <span class="timer-value">${formatearTiempoRestante(cierreApuestas)}</span>
         </div>
@@ -4078,26 +4085,26 @@ async function calcularPuntosKnockout(partidoNumero, fase) {
     const predClasificado = pred.clasificado;
 
     let puntos = 0;
-const predEmpate = (predLocal === predVisit);
-const realEmpate = (realLocal === realVisit);
-const marcadorExacto = (predLocal === realLocal && predVisit === realVisit);
+    const predEmpate = (predLocal === predVisit);
+    const realEmpate = (realLocal === realVisit);
+    const marcadorExacto = (predLocal === realLocal && predVisit === realVisit);
 
-if (marcadorExacto) {
-  puntos = 3;
-  // Si además es empate, se añade el punto por clasificado (total 4)
-  if (realEmpate && predClasificado === realClasificado) {
-    puntos += 1;
-  }
-} else {
-  if (predEmpate && realEmpate) {
-    puntos = 1;
-    if (predClasificado === realClasificado) puntos += 1;
-  } else if (!predEmpate && !realEmpate) {
-    const predGanador = predLocal > predVisit ? "local" : "visitante";
-    const realGanador = realLocal > realVisit ? "local" : "visitante";
-    if (predGanador === realGanador) puntos = 1;
-  }
-}
+    if (marcadorExacto) {
+      puntos = 3;
+      // Si además es empate, se añade el punto por clasificado (total 4)
+      if (realEmpate && predClasificado === realClasificado) {
+        puntos += 1;
+      }
+    } else {
+      if (predEmpate && realEmpate) {
+        puntos = 1;
+        if (predClasificado === realClasificado) puntos += 1;
+      } else if (!predEmpate && !realEmpate) {
+        const predGanador = predLocal > predVisit ? "local" : "visitante";
+        const realGanador = realLocal > realVisit ? "local" : "visitante";
+        if (predGanador === realGanador) puntos = 1;
+      }
+    }
 
     if (puntos > 0) {
       const okGlobal = await actualizarRankingConReintentos(uid, puntos, false);
