@@ -1267,7 +1267,6 @@ async function generarTercerPuesto() {
 
 function loadRanking() {
   if (rankingUnsubscribe) rankingUnsubscribe();
-
   const rankingRef = collection(db, "ranking");
   rankingUnsubscribe = onSnapshot(
     query(rankingRef, orderBy("puntos", "desc")),
@@ -1277,16 +1276,17 @@ function loadRanking() {
         const data = docSnap.data();
         if (!data.user_id) continue;
         const userSnap = await getDoc(doc(db, "users", data.user_id));
-        const nombre = userSnap.exists() ? userSnap.data().nombre : "Usuario";
+        if (!userSnap.exists()) continue;
+        const userData = userSnap.data();
+        // EXCLUIR AL ADMINISTRADOR
+        if (userData.rol === "admin") continue;
         rankingGlobalData.push({
           uid: data.user_id,
-          nombre: nombre,
+          nombre: userData.nombre || "Usuario",
           puntos: data.puntos
         });
       }
-      // Actualizar contador total
       document.getElementById("totalRankingGlobal").innerText = rankingGlobalData.length;
-      // Renderizar con el filtro actual
       renderRankingGlobal();
     }
   );
@@ -1367,10 +1367,13 @@ function loadRankingKnockout() {
       for (const docSnap of snapshot.docs) {
         const data = docSnap.data();
         const userSnap = await getDoc(doc(db, "users", data.user_id));
-        const nombre = userSnap.exists() ? userSnap.data().nombre : "Usuario";
+        if (!userSnap.exists()) continue;
+        const userData = userSnap.data();
+        // EXCLUIR AL ADMINISTRADOR
+        if (userData.rol === "admin") continue;
         rankingKODisplayData.push({
           uid: data.user_id,
-          nombre: nombre,
+          nombre: userData.nombre || "Usuario",
           puntos: data.puntos
         });
       }
@@ -2238,18 +2241,18 @@ window.saveKnockoutPrediction = async (
     // =====================================
 
     await setDoc(
-  doc(db, "predictions_knockout", predictionId),
-  {
-    uid: currentUser.uid,
-    partido: Number(partidoNumero),
-    pred_local: local,
-    pred_visitante: visit,    // ← CORREGIDO
-    clasificado,
-    fase: "dieciseisavos",
-    updated_at: serverTimestamp()
-  },
-  { merge: true }
-);
+      doc(db, "predictions_knockout", predictionId),
+      {
+        uid: currentUser.uid,
+        partido: Number(partidoNumero),
+        pred_local: local,
+        pred_visitante: visit,    // ← CORREGIDO
+        clasificado,
+        fase: "dieciseisavos",
+        updated_at: serverTimestamp()
+      },
+      { merge: true }
+    );
 
     alert(
       "✅ Predicción guardada"
@@ -3077,8 +3080,8 @@ async function cargarPuntosUsuarioSidebar() {
     function mostrarTablaGrupo(grupo, partidos) {
       let html = `<table class="tabla-puntos-compacta"><thead><tr><th>Partido</th><th>Pred</th><th>Real</th><th>Pts</th></tr></thead><tbody>`;
       for (const p of partidos) {
-        const localCode = fifaCodes[p.local] || p.local.substring(0,3);
-        const visitCode = fifaCodes[p.visitante] || p.visitante.substring(0,3);
+        const localCode = fifaCodes[p.local] || p.local.substring(0, 3);
+        const visitCode = fifaCodes[p.visitante] || p.visitante.substring(0, 3);
         const localFlag = obtenerCodigoPais(p.local);
         const visitFlag = obtenerCodigoPais(p.visitante);
         html += `<tr>
@@ -3156,7 +3159,10 @@ async function cargarUsuariosParaAuditoriaAdmin() {
   select.innerHTML = '<option value="">-- Seleccione un usuario --</option>';
   usersSnap.forEach(doc => {
     const user = doc.data();
-    select.innerHTML += `<option value="${user.uid}">${user.nombre} (${user.email})</option>`;
+    // Excluir al administrador (rol "admin")
+    if (user.rol !== "admin") {
+      select.innerHTML += `<option value="${user.uid}">${user.nombre} (${user.email})</option>`;
+    }
   });
 }
 
@@ -3168,7 +3174,7 @@ async function cargarPuntosAuditoriaAdmin(uid) {
   const subpestanasDiv = document.getElementById("subpestanasGruposAuditoria");
   const tablaGruposDiv = document.getElementById("tablaGruposAuditoria");
   const tablaElimDiv = document.getElementById("tablaElimAuditoria");
-  
+
   if (!contenedorGrupos || !tablaGruposDiv) return;
 
   tablaGruposDiv.innerHTML = "<p>Cargando puntos del usuario...</p>";
@@ -3211,8 +3217,8 @@ async function cargarPuntosAuditoriaAdmin(uid) {
     function mostrarTablaGrupo(grupo, partidos) {
       let html = `<table class="tabla-puntos-compacta"><thead><tr><th>Partido</th><th>Pred</th><th>Real</th><th>Pts</th></tr></thead><tbody>`;
       for (const p of partidos) {
-        const localCode = fifaCodes[p.local] || p.local.substring(0,3);
-        const visitCode = fifaCodes[p.visitante] || p.visitante.substring(0,3);
+        const localCode = fifaCodes[p.local] || p.local.substring(0, 3);
+        const visitCode = fifaCodes[p.visitante] || p.visitante.substring(0, 3);
         const localFlag = obtenerCodigoPais(p.local);
         const visitFlag = obtenerCodigoPais(p.visitante);
         html += `<tr>
@@ -3770,7 +3776,7 @@ async function loadAdminKnockoutMatches() {
     const visitReal = resolver(visit);
     return avanza === "local" ? localReal : visitReal;
   };
-    // Función para obtener el nombre real del equipo que PERDIÓ (para tercer puesto)
+  // Función para obtener el nombre real del equipo que PERDIÓ (para tercer puesto)
   const obtenerPerdedorReal = (numPartido) => {
     const res = resultadosMap[numPartido];
     if (!res) return `Por definir`;
@@ -3846,12 +3852,12 @@ async function loadAdminKnockoutMatches() {
   ];
 
   const partidoFinal = { num: 104, local: obtenerGanadorReal(101), visit: obtenerGanadorReal(102) };
-  const partidoTercero = { 
-    num: 103, 
-    local: obtenerPerdedorReal(101), 
-    visit: obtenerPerdedorReal(102) 
+  const partidoTercero = {
+    num: 103,
+    local: obtenerPerdedorReal(101),
+    visit: obtenerPerdedorReal(102)
   };
-  
+
 
   const nombreCorto = (nombre) => {
     if (!nombre || nombre === "Tercero") return "TBD";
@@ -4110,9 +4116,14 @@ async function crearRankingGlobalParaTodos() {
   let cambios = 0;
   for (const docSnap of participantsSnap.docs) {
     const uid = docSnap.id;
+    // Verificar si el usuario es administrador
+    const userSnap = await getDoc(doc(db, "users", uid));
+    if (userSnap.exists() && userSnap.data().rol === "admin") {
+      continue; // Saltar al administrador
+    }
     const rankingRef = doc(db, "ranking", uid);
     const rankingSnap = await getDoc(rankingRef);
-    
+
     // Buscar documentos duplicados con el mismo user_id
     const duplicados = await getDocs(query(collection(db, "ranking"), where("user_id", "==", uid)));
     for (const dup of duplicados.docs) {
@@ -4121,7 +4132,7 @@ async function crearRankingGlobalParaTodos() {
         cambios++;
       }
     }
-    
+
     if (!rankingSnap.exists()) {
       batch.set(rankingRef, {
         user_id: uid,
@@ -4132,7 +4143,7 @@ async function crearRankingGlobalParaTodos() {
     }
   }
   if (cambios > 0) await batch.commit();
-  console.log(`✅ Creados/limpiados ${cambios} documentos en ranking global`);
+  console.log(`✅ Creados/limpiados ${cambios} documentos en ranking global (excluyendo admin)`);
 }
 // ======================================================
 // CREAR RANKING_KNOCKOUT PARA TODOS LOS USUARIOS HABILITADOS
@@ -4143,32 +4154,36 @@ async function crearRankingKOparaTodos() {
   let cambios = 0;
   for (const docSnap of participantsSnap.docs) {
     const data = docSnap.data();
-    if (data.enabled_knockout === true) {
-      const uid = data.uid;
-      const rankingRef = doc(db, "ranking_knockout", uid);
-      const rankingSnap = await getDoc(rankingRef);
-      
-      // Buscar documentos duplicados con el mismo user_id
-      const duplicados = await getDocs(query(collection(db, "ranking_knockout"), where("user_id", "==", uid)));
-      for (const dup of duplicados.docs) {
-        if (dup.id !== uid) {
-          batch.delete(dup.ref);
-          cambios++;
-        }
-      }
-      
-      if (!rankingSnap.exists()) {
-        batch.set(rankingRef, {
-          user_id: uid,
-          puntos: 0,
-          updated_at: serverTimestamp()
-        });
+    if (data.enabled_knockout !== true) continue;
+    const uid = data.uid;
+    // Verificar si el usuario es administrador
+    const userSnap = await getDoc(doc(db, "users", uid));
+    if (userSnap.exists() && userSnap.data().rol === "admin") {
+      continue; // Saltar al administrador
+    }
+    const rankingRef = doc(db, "ranking_knockout", uid);
+    const rankingSnap = await getDoc(rankingRef);
+
+    // Buscar documentos duplicados con el mismo user_id
+    const duplicados = await getDocs(query(collection(db, "ranking_knockout"), where("user_id", "==", uid)));
+    for (const dup of duplicados.docs) {
+      if (dup.id !== uid) {
+        batch.delete(dup.ref);
         cambios++;
       }
     }
+
+    if (!rankingSnap.exists()) {
+      batch.set(rankingRef, {
+        user_id: uid,
+        puntos: 0,
+        updated_at: serverTimestamp()
+      });
+      cambios++;
+    }
   }
   if (cambios > 0) await batch.commit();
-  console.log(`✅ Creados/limpiados ${cambios} documentos en ranking_knockout`);
+  console.log(`✅ Creados/limpiados ${cambios} documentos en ranking_knockout (excluyendo admin)`);
 }
 // ======================================================
 // ESTADO DE AUTENTICACIÓN (CORAZÓN DE LA APP)
