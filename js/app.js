@@ -2238,42 +2238,18 @@ window.saveKnockoutPrediction = async (
     // =====================================
 
     await setDoc(
-
-      doc(
-        db,
-        "predictions_knockout",
-        predictionId
-      ),
-
-      {
-
-        uid:
-          currentUser.uid,
-
-        partido:
-          partidoNumero,
-
-        pred_local:
-          local,
-
-        pred_visit:
-          visit,
-
-        clasificado,
-
-        fase:
-          "dieciseisavos",
-
-        updated_at:
-          serverTimestamp()
-
-      },
-
-      {
-        merge: true
-      }
-
-    );
+  doc(db, "predictions_knockout", predictionId),
+  {
+    uid: currentUser.uid,
+    partido: partidoNumero,
+    pred_local: local,
+    pred_visitante: visit,    // ← CORREGIDO
+    clasificado,
+    fase: "dieciseisavos",
+    updated_at: serverTimestamp()
+  },
+  { merge: true }
+);
 
     alert(
       "✅ Predicción guardada"
