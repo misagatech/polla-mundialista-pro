@@ -4150,7 +4150,20 @@ async function crearRankingKOparaTodos() {
   console.log(`✅ Creados ${cambios} documentos en ranking_knockout`);
 }
 
-
+window.migrarPartidosKO = async () => {
+  const snap = await getDocs(collection(db, "predictions_knockout"));
+  const batch = writeBatch(db);
+  let cambios = 0;
+  for (const doc of snap.docs) {
+    const data = doc.data();
+    if (typeof data.partido === "string") {
+      batch.update(doc.ref, { partido: parseInt(data.partido) });
+      cambios++;
+    }
+  }
+  if (cambios > 0) await batch.commit();
+  console.log(`✅ Migrados ${cambios} documentos en predictions_knockout (partido convertido a número)`);
+};
 // ======================================================
 // ESTADO DE AUTENTICACIÓN (CORAZÓN DE LA APP)
 // ======================================================
