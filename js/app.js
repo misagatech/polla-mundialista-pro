@@ -4078,19 +4078,26 @@ async function calcularPuntosKnockout(partidoNumero, fase) {
     const predClasificado = pred.clasificado;
 
     let puntos = 0;
-    if (predLocal === realLocal && predVisit === realVisit) {
-      puntos = 3;
-    } else {
-      const predEmpate = (predLocal === predVisit);
-      if (predEmpate && realEsEmpate) {
-        puntos = 1;
-        if (predClasificado === realClasificado) puntos += 1;
-      } else if (!predEmpate && !realEsEmpate) {
-        const predGanador = predLocal > predVisit ? "local" : "visitante";
-        const realGanador = realLocal > realVisit ? "local" : "visitante";
-        if (predGanador === realGanador) puntos = 1;
-      }
-    }
+const predEmpate = (predLocal === predVisit);
+const realEmpate = (realLocal === realVisit);
+const marcadorExacto = (predLocal === realLocal && predVisit === realVisit);
+
+if (marcadorExacto) {
+  puntos = 3;
+  // Si además es empate, se añade el punto por clasificado (total 4)
+  if (realEmpate && predClasificado === realClasificado) {
+    puntos += 1;
+  }
+} else {
+  if (predEmpate && realEmpate) {
+    puntos = 1;
+    if (predClasificado === realClasificado) puntos += 1;
+  } else if (!predEmpate && !realEmpate) {
+    const predGanador = predLocal > predVisit ? "local" : "visitante";
+    const realGanador = realLocal > realVisit ? "local" : "visitante";
+    if (predGanador === realGanador) puntos = 1;
+  }
+}
 
     if (puntos > 0) {
       const okGlobal = await actualizarRankingConReintentos(uid, puntos, false);
