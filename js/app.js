@@ -1134,7 +1134,7 @@ async function generarTercerPuesto() {
       </div>
       <div class="grupos-tabs-wrapper" style="margin-bottom: 16px;">
         <button id="scrollThirdLeft" class="scroll-btn"><i class="fas fa-chevron-left"></i></button>
-        <div id="carouselThird" class="knockout-carousel" style="display: flex; overflow-x: auto; gap: 20px; scroll-behavior: smooth; padding-bottom: 10px;"></div>
+        <div id="carouselThird" class="knockout-carousel" style="display: flex; overflow-x: auto; gap: 20px; scroll-behavior: smooth; padding-bottom: 10px; justify-content: center;"></div>
         <button id="scrollThirdRight" class="scroll-btn"><i class="fas fa-chevron-right"></i></button>
       </div>
     </div>`;
