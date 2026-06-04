@@ -3116,7 +3116,157 @@ async function cargarPuntosUsuarioSidebar() {
     tablaGruposDiv.innerHTML = "<p>Error al cargar puntos.</p>";
   }
 }
+// ======================================================
+// NUEVA AUDITORÍA PARA ADMIN (con pestañas como usuario)
+// ======================================================
+async function cargarUsuariosParaAuditoriaAdmin() {
+  const select = document.getElementById("selectUserAuditAdmin");
+  if (!select) return;
+  const usersSnap = await getDocs(collection(db, "users"));
+  select.innerHTML = '<option value="">-- Seleccione un usuario --</option>';
+  usersSnap.forEach(doc => {
+    const user = doc.data();
+    select.innerHTML += `<option value="${user.uid}">${user.nombre} (${user.email})</option>`;
+  });
+}
 
+async function cargarPuntosAuditoriaAdmin(uid) {
+  const contenedorGrupos = document.getElementById("contenedorGruposAuditoria");
+  const contenedorElim = document.getElementById("contenedorElimAuditoria");
+  const tabGrupos = document.getElementById("tabGruposAuditoria");
+  const tabElim = document.getElementById("tabElimAuditoria");
+  const subpestanasDiv = document.getElementById("subpestanasGruposAuditoria");
+  const tablaGruposDiv = document.getElementById("tablaGruposAuditoria");
+  const tablaElimDiv = document.getElementById("tablaElimAuditoria");
+  
+  if (!contenedorGrupos || !tablaGruposDiv) return;
+
+  tablaGruposDiv.innerHTML = "<p>Cargando puntos del usuario...</p>";
+  tablaElimDiv.innerHTML = "<p>Cargando...</p>";
+
+  try {
+    // ---- GRUPOS ----
+    const groupsSnap = await getDocs(query(collection(db, "predictions_groups"), where("uid", "==", uid)));
+    const partidosPorGrupo = {};
+    for (const docSnap of groupsSnap.docs) {
+      const pred = docSnap.data();
+      const matchDoc = await getDoc(doc(db, "matches", pred.match_id));
+      if (!matchDoc.exists()) continue;
+      const match = matchDoc.data();
+      if (match.estado !== "finalizado") continue;
+      const grupo = match.grupo;
+      if (!partidosPorGrupo[grupo]) partidosPorGrupo[grupo] = [];
+      partidosPorGrupo[grupo].push({
+        local: match.equipo_local,
+        visitante: match.equipo_visitante,
+        predLocal: pred.pred_local,
+        predVisit: pred.pred_visitante,
+        realLocal: match.resultado_local,
+        realVisit: match.resultado_visitante,
+        puntos: pred.points || 0
+      });
+    }
+    const gruposOrdenados = Object.keys(partidosPorGrupo).sort();
+    subpestanasDiv.innerHTML = '';
+    gruposOrdenados.forEach(grupo => {
+      const btn = document.createElement('button');
+      btn.textContent = `Grupo ${grupo}`;
+      btn.className = 'subpestana-grupo';
+      btn.dataset.grupo = grupo;
+      btn.onclick = () => mostrarTablaGrupo(grupo, partidosPorGrupo[grupo]);
+      subpestanasDiv.appendChild(btn);
+    });
+    if (gruposOrdenados.length > 0) mostrarTablaGrupo(gruposOrdenados[0], partidosPorGrupo[gruposOrdenados[0]]);
+
+    function mostrarTablaGrupo(grupo, partidos) {
+      let html = `<table class="tabla-puntos-compacta"><thead><tr><th>Partido</th><th>Pred</th><th>Real</th><th>Pts</th></tr></thead><tbody>`;
+      for (const p of partidos) {
+        const localCode = fifaCodes[p.local] || p.local.substring(0,3);
+        const visitCode = fifaCodes[p.visitante] || p.visitante.substring(0,3);
+        const localFlag = obtenerCodigoPais(p.local);
+        const visitFlag = obtenerCodigoPais(p.visitante);
+        html += `<tr>
+          <td><img class="flag-mini" src="https://flagcdn.com/${localFlag}.svg"> ${localCode} vs <img class="flag-mini" src="https://flagcdn.com/${visitFlag}.svg"> ${visitCode}</td>
+          <td>${p.predLocal}-${p.predVisit}</td>
+          <td>${p.realLocal}-${p.realVisit}</td>
+          <td class="punto-badge">${p.puntos}</td>
+        </tr>`;
+      }
+      html += `</tbody></table>`;
+      tablaGruposDiv.innerHTML = html;
+      document.querySelectorAll('#subpestanasGruposAuditoria .subpestana-grupo').forEach(btn => {
+        if (btn.dataset.grupo === grupo) btn.classList.add('active');
+        else btn.classList.remove('active');
+      });
+    }
+
+    // ---- ELIMINATORIAS ----
+    let htmlElim = `<table class="tabla-puntos-compacta"><thead><tr><th>Fase</th><th>Partido</th><th>Pred</th><th>Real</th><th>Pts</th></tr></thead><tbody>`;
+    const fasesKO = [
+      { col: "predictions_knockout", nombre: "16" },
+      { col: "predictions_octavos", nombre: "8" },
+      { col: "predictions_cuartos", nombre: "4" },
+      { col: "predictions_semifinales", nombre: "2" },
+      { col: "predictions_final", nombre: "F" },
+      { col: "predictions_third", nombre: "3º" }
+    ];
+    for (const fase of fasesKO) {
+      const snap = await getDocs(query(collection(db, fase.col), where("uid", "==", uid)));
+      for (const docSnap of snap.docs) {
+        const pred = docSnap.data();
+        const realDoc = await getDoc(doc(db, "knockout_results", pred.partido.toString()));
+        if (!realDoc.exists()) continue;
+        const real = realDoc.data();
+        if (!real.finalizado) continue;
+        htmlElim += `<tr>
+          <td>${fase.nombre}</td>
+          <td>P${pred.partido}</td>
+          <td>${pred.pred_local}-${pred.pred_visitante}</td>
+          <td>${real.resultado_local}-${real.resultado_visitante}</td>
+          <td class="punto-badge">${pred.points || 0}</td>
+        </tr>`;
+      }
+    }
+    htmlElim += `</tbody></table>`;
+    tablaElimDiv.innerHTML = htmlElim || "<p>Sin partidos de eliminatorias finalizados.</p>";
+
+    // Cambio de pestañas
+    if (tabGrupos && tabElim) {
+      tabGrupos.onclick = () => {
+        tabGrupos.classList.add('active');
+        tabElim.classList.remove('active');
+        contenedorGrupos.style.display = 'block';
+        contenedorElim.style.display = 'none';
+      };
+      tabElim.onclick = () => {
+        tabElim.classList.add('active');
+        tabGrupos.classList.remove('active');
+        contenedorElim.style.display = 'block';
+        contenedorGrupos.style.display = 'none';
+      };
+    }
+    contenedorGrupos.style.display = 'block';
+    contenedorElim.style.display = 'none';
+  } catch (error) {
+    console.error(error);
+    tablaGruposDiv.innerHTML = "<p>Error al cargar puntos.</p>";
+  }
+}
+
+async function inicializarAuditoriaAdmin() {
+  const select = document.getElementById("selectUserAuditAdmin");
+  if (!select) return;
+  await cargarUsuariosParaAuditoriaAdmin();
+  select.addEventListener("change", (e) => {
+    const uid = e.target.value;
+    if (uid) {
+      cargarPuntosAuditoriaAdmin(uid);
+    } else {
+      document.getElementById("tablaGruposAuditoria").innerHTML = "<p>Seleccione un usuario para ver sus puntos.</p>";
+      document.getElementById("tablaElimAuditoria").innerHTML = "";
+    }
+  });
+}
 // ======================================================
 // AGREGAR BOTONES DE RESET (GRUPOS Y KNOCKOUT) EN EL PANEL ADMIN
 // ======================================================
@@ -3915,86 +4065,7 @@ async function crearRankingKOparaTodos() {
   console.log(`✅ Creados ${cambios} documentos en ranking_knockout`);
 }
 
-// ======================================================
-// ADMIN: AUDITORÍA DE PUNTOS POR USUARIO
-// ======================================================
-async function cargarUsuariosParaAuditoria() {
-  const select = document.getElementById("selectUserAudit");
-  if (!select) return;
-  const usersSnap = await getDocs(collection(db, "users"));
-  select.innerHTML = '<option value="">-- Seleccione un usuario --</option>';
-  usersSnap.forEach(doc => {
-    const user = doc.data();
-    if (user.rol !== "admin") {
-      select.innerHTML += `<option value="${user.uid}">${user.nombre} (${user.email})</option>`;
-    }
-  });
-}
 
-async function cargarAuditoriaUsuario(uid) {
-  const container = document.getElementById("auditoriaResultados");
-  if (!container || !uid) return;
-  container.innerHTML = "<p>Cargando...</p>";
-
-  try {
-    const userDoc = await getDoc(doc(db, "users", uid));
-    const nombre = userDoc.exists() ? userDoc.data().nombre : "Usuario";
-    let html = `<h4 style="margin:10px 0;">📌 Puntos de ${nombre}</h4><table class="tabla-puntos"><thead><tr><th>Fase</th><th>Partido</th><th>Predicción</th><th>Resultado real</th><th>Puntos</th></tr></thead><tbody>`;
-
-    // Grupos
-    const groupsSnap = await getDocs(query(collection(db, "predictions_groups"), where("uid", "==", uid)));
-    for (const docSnap of groupsSnap.docs) {
-      const pred = docSnap.data();
-      const matchDoc = await getDoc(doc(db, "matches", pred.match_id));
-      if (!matchDoc.exists()) continue;
-      const match = matchDoc.data();
-      if (match.estado !== "finalizado") continue;
-      const localCode = fifaCodes[match.equipo_local] || match.equipo_local.substring(0, 3);
-      const visitCode = fifaCodes[match.equipo_visitante] || match.equipo_visitante.substring(0, 3);
-      html += `<tr><td>Grupos</td><td>${localCode} vs ${visitCode}</td><td>${pred.pred_local}-${pred.pred_visitante}</td><td>${match.resultado_local}-${match.resultado_visitante}</td><td class="punto-badge">${pred.points || 0}</td></tr>`;
-    }
-
-    // Eliminatorias
-    const fasesKO = [
-      { col: "predictions_knockout", nombre: "Dieciseisavos" },
-      { col: "predictions_octavos", nombre: "Octavos" },
-      { col: "predictions_cuartos", nombre: "Cuartos" },
-      { col: "predictions_semifinales", nombre: "Semifinales" },
-      { col: "predictions_final", nombre: "Final" },
-      { col: "predictions_third", nombre: "Tercer puesto" }
-    ];
-    for (const fase of fasesKO) {
-      const snap = await getDocs(query(collection(db, fase.col), where("uid", "==", uid)));
-      for (const docSnap of snap.docs) {
-        const pred = docSnap.data();
-        const realDoc = await getDoc(doc(db, "knockout_results", pred.partido.toString()));
-        if (!realDoc.exists()) continue;
-        const real = realDoc.data();
-        if (!real.finalizado) continue;
-        html += `<tr><td>${fase.nombre}</td><td>Partido ${pred.partido}</td><td>${pred.pred_local}-${pred.pred_visitante}</td><td>${real.resultado_local}-${real.resultado_visitante}</td><td class="punto-badge">${pred.points || 0}</td></tr>`;
-      }
-    }
-
-    html += `</tbody></table>`;
-    container.innerHTML = html;
-  } catch (error) {
-    console.error(error);
-    container.innerHTML = "<p>Error al cargar auditoría.</p>";
-  }
-}
-
-function inicializarAuditoriaAdmin() {
-  const select = document.getElementById("selectUserAudit");
-  const btn = document.getElementById("btnCargarAuditoria");
-  if (select && btn) {
-    cargarUsuariosParaAuditoria();
-    btn.onclick = () => {
-      const uid = select.value;
-      if (uid) cargarAuditoriaUsuario(uid);
-      else alert("Selecciona un usuario");
-    };
-  }
-}
 // ======================================================
 // ESTADO DE AUTENTICACIÓN (CORAZÓN DE LA APP)
 // ======================================================
