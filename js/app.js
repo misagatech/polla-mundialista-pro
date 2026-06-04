@@ -3264,19 +3264,7 @@ function formatearCOP(valor) {
     maximumFractionDigits: 0
   }).format(valor);
 }
-// ======================================================
-// BOTÓN "VER GRUPO" EN LA SIDEBAR
-// ======================================================
-document.getElementById("verGrupoBtn").onclick = () => {
-  const grupoActivoElement = document.querySelector(".grupo-tab.active");
-  if (grupoActivoElement) {
-    grupoActivoElement.scrollIntoView({ behavior: "smooth", block: "center" });
-    const gruposContainer = document.getElementById("gruposContainer");
-    if (gruposContainer) gruposContainer.scrollIntoView({ behavior: "smooth" });
-  } else {
-    alert("No hay grupo activo");
-  }
-};
+
 // ======================================================
 // GESTIÓN DE MEJORES TERCEROS (MANUAL)
 // ======================================================
