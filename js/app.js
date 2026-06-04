@@ -2017,7 +2017,7 @@ async function generarDieciseisavos() {
     const disabled = isClosed || isFinalizado;
     const fechaLocal = horaPartido.toLocaleString("es-CO", { timeZone: "America/Bogota" });
 
-    const predictionId = `${currentUser.uid}_KO_${partido.numero}`;
+    const predictionId = `${currentUser.uid}_${partido.numero}`;
     const predictionSnap = await getDoc(doc(db, "predictions_knockout", predictionId));
     let predLocal = "", predVisit = "", clasifGuardado = "";
     if (predictionSnap.exists()) {
