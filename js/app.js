@@ -783,6 +783,9 @@ window.saveSemifinalPrediction = async (partidoNumero) => {
 
     alert("✅ Predicción guardada");
     // Aquí luego llamarás a generarFinal() cuando la tengas
+    await generarFinal();
+    await generarTercerPuesto();
+
   } catch (error) {
     console.error(error);
     alert(error.message);
