@@ -3794,6 +3794,56 @@ async function loadAdminKnockoutMatches() {
     const visitReal = resolver(visit);
     return avanza === "local" ? localReal : visitReal;
   };
+    // Función para obtener el nombre real del equipo que PERDIÓ (para tercer puesto)
+  const obtenerPerdedorReal = (numPartido) => {
+    const res = resultadosMap[numPartido];
+    if (!res) return `Por definir`;
+    let avanza = null;
+    if (res.finalizado && res.clasificado_real) {
+      avanza = res.clasificado_real;
+    } else if (res.resultado_local !== null && res.resultado_visitante !== null) {
+      if (res.resultado_local > res.resultado_visitante) avanza = "local";
+      else if (res.resultado_visitante > res.resultado_local) avanza = "visitante";
+      else if (res.clasificado_real) avanza = res.clasificado_real;
+    }
+    if (!avanza) return `Por definir`;
+
+    // Obtener los equipos que jugaron ese partido
+    let local = null, visit = null;
+    let partidoBase = partidosDieciseisavos.find(p => p.num === numPartido);
+    if (!partidoBase) {
+      partidoBase = mapaPartidos[numPartido];
+      if (!partidoBase) return `Por definir`;
+      local = partidoBase.local;
+      visit = partidoBase.visit;
+    } else {
+      local = partidoBase.local;
+      visit = partidoBase.visit;
+    }
+    // Resolver nombres reales (por si son "Ganador X")
+    const resolver = (nombre) => {
+      if (!nombre) return "???";
+      if (nombre.startsWith("Ganador")) {
+        const num = parseInt(nombre.split(" ")[1]);
+        return obtenerGanadorReal(num);
+      }
+      if (nombre.startsWith("Perdedor")) {
+        const num = parseInt(nombre.split(" ")[1]);
+        const ganador = obtenerGanadorReal(num);
+        const partidoOrig = partidosDieciseisavos.find(p => p.num === num) || mapaPartidos[num];
+        if (partidoOrig) {
+          const otro = (ganador === partidoOrig.local) ? partidoOrig.visit : partidoOrig.local;
+          return otro;
+        }
+        return `Por definir`;
+      }
+      return nombre;
+    };
+    const localReal = resolver(local);
+    const visitReal = resolver(visit);
+    // El perdedor es el que NO avanzó
+    return avanza === "local" ? visitReal : localReal;
+  };
 
   // Construir todas las fases
   const partidosOctavos = [
@@ -3820,7 +3870,12 @@ async function loadAdminKnockoutMatches() {
   ];
 
   const partidoFinal = { num: 104, local: obtenerGanadorReal(101), visit: obtenerGanadorReal(102) };
-  const partidoTercero = { num: 103, local: `Perdedor ${obtenerGanadorReal(101)}`, visit: `Perdedor ${obtenerGanadorReal(102)}` };
+  const partidoTercero = { 
+    num: 103, 
+    local: obtenerPerdedorReal(101), 
+    visit: obtenerPerdedorReal(102) 
+  };
+  
 
   const nombreCorto = (nombre) => {
     if (!nombre || nombre === "Tercero") return "TBD";
