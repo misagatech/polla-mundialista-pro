@@ -4112,6 +4112,16 @@ async function crearRankingGlobalParaTodos() {
     const uid = docSnap.id;
     const rankingRef = doc(db, "ranking", uid);
     const rankingSnap = await getDoc(rankingRef);
+    
+    // Buscar documentos duplicados con el mismo user_id
+    const duplicados = await getDocs(query(collection(db, "ranking"), where("user_id", "==", uid)));
+    for (const dup of duplicados.docs) {
+      if (dup.id !== uid) {
+        batch.delete(dup.ref);
+        cambios++;
+      }
+    }
+    
     if (!rankingSnap.exists()) {
       batch.set(rankingRef, {
         user_id: uid,
@@ -4122,7 +4132,7 @@ async function crearRankingGlobalParaTodos() {
     }
   }
   if (cambios > 0) await batch.commit();
-  console.log(`✅ Creados ${cambios} documentos en ranking global`);
+  console.log(`✅ Creados/limpiados ${cambios} documentos en ranking global`);
 }
 // ======================================================
 // CREAR RANKING_KNOCKOUT PARA TODOS LOS USUARIOS HABILITADOS
@@ -4134,11 +4144,22 @@ async function crearRankingKOparaTodos() {
   for (const docSnap of participantsSnap.docs) {
     const data = docSnap.data();
     if (data.enabled_knockout === true) {
-      const rankingRef = doc(db, "ranking_knockout", data.uid);
+      const uid = data.uid;
+      const rankingRef = doc(db, "ranking_knockout", uid);
       const rankingSnap = await getDoc(rankingRef);
+      
+      // Buscar documentos duplicados con el mismo user_id
+      const duplicados = await getDocs(query(collection(db, "ranking_knockout"), where("user_id", "==", uid)));
+      for (const dup of duplicados.docs) {
+        if (dup.id !== uid) {
+          batch.delete(dup.ref);
+          cambios++;
+        }
+      }
+      
       if (!rankingSnap.exists()) {
         batch.set(rankingRef, {
-          user_id: data.uid,
+          user_id: uid,
           puntos: 0,
           updated_at: serverTimestamp()
         });
@@ -4147,9 +4168,8 @@ async function crearRankingKOparaTodos() {
     }
   }
   if (cambios > 0) await batch.commit();
-  console.log(`✅ Creados ${cambios} documentos en ranking_knockout`);
+  console.log(`✅ Creados/limpiados ${cambios} documentos en ranking_knockout`);
 }
-
 // ======================================================
 // ESTADO DE AUTENTICACIÓN (CORAZÓN DE LA APP)
 // ======================================================
