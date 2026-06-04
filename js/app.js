@@ -4149,20 +4149,42 @@ async function crearRankingKOparaTodos() {
   if (cambios > 0) await batch.commit();
   console.log(`✅ Creados ${cambios} documentos en ranking_knockout`);
 }
-
-window.migrarPartidosKO = async () => {
-  const snap = await getDocs(collection(db, "predictions_knockout"));
-  const batch = writeBatch(db);
-  let cambios = 0;
-  for (const doc of snap.docs) {
-    const data = doc.data();
-    if (typeof data.partido === "string") {
-      batch.update(doc.ref, { partido: parseInt(data.partido) });
-      cambios++;
+//--------------------------------------------------
+window.migrarTodasLasKO = async () => {
+  const colecciones = [
+    "predictions_knockout",
+    "predictions_octavos",
+    "predictions_cuartos",
+    "predictions_semifinales",
+    "predictions_final",
+    "predictions_third"
+  ];
+  for (const col of colecciones) {
+    const snap = await getDocs(collection(db, col));
+    const batch = writeBatch(db);
+    let cambios = 0;
+    for (const doc of snap.docs) {
+      const data = doc.data();
+      const nuevos = {};
+      let actualizar = false;
+      // Convertir partido a número si es string
+      if (typeof data.partido === "string") {
+        nuevos.partido = parseInt(data.partido);
+        actualizar = true;
+      }
+      // Renombrar pred_visit a pred_visitante si existe
+      if (data.pred_visit !== undefined && data.pred_visitante === undefined) {
+        nuevos.pred_visitante = data.pred_visit;
+        actualizar = true;
+      }
+      if (actualizar) {
+        batch.update(doc.ref, nuevos);
+        cambios++;
+      }
     }
+    if (cambios > 0) await batch.commit();
+    console.log(`✅ ${col}: ${cambios} documentos migrados`);
   }
-  if (cambios > 0) await batch.commit();
-  console.log(`✅ Migrados ${cambios} documentos en predictions_knockout (partido convertido a número)`);
 };
 // ======================================================
 // ESTADO DE AUTENTICACIÓN (CORAZÓN DE LA APP)
