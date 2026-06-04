@@ -679,7 +679,7 @@ window.saveOctavosPrediction = async (partidoNumero) => {
     const predictionId = `${currentUser.uid}_OCT_${partidoNumero}`;
     await setDoc(doc(db, "predictions_octavos", predictionId), {
       uid: currentUser.uid,
-      partido: partidoNumero,
+      partido: Number(partidoNumero),
       pred_local: local,
       pred_visitante: visit,
       clasificado: clasificado,
@@ -726,7 +726,7 @@ window.saveCuartosPrediction = async (partidoNumero) => {
     const predictionId = `${currentUser.uid}_CUARTOS_${partidoNumero}`;
     await setDoc(doc(db, "predictions_cuartos", predictionId), {
       uid: currentUser.uid,
-      partido: partidoNumero,
+      partido: Number(partidoNumero),
       pred_local: local,
       pred_visitante: visit,
       clasificado: clasificado,
@@ -773,7 +773,7 @@ window.saveSemifinalPrediction = async (partidoNumero) => {
     const predictionId = `${currentUser.uid}_SEMIS_${partidoNumero}`;
     await setDoc(doc(db, "predictions_semifinales", predictionId), {
       uid: currentUser.uid,
-      partido: partidoNumero,
+      partido: Number(partidoNumero),
       pred_local: local,
       pred_visitante: visit,
       clasificado: clasificado,
@@ -824,7 +824,7 @@ window.saveThirdPlacePrediction = async (partidoNumero) => {
     const predictionId = `${currentUser.uid}_THIRD_${partidoNumero}`;
     await setDoc(doc(db, "predictions_third", predictionId), {
       uid: currentUser.uid,
-      partido: partidoNumero,
+      partido: Number(partidoNumero),
       pred_local: local,
       pred_visitante: visit,
       clasificado: clasificado,
@@ -873,7 +873,7 @@ window.saveFinalPrediction = async (partidoNumero) => {
     const predictionId = `${currentUser.uid}_FINAL_${partidoNumero}`;
     await setDoc(doc(db, "predictions_final", predictionId), {
       uid: currentUser.uid,
-      partido: partidoNumero,
+      partido: Number(partidoNumero),
       pred_local: local,
       pred_visitante: visit,
       clasificado: clasificado,
@@ -2241,7 +2241,7 @@ window.saveKnockoutPrediction = async (
   doc(db, "predictions_knockout", predictionId),
   {
     uid: currentUser.uid,
-    partido: partidoNumero,
+    partido: Number(partidoNumero),
     pred_local: local,
     pred_visitante: visit,    // ← CORREGIDO
     clasificado,
