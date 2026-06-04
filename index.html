@@ -182,7 +182,33 @@
           </div>
           <!-- ADMIN KNOCKOUT RESULTS -->
           <div id="adminKnockoutMatchesList" class="admin-knockout-list"></div>
-
+          <!-- NUEVO BLOQUE DE AUDITORÍA -->
+          <div class="admin-participants-section" style="margin-top: 30px;">
+            <div class="admin-section-header">
+              <h3 class="admin-section-title">🔍 Auditoría de puntos por usuario</h3>
+            </div>
+            <div style="margin-bottom: 20px;">
+              <label for="selectUserAuditAdmin">Seleccionar usuario: </label>
+              <select id="selectUserAuditAdmin"
+                style="width:100%; padding:8px; border-radius:12px; background:#1e293b; color:white; border:1px solid #facc15;">
+                <option value="">-- Cargando usuarios --</option>
+              </select>
+            </div>
+            <div id="auditoriaContainerAdmin">
+              <div style="display: flex; gap: 8px; margin-bottom: 12px;">
+                <button id="tabGruposAuditoria" class="puntos-tab active" style="flex:1;">📌 Grupos</button>
+                <button id="tabElimAuditoria" class="puntos-tab" style="flex:1;">🏆 Eliminatorias</button>
+              </div>
+              <div id="contenedorGruposAuditoria">
+                <div id="subpestanasGruposAuditoria"
+                  style="display: flex; gap: 6px; overflow-x: auto; margin-bottom: 12px; padding-bottom: 5px;"></div>
+                <div id="tablaGruposAuditoria" style="max-height: 400px; overflow-y: auto;"></div>
+              </div>
+              <div id="contenedorElimAuditoria" style="display: none;">
+                <div id="tablaElimAuditoria" style="max-height: 400px; overflow-y: auto;"></div>
+              </div>
+            </div>
+          </div>
 
           <!-- BTN -->
 
@@ -344,18 +370,7 @@
           <div id="rankingKnockoutList" style="max-height: 280px; overflow-y: auto;">Cargando...</div>
         </div>
 
-        <!-- ========== AUDITORÍA PARA ADMIN (solo visible para admin) ========== -->
-        <div id="adminAuditoriaSidebar" class="sidebar-card" style="display: none;">
-          <h3 class="sidebar-small-title">🔍 Auditoría de puntos</h3>
-          <label for="selectUserAudit">Usuario:</label>
-          <select id="selectUserAudit"
-            style="width:100%; padding:6px; border-radius:12px; background:#1e293b; color:white; margin:8px 0;">
-            <option value="">-- Seleccionar --</option>
-          </select>
-          <button id="btnCargarAuditoria" class="admin-load-btn" style="background:#15803d; width:100%;">📊 Cargar
-            puntos</button>
-          <div id="auditoriaResultados" style="max-height: 300px; overflow-y: auto; margin-top: 10px;"></div>
-        </div>
+
 
         <!-- ========== PUNTOS DEL USUARIO (SIEMPRE VISIBLE) ========== -->
         <div class="sidebar-card">
