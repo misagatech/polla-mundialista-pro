@@ -1161,10 +1161,12 @@ async function generarTercerPuesto() {
 
     // 5. Predicción guardada del usuario
     let predLocal = "", predVisit = "", clasifGuardado = "";
+    let hasPrediction = false;
     try {
       const thirdRef = doc(db, "predictions_third", `${currentUser.uid}_THIRD_103`);
       const thirdSnap = await getDoc(thirdRef);
       if (thirdSnap.exists()) {
+        hasPrediction = true;
         const data = thirdSnap.data();
         predLocal = data.pred_local ?? "";
         predVisit = data.pred_visitante ?? "";
@@ -1220,8 +1222,8 @@ async function generarTercerPuesto() {
           <label><input type="radio" name="third_clasificado_${partido.numero}" value="${partido.visitante}" ${clasifGuardado === partido.visitante ? "checked" : ""} ${disabled ? "disabled" : ""}> ${partido.visitante}</label>
         </div>
         <button class="btn-guardar" onclick="window.saveThirdPlacePrediction('${partido.numero}')" ${disabled ? "disabled" : ""}>
-          ${disabled ? (isFinalizado ? "🔒 Partido finalizado" : "🔒 Apuestas cerradas") : "Guardar"}
-        </button>
+  ${disabled ? (isFinalizado ? "🔒 Partido finalizado" : "🔒 Apuestas cerradas") : (hasPrediction ? "Actualizar" : "Guardar")}
+</button>
         <div class="match-timer" data-cierre="${cierreApuestas.toISOString()}">
           ⏰ Resultados se bloquean en: <span class="timer-value">${formatearTiempoRestante(cierreApuestas)}</span>
         </div>
