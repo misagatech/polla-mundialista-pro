@@ -1271,8 +1271,6 @@ async function generarTercerPuesto() {
 // RANKING EN TIEMPO REAL
 // ======================================================
 
-let rankingInterval; // Variable global para el intervalo del ranking global
-
 function loadRanking() {
   if (rankingInterval) clearInterval(rankingInterval); // Evita intervalos acumulados
 
@@ -1366,7 +1364,6 @@ document.getElementById("buscarRankingGlobal")?.addEventListener("input", (e) =>
 // ======================================================
 // LOAD RANKING
 // ======================================================
-let rankingIntervalKO;
 
 function loadRankingKnockout() {
   if (rankingIntervalKO) clearInterval(rankingIntervalKO);
