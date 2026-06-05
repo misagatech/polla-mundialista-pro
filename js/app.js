@@ -684,6 +684,7 @@ window.saveOctavosPrediction = async (partidoNumero) => {
     }, { merge: true });
 
     alert("✅ Predicción guardada");
+    await generarOctavos();    // 👈 actualiza octavos
     await generarCuartos(); // Refresca la vista de cuartos automáticamente
   } catch (error) {
     console.error(error);
@@ -731,6 +732,7 @@ window.saveCuartosPrediction = async (partidoNumero) => {
     }, { merge: true });
 
     alert("✅ Predicción guardada");
+    await generarCuartos();        // 👈 actualiza cuartos
     await generarSemifinales();
   } catch (error) {
     console.error(error);
@@ -778,6 +780,7 @@ window.saveSemifinalPrediction = async (partidoNumero) => {
     }, { merge: true });
 
     alert("✅ Predicción guardada");
+    await generarSemifinales();   // 👈 actualiza semifinales
     // Aquí luego llamarás a generarFinal() cuando la tengas
     await generarFinal();
     await generarTercerPuesto();
@@ -2259,6 +2262,7 @@ window.saveKnockoutPrediction = async (
     alert(
       "✅ Predicción guardada"
     );
+    generarDieciseisavos();   // 👈 actualiza la fase actual
     generarOctavos();
     generarCuartos();
 

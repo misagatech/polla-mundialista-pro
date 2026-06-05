@@ -2341,6 +2341,9 @@ RESPONSIVE ADMIN PARTICIPANTES
 /* Opcional: para móvil reducir */
 @media (max-width: 640px) {
   #rankingList, #rankingKnockoutList {
-    height: 180px;        /* 4 elementos */
+    height: 200px;        /* 4 elementos */
+  }
+  .admin-participants-grid {
+    max-height: 400px;
   }
 }
