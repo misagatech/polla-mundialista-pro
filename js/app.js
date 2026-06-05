@@ -912,6 +912,10 @@ window.saveFinalPrediction = async (partidoNumero) => {
 async function generarFinal() {
   const container = document.getElementById("finalContainer");
   if (!container) return;
+  // 👇 Guardar scroll
+  let scrollPos = 0;
+  const oldCarousel = document.getElementById("octavosCarousel");
+  if (oldCarousel) scrollPos = oldCarousel.scrollLeft;
 
   // Validar usuario logueado
   if (!currentUser) {
@@ -1010,6 +1014,7 @@ async function generarFinal() {
 
     container.innerHTML = html;
     const carousel = document.getElementById("carouselFinal");
+    if (carousel && scrollPos > 0) carousel.scrollLeft = scrollPos;
     if (!carousel) return;
 
     const tarjetaHTML = `
@@ -1078,6 +1083,12 @@ async function generarFinal() {
 async function generarTercerPuesto() {
   const container = document.getElementById("thirdPlaceContainer");
   if (!container) return;
+
+  // 👇 Guardar posición del scroll (aunque haya una tarjeta)
+  let scrollPos = 0;
+  const oldCarousel = document.getElementById("carouselThird");
+  if (oldCarousel) scrollPos = oldCarousel.scrollLeft;
+
   if (!currentUser) {
     container.innerHTML = `<div class="tabla-grupo-card" style="text-align:center; padding:30px;">🔒 Inicia sesión para ver el Tercer Puesto.</div>`;
     return;
@@ -1213,6 +1224,7 @@ async function generarTercerPuesto() {
 
     container.innerHTML = html;
     const carousel = document.getElementById("carouselThird");
+    if (carousel && scrollPos > 0) carousel.scrollLeft = scrollPos;
     if (!carousel) return;
 
     const tarjetaHTML = `
@@ -1979,6 +1991,13 @@ async function generarDieciseisavos() {
   const container = document.getElementById("bracketContainer");
   if (!container) return;
 
+  // 👇 Guardar la posición actual del scroll (si existe el carrusel)
+  let scrollPos = 0;
+  const oldCarousel = document.getElementById("knockoutCarousel");
+  if (oldCarousel) {
+    scrollPos = oldCarousel.scrollLeft;
+  }
+
   // ========== VALIDACIÓN DE ACCESO ==========
   const participantSnap = await getDoc(doc(db, "participants", currentUser.uid));
   if (!participantSnap.exists() || participantSnap.data().enabled_knockout !== true) {
@@ -2055,6 +2074,10 @@ async function generarDieciseisavos() {
 
   container.innerHTML = html;
   const carousel = document.getElementById("knockoutCarousel");
+  // 👇 Restaurar la posición del scroll
+  if (carousel && scrollPos > 0) {
+    carousel.scrollLeft = scrollPos;
+  }
 
   for (const partido of partidos) {
     if (!partido.local || !partido.visitante) continue;
@@ -2326,6 +2349,11 @@ async function generarOctavos() {
   const container = document.getElementById("octavosContainer");
   if (!container) return;
 
+  let scrollPos = 0;
+  const oldCarousel = document.getElementById("octavosCarousel");
+  if (oldCarousel) scrollPos = oldCarousel.scrollLeft;
+
+
   // ========== VALIDACIÓN DE ACCESO ==========
   const participantSnap = await getDoc(doc(db, "participants", currentUser.uid));
   if (!participantSnap.exists() || participantSnap.data().enabled_knockout !== true) {
@@ -2390,6 +2418,7 @@ async function generarOctavos() {
   </div>`;
   container.innerHTML = html;
   const carousel = document.getElementById("octavosCarousel");
+  if (carousel && scrollPos > 0) carousel.scrollLeft = scrollPos;
 
   for (const partido of partidos) {
     const horaPartido = obtenerHoraPartidoKnockout(partido.numero);
@@ -2483,6 +2512,10 @@ async function generarOctavos() {
 async function generarCuartos() {
   const container = document.getElementById("cuartosContainer");
   if (!container) return;
+  // 👇 Guardar scroll
+  let scrollPos = 0;
+  const oldCarousel = document.getElementById("octavosCarousel");
+  if (oldCarousel) scrollPos = oldCarousel.scrollLeft;
 
   // ========== VALIDACIÓN DE ACCESO ==========
   const participantSnap = await getDoc(doc(db, "participants", currentUser.uid));
@@ -2543,6 +2576,7 @@ async function generarCuartos() {
 
   container.innerHTML = html;
   const carousel = document.getElementById("carouselCuartos");
+  if (carousel && scrollPos > 0) carousel.scrollLeft = scrollPos;
 
   for (const partido of partidos) {
     const horaPartido = obtenerHoraPartidoKnockout(partido.numero);
@@ -2636,6 +2670,10 @@ async function generarCuartos() {
 async function generarSemifinales() {
   const container = document.getElementById("semifinalContainer");
   if (!container) return;
+  // 👇 Guardar scroll
+  let scrollPos = 0;
+  const oldCarousel = document.getElementById("octavosCarousel");
+  if (oldCarousel) scrollPos = oldCarousel.scrollLeft;
 
   // ========== VALIDACIÓN DE ACCESO ==========
   const participantSnap = await getDoc(doc(db, "participants", currentUser.uid));
@@ -2692,6 +2730,7 @@ async function generarSemifinales() {
 
   container.innerHTML = html;
   const carousel = document.getElementById("carouselSemis");
+  if (carousel && scrollPos > 0) carousel.scrollLeft = scrollPos;
 
   for (const partido of partidos) {
     const horaPartido = obtenerHoraPartidoKnockout(partido.numero);
