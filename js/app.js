@@ -2022,6 +2022,20 @@ async function generarDieciseisavos() {
     { numero: 87, local: clasificadosGlobales["1K"] || "1K", visitante: tercerosMap[87] || "Tercero por definir" },
     { numero: 88, local: clasificadosGlobales["2D"] || "2D", visitante: clasificadosGlobales["2G"] || "2G" }
   ];
+    // 👇 NUEVO BLOQUE (justo aquí)
+  let misPrediccionesKO = {};
+  if (currentUser) {
+    try {
+      const qPreds = query(collection(db, "predictions_knockout"), where("uid", "==", currentUser.uid));
+      const predsSnap = await getDocs(qPreds);
+      predsSnap.forEach(doc => {
+        const data = doc.data();
+        misPrediccionesKO[data.partido] = data;
+      });
+    } catch (e) {
+      console.error("Error al cargar predicciones KO:", e);
+    }
+  }
 
   let html = `<div class="tabla-grupo-card">
     <h3 class="tabla-title">Dieciseisavos de Final</h3>
