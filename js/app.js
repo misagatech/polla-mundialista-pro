@@ -634,7 +634,22 @@ window.savePrediction = async (matchId) => {
     );
 
     alert("✅ Predicción guardada");
-    mostrarTodosLosGrupos();
+
+// 👇 ACTUALIZAR DATOS LOCALMENTE
+// Buscar el partido en gruposData y actualizar su userPred
+for (const grupo in gruposData) {
+  const partidoIndex = gruposData[grupo].findIndex(m => m.id === matchId);
+  if (partidoIndex !== -1) {
+    gruposData[grupo][partidoIndex].userPred = {
+      pred_local: local,
+      pred_visitante: visit,
+      // otros campos necesarios (si los hay)
+    };
+    break;
+  }
+}
+
+mostrarTodosLosGrupos();
 
   } catch (error) {
 
