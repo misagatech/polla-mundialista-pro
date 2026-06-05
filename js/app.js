@@ -2521,12 +2521,16 @@ async function generarOctavos() {
 // ======================================================
 // GENERAR CUARTOS AUTOMÁTICOS (CARRUSEL HORIZONTAL)
 // ======================================================
+// ======================================================
+// GENERAR CUARTOS AUTOMÁTICOS (CARRUSEL HORIZONTAL)
+// ======================================================
 async function generarCuartos() {
   const container = document.getElementById("cuartosContainer");
   if (!container) return;
-  // 👇 Guardar scroll
+
+  // 👇 Guardar scroll con el ID correcto
   let scrollPos = 0;
-  const oldCarousel = document.getElementById("octavosCarousel");
+  const oldCarousel = document.getElementById("carouselCuartos");
   if (oldCarousel) scrollPos = oldCarousel.scrollLeft;
 
   // ========== VALIDACIÓN DE ACCESO ==========
@@ -2538,7 +2542,6 @@ async function generarCuartos() {
     </div>`;
     return;
   }
-  // ==========================================
 
   // Cargar resultados de knockout
   const resultadosSnap = await getDocs(collection(db, "knockout_results"));
@@ -2588,9 +2591,9 @@ async function generarCuartos() {
 
   container.innerHTML = html;
   const carousel = document.getElementById("carouselCuartos");
-  
 
   for (const partido of partidos) {
+    // ... (tu código de inserción de tarjetas, no lo cambio)
     const horaPartido = obtenerHoraPartidoKnockout(partido.numero);
     const cierreApuestas = new Date(horaPartido.getTime() - 60 * 60 * 1000);
     const isClosed = new Date() >= cierreApuestas;
@@ -2631,8 +2634,8 @@ async function generarCuartos() {
           <label><input type="radio" name="cuartos_clasificado_${partido.numero}" value="${partido.visitante}" ${clasifGuardado === partido.visitante ? "checked" : ""} ${disabled ? "disabled" : ""}> ${fifaCodes[partido.visitante] || partido.visitante}</label>
         </div>
         <button class="btn-guardar ${hasPrediction ? 'btn-actualizar' : ''}" onclick="window.saveCuartosPrediction('${partido.numero}')" ${disabled ? "disabled" : ""}>
-  ${disabled ? (isFinalizado ? "🔒 Partido finalizado" : "🔒 Apuestas cerradas") : (hasPrediction ? "Actualizar" : "Guardar")}
-</button>
+          ${disabled ? (isFinalizado ? "🔒 Partido finalizado" : "🔒 Apuestas cerradas") : (hasPrediction ? "Actualizar" : "Guardar")}
+        </button>
         <div class="match-timer" data-cierre="${cierreApuestas.toISOString()}">
           ⏰ Resultados se bloquean en: <span class="timer-value">${formatearTiempoRestante(cierreApuestas)}</span>
         </div>
@@ -2675,8 +2678,8 @@ async function generarCuartos() {
       updateRadios();
     }
   }
-}
- // 👇 RESTAURAR SCROLL AL FINAL (después de todo el DOM)
+
+  // 👇 RESTAURAR SCROLL AL FINAL (dentro de la función)
   if (carousel && scrollPos > 0) {
     setTimeout(() => {
       carousel.scrollLeft = scrollPos;
@@ -2691,7 +2694,7 @@ async function generarSemifinales() {
   if (!container) return;
   // 👇 Guardar scroll
   let scrollPos = 0;
-  const oldCarousel = document.getElementById("octavosCarousel");
+  const oldCarousel = document.getElementById("carouselSemis");
   if (oldCarousel) scrollPos = oldCarousel.scrollLeft;
 
   // ========== VALIDACIÓN DE ACCESO ==========
@@ -2833,7 +2836,7 @@ async function generarSemifinales() {
       updateRadios();
     }
   }
-}
+
 // 👇 RESTAURAR SCROLL AL FINAL (después de todo el DOM)
   if (carousel && scrollPos > 0) {
     setTimeout(() => {
