@@ -1675,7 +1675,11 @@ window.finalizarPartido = async (matchId) => {
     await loadRanking();
     if (currentUser) {
         await cargarPuntosUsuarioSidebar();
-    }
+
+     // 👇 FORZAR REFRESCO DE VISTA DE GRUPOS
+    if (matchesUnsubscribe) {
+      loadMatchesAndPredictions();    }
+
 
     alert("✅ Partido finalizado y puntos calculados");
     loadAdminMatches();
@@ -2047,17 +2051,15 @@ async function generarDieciseisavos() {
     const disabled = isClosed || isFinalizado;
     const fechaLocal = horaPartido.toLocaleString("es-CO", { timeZone: "America/Bogota" });
 
-    const predictionId = `${currentUser.uid}_${partido.numero}`;
-    const predictionSnap = await getDoc(doc(db, "predictions_knockout", predictionId));
-    let predLocal = "", predVisit = "", clasifGuardado = "";
-    let hasPrediction = false;
-    if (predictionSnap.exists()) {
-      hasPrediction = true;
-      const data = predictionSnap.data();
-      predLocal = data.pred_local ?? "";
-      predVisit = data.pred_visitante ?? "";
-      clasifGuardado = data.clasificado ?? "";
-    }
+    const predData = misPrediccionesKO[partido.numero];
+let predLocal = "", predVisit = "", clasifGuardado = "";
+let hasPrediction = false;
+if (predData) {
+  hasPrediction = true;
+  predLocal = predData.pred_local ?? "";
+  predVisit = predData.pred_visitante ?? "";
+  clasifGuardado = predData.clasificado ?? "";
+}
 
     const radiosId = `radios_ko_${partido.numero}`;
     const showRadios = (predLocal === predVisit && predLocal !== "");
@@ -4045,6 +4047,12 @@ window.finalizarPartidoKnockout = async (numeroPartido) => {
     await loadRankingKnockout();
     if (currentUser) {
         await cargarPuntosUsuarioSidebar();
+        await generarDieciseisavos();
+  await generarOctavos();
+  await generarCuartos();
+  await generarSemifinales();
+  await generarFinal();
+  await generarTercerPuesto();
     }
     btn.innerText = "✅ Finalizado";
     btn.classList.add("finalized");
