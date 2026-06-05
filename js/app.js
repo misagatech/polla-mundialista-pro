@@ -1671,6 +1671,11 @@ window.finalizarPartido = async (matchId) => {
 
     // CALCULAR PUNTOS (llamada a la función externa)
     await calcularPuntos(matchId);
+     // 👇 REFRESCAR PUNTOS INMEDIATAMENTE
+    await loadRanking();
+    if (currentUser) {
+        await cargarPuntosUsuarioSidebar();
+    }
 
     alert("✅ Partido finalizado y puntos calculados");
     loadAdminMatches();
@@ -4036,6 +4041,11 @@ window.finalizarPartidoKnockout = async (numeroPartido) => {
 
     await updateDoc(resultadoRef, { finalizado: true });
     await calcularPuntosKnockout(numeroPartido, fase);
+     // 👇 REFRESCAR PUNTOS INMEDIATAMENTE
+    await loadRankingKnockout();
+    if (currentUser) {
+        await cargarPuntosUsuarioSidebar();
+    }
     btn.innerText = "✅ Finalizado";
     btn.classList.add("finalized");
     setTimeout(() => {
