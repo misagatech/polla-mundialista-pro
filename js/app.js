@@ -11,6 +11,7 @@ import {
   doc,
   onSnapshot,
   orderBy,
+  limit,          // ← AÑADE ESTO
   writeBatch,
   serverTimestamp
 } from "https://www.gstatic.com/firebasejs/12.12.0/firebase-firestore.js";
@@ -52,6 +53,8 @@ let rankingUnsubscribe = null;
 let rankingUnsubscribeKO = null;
 let participantsUnsubscribe = null;
 let adminParticipantsUnsubscribe = null;
+let rankingInterval = null;      // para el ranking global
+let rankingIntervalKO = null;    // para el ranking knockout
 let rankingKODisplayData = [];
 let rankingKOFiltro = "";
 let rankingGlobalData = [];
@@ -1363,29 +1366,31 @@ document.getElementById("buscarRankingGlobal")?.addEventListener("input", (e) =>
 // ======================================================
 // LOAD RANKING
 // ======================================================
+let rankingIntervalKO;
+
 function loadRankingKnockout() {
-  const rankingRef = collection(db, "ranking_knockout");
-  rankingUnsubscribeKO = onSnapshot(
-    query(rankingRef, orderBy("puntos", "desc")),
-    async (snapshot) => {
-      rankingKODisplayData = [];
-      for (const docSnap of snapshot.docs) {
-        const data = docSnap.data();
-        const userSnap = await getDoc(doc(db, "users", data.user_id));
-        if (!userSnap.exists()) continue;
-        const userData = userSnap.data();
-        // EXCLUIR AL ADMINISTRADOR
-        if (userData.rol === "admin") continue;
-        rankingKODisplayData.push({
-          uid: data.user_id,
-          nombre: userData.nombre || "Usuario",
-          puntos: data.puntos
-        });
-      }
-      document.getElementById("totalRankingKO").innerText = rankingKODisplayData.length;
-      renderRankingKnockout();
+  if (rankingIntervalKO) clearInterval(rankingIntervalKO);
+  async function actualizarRankingKO() {
+    const q = query(collection(db, "ranking_knockout"), orderBy("puntos", "desc"), limit(50));
+    const snapshot = await getDocs(q);
+    rankingKODisplayData = [];
+    for (const docSnap of snapshot.docs) {
+      const data = docSnap.data();
+      const userSnap = await getDoc(doc(db, "users", data.user_id));
+      if (!userSnap.exists()) continue;
+      const userData = userSnap.data();
+      if (userData.rol === "admin") continue;
+      rankingKODisplayData.push({
+        uid: data.user_id,
+        nombre: userData.nombre || "Usuario",
+        puntos: data.puntos
+      });
     }
-  );
+    document.getElementById("totalRankingKO").innerText = rankingKODisplayData.length;
+    renderRankingKnockout();
+  }
+  actualizarRankingKO();
+  rankingIntervalKO = setInterval(actualizarRankingKO, 60000);
 }
 
 function renderRankingKnockout() {
@@ -4268,20 +4273,35 @@ onAuthStateChanged(auth, async (user) => {
     }
     loadRanking();
     // Crear automáticamente el documento en ranking_knockout si el usuario tiene KO habilitado
-    const participantSnapKO = await getDoc(doc(db, "participants", currentUser.uid));
-    if (participantSnapKO.exists() && participantSnapKO.data().enabled_knockout === true) {
-      const rankingKORef = doc(db, "ranking_knockout", currentUser.uid);
-      const rankingKOSnap = await getDoc(rankingKORef);
-      if (!rankingKOSnap.exists()) {
-        await setDoc(rankingKORef, {
-          user_id: currentUser.uid,
-          puntos: 0,
-          updated_at: serverTimestamp()
-        });
-        console.log("✅ Ranking KO creado para", currentUser.uid);
-      }
-    }
-    loadRankingKnockout();
+const participantSnapKO = await getDoc(doc(db, "participants", currentUser.uid));
+if (participantSnapKO.exists() && participantSnapKO.data().enabled_knockout === true) {
+  const rankingKORef = doc(db, "ranking_knockout", currentUser.uid);
+  const rankingKOSnap = await getDoc(rankingKORef);
+  if (!rankingKOSnap.exists()) {
+    await setDoc(rankingKORef, {
+      user_id: currentUser.uid,
+      puntos: 0,
+      updated_at: serverTimestamp()
+    });
+    console.log("✅ Ranking KO creado para", currentUser.uid);
+  }
+}
+
+// 👇 NUEVO: Limpiar posibles duplicados en ranking_knockout para este usuario
+const rankingKODupQuery = query(collection(db, "ranking_knockout"), where("user_id", "==", currentUser.uid));
+const dupSnapshot = await getDocs(rankingKODupQuery);
+if (dupSnapshot.size > 1) {
+  const batch = writeBatch(db);
+  let primero = true;
+  dupSnapshot.forEach(docSnap => {
+    if (primero) { primero = false; }
+    else { batch.delete(docSnap.ref); }
+  });
+  await batch.commit();
+  console.log("✅ Duplicados de ranking KO limpiados para", currentUser.uid);
+}
+
+loadRankingKnockout();   // ← Ahora sí, cargar el ranking
     loadPrizePoolRealtime();
     await generarOctavos();
     await generarCuartos();
@@ -4294,6 +4314,13 @@ onAuthStateChanged(auth, async (user) => {
     if (rankingUnsubscribe) rankingUnsubscribe();
     if (participantsUnsubscribe) participantsUnsubscribe();
     if (adminParticipantsUnsubscribe) adminParticipantsUnsubscribe();
+    // 👇 NUEVO: Limpiar intervalos
+  if (rankingInterval) clearInterval(rankingInterval);
+  if (rankingIntervalKO) clearInterval(rankingIntervalKO);
+  if (window.timerInterval) {
+    clearInterval(window.timerInterval);
+    window.timerInterval = null;
+  }
     authScreen.classList.remove("hidden");
     appScreen.classList.add("hidden");
   }
