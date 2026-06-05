@@ -2453,9 +2453,7 @@ async function generarOctavos() {
   }
 }
 
-// ======================================================
-// GENERAR CUARTOS AUTOMÁTICOS (CARRUSEL HORIZONTAL)
-// ======================================================
+
 // ======================================================
 // GENERAR CUARTOS AUTOMÁTICOS (CARRUSEL HORIZONTAL)
 // ======================================================
@@ -2860,48 +2858,75 @@ document.getElementById("btnLogout").onclick = async () => {
   await signOut(auth);
 };
 // ======================================================
-// PREMIOS Y ACUMULADO EN TIEMPO REAL
+// PREMIOS Y ACUMULADO EN TIEMPO REAL (excluyendo admin y duplicados)
 // ======================================================
 function loadPrizePoolRealtime() {
   if (participantsUnsubscribe) participantsUnsubscribe();
 
   const participantsRef = collection(db, "participants");
-  participantsUnsubscribe = onSnapshot(participantsRef, (snapshot) => {
+  
+  participantsUnsubscribe = onSnapshot(participantsRef, async (snapshot) => {
+    // Usamos Map para evitar duplicados por uid
+    const participantesUnicos = new Map(); // key = uid, value = datos del participant
+    
+    for (const docSnap of snapshot.docs) {
+      const participant = docSnap.data();
+      const uid = participant.uid;
+      if (!uid) continue;
+      
+      // Obtener rol del usuario (solo una vez por uid)
+      let userRol = null;
+      try {
+        const userSnap = await getDoc(doc(db, "users", uid));
+        if (userSnap.exists()) userRol = userSnap.data().rol;
+      } catch (e) {
+        console.warn(`Error al obtener rol de ${uid}:`, e);
+      }
+      
+      // Excluir administradores
+      if (userRol === "admin") continue;
+      
+      // Si ya tenemos este uid en el Map, no lo agregamos de nuevo (evita duplicados)
+      if (!participantesUnicos.has(uid)) {
+        participantesUnicos.set(uid, participant);
+      }
+    }
+    
+    // Ahora recorremos los participantes únicos y no admin
     let totalGrupos = 0, acumuladoGrupos = 0;
     let totalKO = 0, acumuladoKO = 0;
-
-    snapshot.forEach(docSnap => {
-      const data = docSnap.data();
-      if (data.paid_groups === true) {
+    
+    for (const participant of participantesUnicos.values()) {
+      if (participant.paid_groups === true) {
         totalGrupos++;
-        acumuladoGrupos += Number(data.amount_groups || 0);
+        acumuladoGrupos += Number(participant.amount_groups || 0);
       }
-      if (data.paid_knockout === true) {
+      if (participant.paid_knockout === true) {
         totalKO++;
-        acumuladoKO += Number(data.amount_knockout || 0);
+        acumuladoKO += Number(participant.amount_knockout || 0);
       }
-    });
-
+    }
+    
     // Actualizar elementos de grupos
     const gruposTotal = document.getElementById("totalParticipantesGrupos");
     const gruposAcumulado = document.getElementById("totalAcumuladoGrupos");
     const gruposPrimer = document.getElementById("premioGruposPrimer");
     const gruposAdmin = document.getElementById("premioGruposAdmin");
     const gruposPlataforma = document.getElementById("premioGruposPlataforma");
-
+    
     if (gruposTotal) gruposTotal.innerText = totalGrupos;
     if (gruposAcumulado) gruposAcumulado.innerText = formatearCOP(acumuladoGrupos);
     if (gruposPrimer) gruposPrimer.innerText = formatearCOP(acumuladoGrupos * 0.75);
     if (gruposAdmin) gruposAdmin.innerText = formatearCOP(acumuladoGrupos * 0.15);
     if (gruposPlataforma) gruposPlataforma.innerText = formatearCOP(acumuladoGrupos * 0.1);
-
+    
     // Actualizar elementos de knockout
     const koTotal = document.getElementById("totalParticipantesKO");
     const koAcumulado = document.getElementById("totalAcumuladoKO");
     const koPrimer = document.getElementById("premioKOPrimer");
     const koAdmin = document.getElementById("premioKOAdmin");
     const koPlataforma = document.getElementById("premioKOPlataforma");
-
+    
     if (koTotal) koTotal.innerText = totalKO;
     if (koAcumulado) koAcumulado.innerText = formatearCOP(acumuladoKO);
     if (koPrimer) koPrimer.innerText = formatearCOP(acumuladoKO * 0.75);
@@ -2909,8 +2934,6 @@ function loadPrizePoolRealtime() {
     if (koPlataforma) koPlataforma.innerText = formatearCOP(acumuladoKO * 0.1);
   });
 }
-
-
 // ======================================================
 // ADMIN PARTICIPANTES (con filtro y dos pollas)
 // ======================================================
