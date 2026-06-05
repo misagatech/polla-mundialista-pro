@@ -1671,15 +1671,17 @@ window.finalizarPartido = async (matchId) => {
 
     // CALCULAR PUNTOS (llamada a la función externa)
     await calcularPuntos(matchId);
-     // 👇 REFRESCAR PUNTOS INMEDIATAMENTE
+
+    // REFRESCAR PUNTOS INMEDIATAMENTE
     await loadRanking();
     if (currentUser) {
-        await cargarPuntosUsuarioSidebar();
+      await cargarPuntosUsuarioSidebar();
+    }
 
-     // 👇 FORZAR REFRESCO DE VISTA DE GRUPOS
+    // FORZAR REFRESCO DE VISTA DE GRUPOS
     if (matchesUnsubscribe) {
-      loadMatchesAndPredictions();    }
-
+      loadMatchesAndPredictions();
+    }
 
     alert("✅ Partido finalizado y puntos calculados");
     loadAdminMatches();
@@ -1688,7 +1690,6 @@ window.finalizarPartido = async (matchId) => {
     alert("Error al finalizar partido");
   }
 };
-
 // ======================================================
 // REABRIR PARTIDO (ADMIN)
 // ======================================================
