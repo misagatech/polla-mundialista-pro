@@ -2178,140 +2178,50 @@ if (predData) {
 // ======================================================
 // GUARDAR PREDICCIÓN ELIMINATORIAS
 // ======================================================
+// ======================================================
+// GUARDAR PREDICCIÓN ELIMINATORIAS
+// ======================================================
 
-window.saveKnockoutPrediction = async (
-  partidoNumero
-) => {
-
+window.saveKnockoutPrediction = async (partidoNumero) => {
   try {
-
     if (!currentUser) {
-
-      return alert(
-        "Debes iniciar sesión"
-      );
-
+      return alert("Debes iniciar sesión");
     }
 
-    // =====================================
-    // INPUTS
-    // =====================================
-
-    const localInput =
-      document.getElementById(
-        `ko_local_${partidoNumero}`
-      );
-
-    const visitInput =
-      document.getElementById(
-        `ko_visit_${partidoNumero}`
-      );
-
+    const localInput = document.getElementById(`ko_local_${partidoNumero}`);
+    const visitInput = document.getElementById(`ko_visit_${partidoNumero}`);
     if (!localInput || !visitInput) {
-
-      return alert(
-        "Inputs no encontrados"
-      );
-
+      return alert("Inputs no encontrados");
     }
 
-    const local =
-      parseInt(localInput.value);
-
-    const visit =
-      parseInt(visitInput.value);
-
-    if (
-      isNaN(local)
-      ||
-      isNaN(visit)
-    ) {
-
-      return alert(
-        "Ingresa marcadores válidos"
-      );
-
+    const local = parseInt(localInput.value);
+    const visit = parseInt(visitInput.value);
+    if (isNaN(local) || isNaN(visit)) {
+      return alert("Ingresa marcadores válidos");
     }
 
-    // =====================================
-    // OBTENER PARTIDO
-    // =====================================
-
-    const card =
-      document.querySelector(
-        `[data-partido="${partidoNumero}"]`
-      );
-
+    const card = document.querySelector(`[data-partido="${partidoNumero}"]`);
     if (!card) {
-
-      return alert(
-        "Partido no encontrado"
-      );
-
+      return alert("Partido no encontrado");
     }
 
-    const equipoLocal =
-      card.dataset.local;
-
-    const equipoVisit =
-      card.dataset.visitante;
-
-    // =====================================
-    // CLASIFICADO
-    // =====================================
+    const equipoLocal = card.dataset.local;
+    const equipoVisit = card.dataset.visitante;
 
     let clasificado = null;
-
-    // GANA LOCAL
-
     if (local > visit) {
-
-      clasificado =
-        equipoLocal;
-
-    }
-
-    // GANA VISITA
-
-    else if (visit > local) {
-
-      clasificado =
-        equipoVisit;
-
-    }
-
-    // EMPATE
-
-    else {
-
-      const selected =
-        document.querySelector(
-          `input[name="clasificado_${partidoNumero}"]:checked`
-        );
-
+      clasificado = equipoLocal;
+    } else if (visit > local) {
+      clasificado = equipoVisit;
+    } else {
+      const selected = document.querySelector(`input[name="clasificado_${partidoNumero}"]:checked`);
       if (!selected) {
-
-        return alert(
-          "Debes elegir quién clasifica"
-        );
-
+        return alert("Debes elegir quién clasifica");
       }
-
-      clasificado =
-        selected.value;
-
+      clasificado = selected.value;
     }
 
-    // =====================================
-    // ID
-    // =====================================
-
-    const predictionId =
-      `${currentUser.uid}_${partidoNumero}`;
-
-    // =====================================
-    // GUARDAR
-    // =====================================
+    const predictionId = `${currentUser.uid}_${partidoNumero}`;
 
     await setDoc(
       doc(db, "predictions_knockout", predictionId),
@@ -2319,7 +2229,7 @@ window.saveKnockoutPrediction = async (
         uid: currentUser.uid,
         partido: Number(partidoNumero),
         pred_local: local,
-        pred_visitante: visit,    // ← CORREGIDO
+        pred_visitante: visit,
         clasificado,
         fase: "dieciseisavos",
         updated_at: serverTimestamp()
@@ -2327,24 +2237,49 @@ window.saveKnockoutPrediction = async (
       { merge: true }
     );
 
-    alert(
-      "✅ Predicción guardada"
-    );
-    generarDieciseisavos();   // 👈 actualiza la fase actual
-    generarOctavos();
-    generarCuartos();
+    alert("✅ Predicción guardada");
 
+    // 1. Actualizar SOLO la tarjeta actual (sin regenerar el carrusel)
+    if (card) {
+      // Actualizar inputs
+      const localInputCard = card.querySelector(`#ko_local_${partidoNumero}`);
+      const visitInputCard = card.querySelector(`#ko_visit_${partidoNumero}`);
+      if (localInputCard && visitInputCard) {
+        localInputCard.value = local;
+        visitInputCard.value = visit;
+      }
+      // Actualizar botón
+      const btn = card.querySelector(".btn-guardar");
+      if (btn && !btn.disabled) {
+        btn.innerText = "Actualizar";
+        btn.classList.add("btn-actualizar");
+      }
+      // Actualizar radios (si hay empate)
+      const radiosDiv = card.querySelector(`#radios_ko_${partidoNumero}`);
+      if (radiosDiv) {
+        const radioLocal = radiosDiv.querySelector(`input[value="${equipoLocal}"]`);
+        const radioVisit = radiosDiv.querySelector(`input[value="${equipoVisit}"]`);
+        if (radioLocal && radioVisit) {
+          if (local === visit) {
+            radiosDiv.style.display = "flex";
+            radioLocal.checked = (clasificado === equipoLocal);
+            radioVisit.checked = (clasificado === equipoVisit);
+          } else {
+            radiosDiv.style.display = "none";
+          }
+        }
+      }
+    }
 
-  }
+    // 2. Regenerar solo las fases siguientes (octavos y cuartos)
+    //    Ya tienen restauración de scroll, apenas se notará.
+    await generarOctavos();
+    await generarCuartos();
 
-  catch (error) {
-
+  } catch (error) {
     console.error(error);
-
     alert(error.message);
-
   }
-
 };
 // ======================================================
 // GENERAR OCTAVOS AUTOMÁTICOS
