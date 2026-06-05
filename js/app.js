@@ -1035,7 +1035,7 @@ async function generarFinal() {
           <label><input type="radio" name="final_clasificado_${partido.numero}" value="${partido.local}" ${clasifGuardado === partido.local ? "checked" : ""} ${disabled ? "disabled" : ""}> ${fifaCodes[partido.local] || partido.local}</label>
           <label><input type="radio" name="final_clasificado_${partido.numero}" value="${partido.visitante}" ${clasifGuardado === partido.visitante ? "checked" : ""} ${disabled ? "disabled" : ""}> ${fifaCodes[partido.visitante] || partido.visitante}</label>
         </div>
-        <button class="btn-guardar" onclick="window.saveFinalPrediction('${partido.numero}')" ${disabled ? "disabled" : ""}>
+        <button class="btn-guardar ${hasPrediction ? 'btn-actualizar' : ''}" onclick="window.saveFinalPrediction('${partido.numero}')" ${disabled ? "disabled" : ""}>
   ${disabled ? (isFinalizado ? "🔒 Partido finalizado" : "🔒 Apuestas cerradas") : (hasPrediction ? "Actualizar" : "Guardar")}
 </button>
         <div class="match-timer" data-cierre="${cierreApuestas.toISOString()}">
@@ -1238,7 +1238,7 @@ async function generarTercerPuesto() {
           <label><input type="radio" name="third_clasificado_${partido.numero}" value="${partido.local}" ${clasifGuardado === partido.local ? "checked" : ""} ${disabled ? "disabled" : ""}> ${partido.local}</label>
           <label><input type="radio" name="third_clasificado_${partido.numero}" value="${partido.visitante}" ${clasifGuardado === partido.visitante ? "checked" : ""} ${disabled ? "disabled" : ""}> ${partido.visitante}</label>
         </div>
-        <button class="btn-guardar" onclick="window.saveThirdPlacePrediction('${partido.numero}')" ${disabled ? "disabled" : ""}>
+        <button class="btn-guardar ${hasPrediction ? 'btn-actualizar' : ''}" onclick="window.saveThirdPlacePrediction('${partido.numero}')" ${disabled ? "disabled" : ""}>
   ${disabled ? (isFinalizado ? "🔒 Partido finalizado" : "🔒 Apuestas cerradas") : (hasPrediction ? "Actualizar" : "Guardar")}
 </button>
         <div class="match-timer" data-cierre="${cierreApuestas.toISOString()}">
@@ -2102,7 +2102,7 @@ if (predData) {
           <label><input type="radio" name="clasificado_${partido.numero}" value="${partido.local}" ${clasifGuardado === partido.local ? "checked" : ""} ${disabled ? "disabled" : ""}> ${fifaCodes[partido.local] || partido.local}</label>
           <label><input type="radio" name="clasificado_${partido.numero}" value="${partido.visitante}" ${clasifGuardado === partido.visitante ? "checked" : ""} ${disabled ? "disabled" : ""}> ${fifaCodes[partido.visitante] || partido.visitante}</label>
         </div>
-        <button class="btn-guardar" onclick="window.saveKnockoutPrediction('${partido.numero}')" ${disabled ? "disabled" : ""}>
+        <button class="btn-guardar ${hasPrediction ? 'btn-actualizar' : ''}" onclick="window.saveKnockoutPrediction('${partido.numero}')" ${disabled ? "disabled" : ""}>
   ${disabled ? (isFinalizado ? "🔒 Partido finalizado" : "🔒 Apuestas cerradas") : (hasPrediction ? "Actualizar" : "Guardar")}
 </button>
         <div class="match-timer" data-cierre="${cierreApuestas.toISOString()}">
@@ -2431,7 +2431,7 @@ async function generarOctavos() {
           <label><input type="radio" name="oct_clasificado_${partido.numero}" value="${partido.local}" ${clasifGuardado === partido.local ? "checked" : ""} ${disabled ? "disabled" : ""}> ${fifaCodes[partido.local] || partido.local}</label>
           <label><input type="radio" name="oct_clasificado_${partido.numero}" value="${partido.visitante}" ${clasifGuardado === partido.visitante ? "checked" : ""} ${disabled ? "disabled" : ""}> ${fifaCodes[partido.visitante] || partido.visitante}</label>
         </div>
-      <button class="btn-guardar" onclick="window.saveOctavosPrediction('${partido.numero}')" ${disabled ? "disabled" : ""}>
+      <button class="btn-guardar ${hasPrediction ? 'btn-actualizar' : ''}" onclick="window.saveOctavosPrediction('${partido.numero}')" ${disabled ? "disabled" : ""}>
   ${disabled ? (isFinalizado ? "🔒 Partido finalizado" : "🔒 Apuestas cerradas") : (hasPrediction ? "Actualizar" : "Guardar")}
 </button>
         <div class="match-timer" data-cierre="${cierreApuestas.toISOString()}">
@@ -2584,7 +2584,7 @@ async function generarCuartos() {
           <label><input type="radio" name="cuartos_clasificado_${partido.numero}" value="${partido.local}" ${clasifGuardado === partido.local ? "checked" : ""} ${disabled ? "disabled" : ""}> ${fifaCodes[partido.local] || partido.local}</label>
           <label><input type="radio" name="cuartos_clasificado_${partido.numero}" value="${partido.visitante}" ${clasifGuardado === partido.visitante ? "checked" : ""} ${disabled ? "disabled" : ""}> ${fifaCodes[partido.visitante] || partido.visitante}</label>
         </div>
-        <button class="btn-guardar" onclick="window.saveCuartosPrediction('${partido.numero}')" ${disabled ? "disabled" : ""}>
+        <button class="btn-guardar ${hasPrediction ? 'btn-actualizar' : ''}" onclick="window.saveCuartosPrediction('${partido.numero}')" ${disabled ? "disabled" : ""}>
   ${disabled ? (isFinalizado ? "🔒 Partido finalizado" : "🔒 Apuestas cerradas") : (hasPrediction ? "Actualizar" : "Guardar")}
 </button>
         <div class="match-timer" data-cierre="${cierreApuestas.toISOString()}">
@@ -2733,7 +2733,7 @@ async function generarSemifinales() {
           <label><input type="radio" name="semis_clasificado_${partido.numero}" value="${partido.local}" ${clasifGuardado === partido.local ? "checked" : ""} ${disabled ? "disabled" : ""}> ${fifaCodes[partido.local] || partido.local}</label>
           <label><input type="radio" name="semis_clasificado_${partido.numero}" value="${partido.visitante}" ${clasifGuardado === partido.visitante ? "checked" : ""} ${disabled ? "disabled" : ""}> ${fifaCodes[partido.visitante] || partido.visitante}</label>
         </div>
-        <button class="btn-guardar" onclick="window.saveSemifinalPrediction('${partido.numero}')" ${disabled ? "disabled" : ""}>
+        <button class="btn-guardar ${hasPrediction ? 'btn-actualizar' : ''}" onclick="window.saveSemifinalPrediction('${partido.numero}')" ${disabled ? "disabled" : ""}>
   ${disabled ? (isFinalizado ? "🔒 Partido finalizado" : "🔒 Apuestas cerradas") : (hasPrediction ? "Actualizar" : "Guardar")}
 </button>
         <div class="match-timer" data-cierre="${cierreApuestas.toISOString()}">
