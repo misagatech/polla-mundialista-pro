@@ -914,7 +914,7 @@ async function generarFinal() {
   if (!container) return;
   // 👇 Guardar scroll
   let scrollPos = 0;
-  const oldCarousel = document.getElementById("octavosCarousel");
+  const oldCarousel = document.getElementById("carouselFinal");
   if (oldCarousel) scrollPos = oldCarousel.scrollLeft;
 
   // Validar usuario logueado
