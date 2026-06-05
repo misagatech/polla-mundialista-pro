@@ -2074,10 +2074,7 @@ async function generarDieciseisavos() {
 
   container.innerHTML = html;
   const carousel = document.getElementById("knockoutCarousel");
-  // 👇 Restaurar la posición del scroll
-  if (carousel && scrollPos > 0) {
-    carousel.scrollLeft = scrollPos;
-  }
+  
 
   for (const partido of partidos) {
     if (!partido.local || !partido.visitante) continue;
@@ -2145,7 +2142,7 @@ if (predData) {
     rightBtn.onclick = () => carousel.scrollBy({ left: 340, behavior: "smooth" });
   }
 
-  // Listeners para mostrar radios en empate
+    // Listeners para mostrar radios en empate
   for (const partido of partidos) {
     const horaPartido = obtenerHoraPartidoKnockout(partido.numero);
     const cierreApuestas = new Date(horaPartido.getTime() - 60 * 60 * 1000);
@@ -2169,6 +2166,13 @@ if (predData) {
       visitInput.addEventListener("input", updateRadios);
       updateRadios();
     }
+  }
+
+  // 👇 RESTAURAR SCROLL AL FINAL (después de todo el DOM)
+  if (carousel && scrollPos > 0) {
+    setTimeout(() => {
+      carousel.scrollLeft = scrollPos;
+    }, 50);
   }
 }
 // ======================================================
@@ -2418,7 +2422,7 @@ async function generarOctavos() {
   </div>`;
   container.innerHTML = html;
   const carousel = document.getElementById("octavosCarousel");
-  if (carousel && scrollPos > 0) carousel.scrollLeft = scrollPos;
+  
 
   for (const partido of partidos) {
     const horaPartido = obtenerHoraPartidoKnockout(partido.numero);
@@ -2506,6 +2510,14 @@ async function generarOctavos() {
     }
   }
 }
+// 👇 RESTAURAR SCROLL AL FINAL (después de todo el DOM)
+  if (carousel && scrollPos > 0) {
+    setTimeout(() => {
+      carousel.scrollLeft = scrollPos;
+    }, 50);
+  }
+}
+
 // ======================================================
 // GENERAR CUARTOS AUTOMÁTICOS (CARRUSEL HORIZONTAL)
 // ======================================================
@@ -2576,7 +2588,7 @@ async function generarCuartos() {
 
   container.innerHTML = html;
   const carousel = document.getElementById("carouselCuartos");
-  if (carousel && scrollPos > 0) carousel.scrollLeft = scrollPos;
+  
 
   for (const partido of partidos) {
     const horaPartido = obtenerHoraPartidoKnockout(partido.numero);
@@ -2664,6 +2676,13 @@ async function generarCuartos() {
     }
   }
 }
+ // 👇 RESTAURAR SCROLL AL FINAL (después de todo el DOM)
+  if (carousel && scrollPos > 0) {
+    setTimeout(() => {
+      carousel.scrollLeft = scrollPos;
+    }, 50);
+  }
+}
 // ======================================================
 // GENERAR SEMIFINALES (CARRUSEL HORIZONTAL)
 // ======================================================
@@ -2730,8 +2749,7 @@ async function generarSemifinales() {
 
   container.innerHTML = html;
   const carousel = document.getElementById("carouselSemis");
-  if (carousel && scrollPos > 0) carousel.scrollLeft = scrollPos;
-
+ 
   for (const partido of partidos) {
     const horaPartido = obtenerHoraPartidoKnockout(partido.numero);
     const cierreApuestas = new Date(horaPartido.getTime() - 60 * 60 * 1000);
@@ -2814,6 +2832,13 @@ async function generarSemifinales() {
       visitInput.addEventListener("input", updateRadios);
       updateRadios();
     }
+  }
+}
+// 👇 RESTAURAR SCROLL AL FINAL (después de todo el DOM)
+  if (carousel && scrollPos > 0) {
+    setTimeout(() => {
+      carousel.scrollLeft = scrollPos;
+    }, 50);
   }
 }
 // ======================================================
