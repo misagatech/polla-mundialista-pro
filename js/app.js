@@ -631,6 +631,7 @@ window.savePrediction = async (matchId) => {
     );
 
     alert("✅ Predicción guardada");
+    mostrarTodosLosGrupos();
 
   } catch (error) {
 
