@@ -2336,3 +2336,12 @@ RESPONSIVE ADMIN PARTICIPANTES
   transform: translateY(-2px);
   box-shadow: 0 6px 14px rgba(250, 204, 21, 0.3);
 }
+#rankingList, #rankingKnockoutList {
+  max-height: 300px;
+  overflow-y: auto;
+  padding-right: 5px;
+}
+.admin-participants-grid {
+  max-height: 500px;
+  overflow-y: auto;
+}
