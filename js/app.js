@@ -1268,33 +1268,35 @@ async function generarTercerPuesto() {
 // RANKING EN TIEMPO REAL
 // ======================================================
 
-function loadRanking() {
-  if (rankingUnsubscribe) rankingUnsubscribe();
-  const rankingRef = collection(db, "ranking");
-  rankingUnsubscribe = onSnapshot(
-    query(rankingRef, orderBy("puntos", "desc")),
-    async (snapshot) => {
-      rankingGlobalData = [];
-      for (const docSnap of snapshot.docs) {
-        const data = docSnap.data();
-        if (!data.user_id) continue;
-        const userSnap = await getDoc(doc(db, "users", data.user_id));
-        if (!userSnap.exists()) continue;
-        const userData = userSnap.data();
-        // EXCLUIR AL ADMINISTRADOR
-        if (userData.rol === "admin") continue;
-        rankingGlobalData.push({
-          uid: data.user_id,
-          nombre: userData.nombre || "Usuario",
-          puntos: data.puntos
-        });
-      }
-      document.getElementById("totalRankingGlobal").innerText = rankingGlobalData.length;
-      renderRankingGlobal();
-    }
-  );
-}
+let rankingInterval; // Variable global para el intervalo del ranking global
 
+function loadRanking() {
+  if (rankingInterval) clearInterval(rankingInterval); // Evita intervalos acumulados
+
+  async function actualizarRanking() {
+    const q = query(collection(db, "ranking"), orderBy("puntos", "desc"), limit(50));
+    const snapshot = await getDocs(q);
+    rankingGlobalData = [];
+    for (const docSnap of snapshot.docs) {
+      const data = docSnap.data();
+      if (!data.user_id) continue;
+      const userSnap = await getDoc(doc(db, "users", data.user_id));
+      if (!userSnap.exists()) continue;
+      const userData = userSnap.data();
+      if (userData.rol === "admin") continue; // Excluir al administrador
+      rankingGlobalData.push({
+        uid: data.user_id,
+        nombre: userData.nombre || "Usuario",
+        puntos: data.puntos
+      });
+    }
+    document.getElementById("totalRankingGlobal").innerText = rankingGlobalData.length;
+    renderRankingGlobal();
+  }
+
+  actualizarRanking();                              // Carga inicial
+  rankingInterval = setInterval(actualizarRanking, 60000); // Actualiza cada 60 segundos
+}
 function renderRankingGlobal() {
   const container = document.getElementById("rankingList");
   if (!container) return;
