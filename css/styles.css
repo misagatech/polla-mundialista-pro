@@ -2326,3 +2326,13 @@ RESPONSIVE ADMIN PARTICIPANTES
     grid-template-columns: 1fr;
   }
 }
+/* Botón cuando ya existe predicción (Actualizar) */
+.btn-guardar.btn-actualizar {
+  background: linear-gradient(135deg, #facc15, #eab308) !important;
+  color: black !important;
+  border: 1px solid #facc15;
+}
+.btn-guardar.btn-actualizar:hover {
+  transform: translateY(-2px);
+  box-shadow: 0 6px 14px rgba(250, 204, 21, 0.3);
+}
