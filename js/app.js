@@ -2509,7 +2509,7 @@ async function generarOctavos() {
       updateRadios();
     }
   }
-}
+
 // 👇 RESTAURAR SCROLL AL FINAL (después de todo el DOM)
   if (carousel && scrollPos > 0) {
     setTimeout(() => {
