@@ -282,6 +282,29 @@
         <!-- ===================================================== -->
 
         <div id="tablaGruposContainer"></div>
+
+        <!-- ===================================================== -->
+        <!-- BOTONES GLOBALES PARA ELIMINATORIAS -->
+        <!-- ===================================================== -->
+        <div id="botonesEliminatorias" class="tabla-grupo-card"
+          style="margin-bottom: 20px; text-align: center; background: rgba(0,0,0,0.5); padding: 15px; border-radius: 30px;">
+          <button id="btnGuardarTodasElim" class="admin-load-btn"
+            style="background: linear-gradient(90deg, #15803d, #22c55e); margin-right: 10px;">📦 Guardar todas las
+            predicciones</button>
+          <button id="btnModificarDesde" class="admin-load-btn"
+            style="background: #facc15; color: black; margin-right: 10px;">✏️ Modificar desde...</button>
+          <button id="btnBorrarTodoElim" class="admin-load-btn" style="background: #dc2626;">🗑️ Borrar todo</button>
+        </div>
+        <!-- Menú para elegir fase (inicialmente oculto) -->
+        <div id="menuFases" style="display: none; margin-bottom: 20px;" class="tabla-grupo-card">
+          <div style="display: flex; flex-wrap: wrap; gap: 10px; justify-content: center;">
+            <button class="fase-opcion" data-fase="dieciseisavos">Dieciseisavos</button>
+            <button class="fase-opcion" data-fase="octavos">Octavos</button>
+            <button class="fase-opcion" data-fase="cuartos">Cuartos</button>
+            <button class="fase-opcion" data-fase="semifinales">Semifinales</button>
+            <button class="fase-opcion" data-fase="final">Final</button>
+          </div>
+        </div>
         <!-- ===================================================== -->
         <!-- DIECISEISAVOS -->
         <!-- ===================================================== -->
