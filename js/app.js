@@ -2169,6 +2169,7 @@ async function generarDieciseisavos() {
     });
   });
 }
+} // <-- Esta llave cierra la función
 // ======================================================
 // GUARDAR PREDICCIÓN ELIMINATORIAS
 // ======================================================
@@ -2446,6 +2447,7 @@ async function generarOctavos() {
     });
   });
 }
+}
 
 
 // ======================================================
@@ -2613,6 +2615,7 @@ if (carousel && scrollPos > 0) {
     });
   });
 }
+} 
 // ======================================================
 // GENERAR SEMIFINALES (CARRUSEL HORIZONTAL)
 // ======================================================
@@ -2770,6 +2773,7 @@ if (carousel && scrollPos > 0) {
       carousel.scrollLeft = scrollPos;
     });
   });
+}
 }
 // ======================================================
 // LOGIN, REGISTRO, LOGOUT
