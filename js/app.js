@@ -635,21 +635,21 @@ window.savePrediction = async (matchId) => {
 
     alert("✅ Predicción guardada");
 
-// 👇 ACTUALIZAR DATOS LOCALMENTE
-// Buscar el partido en gruposData y actualizar su userPred
-for (const grupo in gruposData) {
-  const partidoIndex = gruposData[grupo].findIndex(m => m.id === matchId);
-  if (partidoIndex !== -1) {
-    gruposData[grupo][partidoIndex].userPred = {
-      pred_local: local,
-      pred_visitante: visit,
-      // otros campos necesarios (si los hay)
-    };
-    break;
-  }
-}
+    // 👇 ACTUALIZAR DATOS LOCALMENTE
+    // Buscar el partido en gruposData y actualizar su userPred
+    for (const grupo in gruposData) {
+      const partidoIndex = gruposData[grupo].findIndex(m => m.id === matchId);
+      if (partidoIndex !== -1) {
+        gruposData[grupo][partidoIndex].userPred = {
+          pred_local: local,
+          pred_visitante: visit,
+          // otros campos necesarios (si los hay)
+        };
+        break;
+      }
+    }
 
-mostrarTodosLosGrupos();
+    mostrarTodosLosGrupos();
 
   } catch (error) {
 
@@ -970,9 +970,9 @@ async function generarFinal() {
     // ========== DATOS DEL PARTIDO ==========
     const horaPartido = obtenerHoraPartidoKnockout(104);
     const cierreApuestas = new Date(horaPartido.getTime() - 60 * 60 * 1000);
-    const isClosed = new Date() >= cierreApuestas;
+    //const isClosed = new Date() >= cierreApuestas;
     const isFinalizado = resultadosMap[partido.numero]?.finalizado === true;
-    const disabled = isClosed || isFinalizado;
+    const disabled = isKnockoutClosed || isFinalizado;
     const fechaLocal = horaPartido.toLocaleString("es-CO", { timeZone: "America/Bogota" });
 
     // ========== PREDICCIÓN GUARDADA DEL USUARIO ==========
@@ -1041,9 +1041,9 @@ async function generarFinal() {
           <label><input type="radio" name="final_clasificado_${partido.numero}" value="${partido.visitante}" ${clasifGuardado === partido.visitante ? "checked" : ""} ${disabled ? "disabled" : ""}> ${fifaCodes[partido.visitante] || partido.visitante}</label>
         </div>
       
-        <div class="match-timer" data-cierre="${cierreApuestas.toISOString()}">
-          ⏰ Resultados se bloquean en: <span class="timer-value">${formatearTiempoRestante(cierreApuestas)}</span>
-        </div>
+        <div class="match-timer" data-cierre="${horaPartido.toISOString()}">
+  🕒 Partido comienza en: <span class="timer-value">${formatearTiempoRestante(horaPartido)}</span>
+</div>
         <div class="match-date">📅 ${fechaLocal}</div>
       </div>
     `;
@@ -1180,9 +1180,9 @@ async function generarTercerPuesto() {
 
     const horaPartido = obtenerHoraPartidoKnockout(103);
     const cierreApuestas = new Date(horaPartido.getTime() - 60 * 60 * 1000);
-    const isClosed = new Date() >= cierreApuestas;
+    //const isClosed = new Date() >= cierreApuestas;
     const isFinalizado = resultadosMap[partido.numero]?.finalizado === true;
-    const disabled = isClosed || isFinalizado;
+    const disabled = isKnockoutClosed || isFinalizado;
     const fechaLocal = horaPartido.toLocaleString("es-CO", { timeZone: "America/Bogota" });
 
     // 5. Predicción guardada del usuario
@@ -1248,9 +1248,9 @@ async function generarTercerPuesto() {
           <label><input type="radio" name="third_clasificado_${partido.numero}" value="${partido.local}" ${clasifGuardado === partido.local ? "checked" : ""} ${disabled ? "disabled" : ""}> ${partido.local}</label>
           <label><input type="radio" name="third_clasificado_${partido.numero}" value="${partido.visitante}" ${clasifGuardado === partido.visitante ? "checked" : ""} ${disabled ? "disabled" : ""}> ${partido.visitante}</label>
         </div>
-        <div class="match-timer" data-cierre="${cierreApuestas.toISOString()}">
-          ⏰ Resultados se bloquean en: <span class="timer-value">${formatearTiempoRestante(cierreApuestas)}</span>
-        </div>
+        <div class="match-timer" data-cierre="${horaPartido.toISOString()}">
+  🕒 Partido comienza en: <span class="timer-value">${formatearTiempoRestante(horaPartido)}</span>
+</div>
         <div class="match-date">📅 ${fechaLocal}</div>
       </div>
     `;
@@ -2036,7 +2036,7 @@ async function generarDieciseisavos() {
     { numero: 87, local: clasificadosGlobales["1K"] || "1K", visitante: tercerosMap[87] || "Tercero por definir" },
     { numero: 88, local: clasificadosGlobales["2D"] || "2D", visitante: clasificadosGlobales["2G"] || "2G" }
   ];
-    // 👇 NUEVO BLOQUE (justo aquí)
+  // 👇 NUEVO BLOQUE (justo aquí)
   let misPrediccionesKO = {};
   if (currentUser) {
     try {
@@ -2069,27 +2069,27 @@ async function generarDieciseisavos() {
 
   container.innerHTML = html;
   const carousel = document.getElementById("knockoutCarousel");
-  
+
 
   for (const partido of partidos) {
     if (!partido.local || !partido.visitante) continue;
 
     const horaPartido = obtenerHoraPartidoKnockout(partido.numero);
     const cierreApuestas = new Date(horaPartido.getTime() - 60 * 60 * 1000);
-    const isClosed = new Date() >= cierreApuestas;
+    //const isClosed = new Date() >= cierreApuestas;
     const isFinalizado = resultadosMap[partido.numero]?.finalizado === true;
-    const disabled = isClosed || isFinalizado;
+    const disabled = isKnockoutClosed || isFinalizado;
     const fechaLocal = horaPartido.toLocaleString("es-CO", { timeZone: "America/Bogota" });
 
     const predData = misPrediccionesKO[partido.numero];
-let predLocal = "", predVisit = "", clasifGuardado = "";
-let hasPrediction = false;
-if (predData) {
-  hasPrediction = true;
-  predLocal = predData.pred_local ?? "";
-  predVisit = predData.pred_visitante ?? "";
-  clasifGuardado = predData.clasificado ?? "";
-}
+    let predLocal = "", predVisit = "", clasifGuardado = "";
+    let hasPrediction = false;
+    if (predData) {
+      hasPrediction = true;
+      predLocal = predData.pred_local ?? "";
+      predVisit = predData.pred_visitante ?? "";
+      clasifGuardado = predData.clasificado ?? "";
+    }
 
     const radiosId = `radios_ko_${partido.numero}`;
     const showRadios = (predLocal === predVisit && predLocal !== "");
@@ -2118,9 +2118,9 @@ if (predData) {
           <label><input type="radio" name="clasificado_${partido.numero}" value="${partido.visitante}" ${clasifGuardado === partido.visitante ? "checked" : ""} ${disabled ? "disabled" : ""}> ${fifaCodes[partido.visitante] || partido.visitante}</label>
         </div>
        
-        <div class="match-timer" data-cierre="${cierreApuestas.toISOString()}">
-          ⏰ Resultados se bloquean en: <span class="timer-value">${formatearTiempoRestante(cierreApuestas)}</span>
-        </div>
+        <div class="match-timer" data-cierre="${horaPartido.toISOString()}">
+  🕒 Partido comienza en: <span class="timer-value">${formatearTiempoRestante(horaPartido)}</span>
+</div>
         <div class="match-date">📅 ${fechaLocal}</div>
       </div>
     `;
@@ -2135,12 +2135,12 @@ if (predData) {
     rightBtn.onclick = () => carousel.scrollBy({ left: 340, behavior: "smooth" });
   }
 
-    // Listeners para mostrar radios en empate
+  // Listeners para mostrar radios en empate
   for (const partido of partidos) {
     const horaPartido = obtenerHoraPartidoKnockout(partido.numero);
     const cierreApuestas = new Date(horaPartido.getTime() - 60 * 60 * 1000);
     const disabled = new Date() >= cierreApuestas;
-    if (disabled) continue;
+    if (isKnockoutClosed) continue;
 
     const localInput = document.getElementById(`ko_local_${partido.numero}`);
     const visitInput = document.getElementById(`ko_visit_${partido.numero}`);
@@ -2161,12 +2161,13 @@ if (predData) {
     }
   }
 
-  // 👇 RESTAURAR SCROLL AL FINAL (después de todo el DOM)
-  if (carousel && scrollPos > 0) {
-    setTimeout(() => {
+ if (carousel && scrollPos > 0) {
+  // Esperar a que el navegador termine de renderizar
+  requestAnimationFrame(() => {
+    requestAnimationFrame(() => {
       carousel.scrollLeft = scrollPos;
-    }, 50);
-  }
+    });
+  });
 }
 // ======================================================
 // GUARDAR PREDICCIÓN ELIMINATORIAS
@@ -2350,14 +2351,14 @@ async function generarOctavos() {
   </div>`;
   container.innerHTML = html;
   const carousel = document.getElementById("octavosCarousel");
-  
+
 
   for (const partido of partidos) {
     const horaPartido = obtenerHoraPartidoKnockout(partido.numero);
     const cierreApuestas = new Date(horaPartido.getTime() - 60 * 60 * 1000);
-    const isClosed = new Date() >= cierreApuestas;
+    //const isClosed = new Date() >= cierreApuestas;
     const isFinalizado = resultadosMap[partido.numero]?.finalizado === true;
-    const disabled = isClosed || isFinalizado;
+    const disabled = isKnockoutClosed || isFinalizado;
     const fechaLocal = horaPartido.toLocaleString("es-CO", { timeZone: "America/Bogota" });
 
     const pred = predicciones[partido.numero] || {};
@@ -2393,9 +2394,9 @@ async function generarOctavos() {
           <label><input type="radio" name="oct_clasificado_${partido.numero}" value="${partido.visitante}" ${clasifGuardado === partido.visitante ? "checked" : ""} ${disabled ? "disabled" : ""}> ${fifaCodes[partido.visitante] || partido.visitante}</label>
         </div>
       
-        <div class="match-timer" data-cierre="${cierreApuestas.toISOString()}">
-          ⏰ Resultados se bloquean en: <span class="timer-value">${formatearTiempoRestante(cierreApuestas)}</span>
-        </div>
+        <div class="match-timer" data-cierre="${horaPartido.toISOString()}">
+  🕒 Partido comienza en: <span class="timer-value">${formatearTiempoRestante(horaPartido)}</span>
+</div>
         <div class="match-date">📅 ${fechaLocal}</div>
       </div>
     `;
@@ -2415,7 +2416,7 @@ async function generarOctavos() {
     const horaPartido = obtenerHoraPartidoKnockout(partido.numero);
     const cierreApuestas = new Date(horaPartido.getTime() - 60 * 60 * 1000);
     const disabled = new Date() >= cierreApuestas;
-    if (disabled) continue;
+    if (isKnockoutClosed) continue;
 
     const localInput = document.getElementById(`oct_local_${partido.numero}`);
     const visitInput = document.getElementById(`oct_visit_${partido.numero}`);
@@ -2436,12 +2437,14 @@ async function generarOctavos() {
     }
   }
 
-// 👇 RESTAURAR SCROLL AL FINAL (después de todo el DOM)
-  if (carousel && scrollPos > 0) {
-    setTimeout(() => {
+  // 👇 RESTAURAR SCROLL AL FINAL (después de todo el DOM)
+ if (carousel && scrollPos > 0) {
+  // Esperar a que el navegador termine de renderizar
+  requestAnimationFrame(() => {
+    requestAnimationFrame(() => {
       carousel.scrollLeft = scrollPos;
-    }, 50);
-  }
+    });
+  });
 }
 
 
@@ -2520,9 +2523,9 @@ async function generarCuartos() {
     // ... (tu código de inserción de tarjetas, no lo cambio)
     const horaPartido = obtenerHoraPartidoKnockout(partido.numero);
     const cierreApuestas = new Date(horaPartido.getTime() - 60 * 60 * 1000);
-    const isClosed = new Date() >= cierreApuestas;
+    //const isClosed = new Date() >= cierreApuestas;
     const isFinalizado = resultadosMap[partido.numero]?.finalizado === true;
-    const disabled = isClosed || isFinalizado;
+    const disabled = isKnockoutClosed || isFinalizado;
     const fechaLocal = horaPartido.toLocaleString("es-CO", { timeZone: "America/Bogota" });
 
     const pred = predicciones[partido.numero] || {};
@@ -2558,9 +2561,9 @@ async function generarCuartos() {
           <label><input type="radio" name="cuartos_clasificado_${partido.numero}" value="${partido.visitante}" ${clasifGuardado === partido.visitante ? "checked" : ""} ${disabled ? "disabled" : ""}> ${fifaCodes[partido.visitante] || partido.visitante}</label>
         </div>
       
-        <div class="match-timer" data-cierre="${cierreApuestas.toISOString()}">
-          ⏰ Resultados se bloquean en: <span class="timer-value">${formatearTiempoRestante(cierreApuestas)}</span>
-        </div>
+        <div class="match-timer" data-cierre="${horaPartido.toISOString()}">
+  🕒 Partido comienza en: <span class="timer-value">${formatearTiempoRestante(horaPartido)}</span>
+</div>
         <div class="match-date">📅 ${fechaLocal}</div>
       </div>
     `;
@@ -2579,8 +2582,8 @@ async function generarCuartos() {
   for (const partido of partidos) {
     const horaPartido = obtenerHoraPartidoKnockout(partido.numero);
     const cierreApuestas = new Date(horaPartido.getTime() - 60 * 60 * 1000);
-    const disabled = new Date() >= cierreApuestas;
-    if (disabled) continue;
+    if (isKnockoutClosed) continue;
+    //if (disabled) continue;
 
     const localInput = document.getElementById(`cuartos_local_${partido.numero}`);
     const visitInput = document.getElementById(`cuartos_visit_${partido.numero}`);
@@ -2602,11 +2605,13 @@ async function generarCuartos() {
   }
 
   // 👇 RESTAURAR SCROLL AL FINAL (dentro de la función)
-  if (carousel && scrollPos > 0) {
-    setTimeout(() => {
+if (carousel && scrollPos > 0) {
+  // Esperar a que el navegador termine de renderizar
+  requestAnimationFrame(() => {
+    requestAnimationFrame(() => {
       carousel.scrollLeft = scrollPos;
-    }, 50);
-  }
+    });
+  });
 }
 // ======================================================
 // GENERAR SEMIFINALES (CARRUSEL HORIZONTAL)
@@ -2674,13 +2679,13 @@ async function generarSemifinales() {
 
   container.innerHTML = html;
   const carousel = document.getElementById("carouselSemis");
- 
+
   for (const partido of partidos) {
     const horaPartido = obtenerHoraPartidoKnockout(partido.numero);
     const cierreApuestas = new Date(horaPartido.getTime() - 60 * 60 * 1000);
-    const isClosed = new Date() >= cierreApuestas;
+    //const isClosed = new Date() >= cierreApuestas;
     const isFinalizado = resultadosMap[partido.numero]?.finalizado === true;
-    const disabled = isClosed || isFinalizado;
+    const disabled = isKnockoutClosed || isFinalizado;
     const fechaLocal = horaPartido.toLocaleString("es-CO", { timeZone: "America/Bogota" });
 
     const pred = predicciones[partido.numero] || {};
@@ -2716,9 +2721,9 @@ async function generarSemifinales() {
           <label><input type="radio" name="semis_clasificado_${partido.numero}" value="${partido.visitante}" ${clasifGuardado === partido.visitante ? "checked" : ""} ${disabled ? "disabled" : ""}> ${fifaCodes[partido.visitante] || partido.visitante}</label>
         </div>
         
-        <div class="match-timer" data-cierre="${cierreApuestas.toISOString()}">
-          ⏰ Resultados se bloquean en: <span class="timer-value">${formatearTiempoRestante(cierreApuestas)}</span>
-        </div>
+        <div class="match-timer" data-cierre="${horaPartido.toISOString()}">
+  🕒 Partido comienza en: <span class="timer-value">${formatearTiempoRestante(horaPartido)}</span>
+</div>
         <div class="match-date">📅 ${fechaLocal}</div>
       </div>
     `;
@@ -2736,7 +2741,7 @@ async function generarSemifinales() {
     const horaPartido = obtenerHoraPartidoKnockout(partido.numero);
     const cierreApuestas = new Date(horaPartido.getTime() - 60 * 60 * 1000);
     const disabled = new Date() >= cierreApuestas;
-    if (disabled) continue;
+    if (isKnockoutClosed) continue;
 
     const localInput = document.getElementById(`semis_local_${partido.numero}`);
     const visitInput = document.getElementById(`semis_visit_${partido.numero}`);
@@ -2757,12 +2762,14 @@ async function generarSemifinales() {
     }
   }
 
-// 👇 RESTAURAR SCROLL AL FINAL (después de todo el DOM)
-  if (carousel && scrollPos > 0) {
-    setTimeout(() => {
+  // 👇 RESTAURAR SCROLL AL FINAL (después de todo el DOM)
+if (carousel && scrollPos > 0) {
+  // Esperar a que el navegador termine de renderizar
+  requestAnimationFrame(() => {
+    requestAnimationFrame(() => {
       carousel.scrollLeft = scrollPos;
-    }, 50);
-  }
+    });
+  });
 }
 // ======================================================
 // LOGIN, REGISTRO, LOGOUT
@@ -2851,16 +2858,16 @@ function loadPrizePoolRealtime() {
   if (participantsUnsubscribe) participantsUnsubscribe();
 
   const participantsRef = collection(db, "participants");
-  
+
   participantsUnsubscribe = onSnapshot(participantsRef, async (snapshot) => {
     // Usamos Map para evitar duplicados por uid
     const participantesUnicos = new Map(); // key = uid, value = datos del participant
-    
+
     for (const docSnap of snapshot.docs) {
       const participant = docSnap.data();
       const uid = participant.uid;
       if (!uid) continue;
-      
+
       // Obtener rol del usuario (solo una vez por uid)
       let userRol = null;
       try {
@@ -2869,20 +2876,20 @@ function loadPrizePoolRealtime() {
       } catch (e) {
         console.warn(`Error al obtener rol de ${uid}:`, e);
       }
-      
+
       // Excluir administradores
       if (userRol === "admin") continue;
-      
+
       // Si ya tenemos este uid en el Map, no lo agregamos de nuevo (evita duplicados)
       if (!participantesUnicos.has(uid)) {
         participantesUnicos.set(uid, participant);
       }
     }
-    
+
     // Ahora recorremos los participantes únicos y no admin
     let totalGrupos = 0, acumuladoGrupos = 0;
     let totalKO = 0, acumuladoKO = 0;
-    
+
     for (const participant of participantesUnicos.values()) {
       if (participant.paid_groups === true) {
         totalGrupos++;
@@ -2893,27 +2900,27 @@ function loadPrizePoolRealtime() {
         acumuladoKO += Number(participant.amount_knockout || 0);
       }
     }
-    
+
     // Actualizar elementos de grupos
     const gruposTotal = document.getElementById("totalParticipantesGrupos");
     const gruposAcumulado = document.getElementById("totalAcumuladoGrupos");
     const gruposPrimer = document.getElementById("premioGruposPrimer");
     const gruposAdmin = document.getElementById("premioGruposAdmin");
     const gruposPlataforma = document.getElementById("premioGruposPlataforma");
-    
+
     if (gruposTotal) gruposTotal.innerText = totalGrupos;
     if (gruposAcumulado) gruposAcumulado.innerText = formatearCOP(acumuladoGrupos);
     if (gruposPrimer) gruposPrimer.innerText = formatearCOP(acumuladoGrupos * 0.75);
     if (gruposAdmin) gruposAdmin.innerText = formatearCOP(acumuladoGrupos * 0.15);
     if (gruposPlataforma) gruposPlataforma.innerText = formatearCOP(acumuladoGrupos * 0.1);
-    
+
     // Actualizar elementos de knockout
     const koTotal = document.getElementById("totalParticipantesKO");
     const koAcumulado = document.getElementById("totalAcumuladoKO");
     const koPrimer = document.getElementById("premioKOPrimer");
     const koAdmin = document.getElementById("premioKOAdmin");
     const koPlataforma = document.getElementById("premioKOPlataforma");
-    
+
     if (koTotal) koTotal.innerText = totalKO;
     if (koAcumulado) koAcumulado.innerText = formatearCOP(acumuladoKO);
     if (koPrimer) koPrimer.innerText = formatearCOP(acumuladoKO * 0.75);
@@ -4070,16 +4077,16 @@ window.finalizarPartidoKnockout = async (numeroPartido) => {
 
     await updateDoc(resultadoRef, { finalizado: true });
     await calcularPuntosKnockout(numeroPartido, fase);
-     // 👇 REFRESCAR PUNTOS INMEDIATAMENTE
+    // 👇 REFRESCAR PUNTOS INMEDIATAMENTE
     await loadRankingKnockout();
     if (currentUser) {
-        await cargarPuntosUsuarioSidebar();
-        await generarDieciseisavos();
-  await generarOctavos();
-  await generarCuartos();
-  await generarSemifinales();
-  await generarFinal();
-  await generarTercerPuesto();
+      await cargarPuntosUsuarioSidebar();
+      await generarDieciseisavos();
+      await generarOctavos();
+      await generarCuartos();
+      await generarSemifinales();
+      await generarFinal();
+      await generarTercerPuesto();
     }
     btn.innerText = "✅ Finalizado";
     btn.classList.add("finalized");
@@ -4330,35 +4337,35 @@ onAuthStateChanged(auth, async (user) => {
     }
     loadRanking();
     // Crear automáticamente el documento en ranking_knockout si el usuario tiene KO habilitado
-const participantSnapKO = await getDoc(doc(db, "participants", currentUser.uid));
-if (participantSnapKO.exists() && participantSnapKO.data().enabled_knockout === true) {
-  const rankingKORef = doc(db, "ranking_knockout", currentUser.uid);
-  const rankingKOSnap = await getDoc(rankingKORef);
-  if (!rankingKOSnap.exists()) {
-    await setDoc(rankingKORef, {
-      user_id: currentUser.uid,
-      puntos: 0,
-      updated_at: serverTimestamp()
-    });
-    console.log("✅ Ranking KO creado para", currentUser.uid);
-  }
-}
+    const participantSnapKO = await getDoc(doc(db, "participants", currentUser.uid));
+    if (participantSnapKO.exists() && participantSnapKO.data().enabled_knockout === true) {
+      const rankingKORef = doc(db, "ranking_knockout", currentUser.uid);
+      const rankingKOSnap = await getDoc(rankingKORef);
+      if (!rankingKOSnap.exists()) {
+        await setDoc(rankingKORef, {
+          user_id: currentUser.uid,
+          puntos: 0,
+          updated_at: serverTimestamp()
+        });
+        console.log("✅ Ranking KO creado para", currentUser.uid);
+      }
+    }
 
-// 👇 NUEVO: Limpiar posibles duplicados en ranking_knockout para este usuario
-const rankingKODupQuery = query(collection(db, "ranking_knockout"), where("user_id", "==", currentUser.uid));
-const dupSnapshot = await getDocs(rankingKODupQuery);
-if (dupSnapshot.size > 1) {
-  const batch = writeBatch(db);
-  let primero = true;
-  dupSnapshot.forEach(docSnap => {
-    if (primero) { primero = false; }
-    else { batch.delete(docSnap.ref); }
-  });
-  await batch.commit();
-  console.log("✅ Duplicados de ranking KO limpiados para", currentUser.uid);
-}
+    // 👇 NUEVO: Limpiar posibles duplicados en ranking_knockout para este usuario
+    const rankingKODupQuery = query(collection(db, "ranking_knockout"), where("user_id", "==", currentUser.uid));
+    const dupSnapshot = await getDocs(rankingKODupQuery);
+    if (dupSnapshot.size > 1) {
+      const batch = writeBatch(db);
+      let primero = true;
+      dupSnapshot.forEach(docSnap => {
+        if (primero) { primero = false; }
+        else { batch.delete(docSnap.ref); }
+      });
+      await batch.commit();
+      console.log("✅ Duplicados de ranking KO limpiados para", currentUser.uid);
+    }
 
-loadRankingKnockout();   // ← Ahora sí, cargar el ranking
+    loadRankingKnockout();   // ← Ahora sí, cargar el ranking
     loadPrizePoolRealtime();
     await generarOctavos();
     await generarCuartos();
@@ -4372,12 +4379,12 @@ loadRankingKnockout();   // ← Ahora sí, cargar el ranking
     if (participantsUnsubscribe) participantsUnsubscribe();
     if (adminParticipantsUnsubscribe) adminParticipantsUnsubscribe();
     // 👇 NUEVO: Limpiar intervalos
-  if (rankingInterval) clearInterval(rankingInterval);
-  if (rankingIntervalKO) clearInterval(rankingIntervalKO);
-  if (window.timerInterval) {
-    clearInterval(window.timerInterval);
-    window.timerInterval = null;
-  }
+    if (rankingInterval) clearInterval(rankingInterval);
+    if (rankingIntervalKO) clearInterval(rankingIntervalKO);
+    if (window.timerInterval) {
+      clearInterval(window.timerInterval);
+      window.timerInterval = null;
+    }
     authScreen.classList.remove("hidden");
     appScreen.classList.add("hidden");
   }
@@ -4485,10 +4492,17 @@ async function guardarTodasEliminatorias() {
     }
   }
 
-  if (totalPartidos === 0) return alert("No hay partidos para guardar.");
+    if (totalPartidos === 0) return alert("No hay partidos para guardar.");
   await batch.commit();
   alert(`✅ ${totalPartidos} predicciones guardadas correctamente.`);
-  location.reload();
+
+  // Regenerar todas las fases para mostrar los nuevos datos guardados
+  await generarDieciseisavos();
+  await generarOctavos();
+  await generarCuartos();
+  await generarSemifinales();
+  await generarFinal();
+  await generarTercerPuesto();
 }
 
 // Borrar todas las predicciones localmente y en Firestore
@@ -4579,6 +4593,49 @@ document.querySelectorAll(".fase-opcion").forEach(btn => {
 // Inicializar botones al cargar
 setTimeout(() => {
   actualizarEstadoCierreEliminatorias();
+  iniciarContadorCierreEliminatorias();  // 👈 AÑADE ESTA LÍNEA
   document.getElementById("btnGuardarTodasElim")?.addEventListener("click", guardarTodasEliminatorias);
   document.getElementById("btnBorrarTodoElim")?.addEventListener("click", borrarTodasEliminatorias);
 }, 1000);
+let knockoutDeadlineTimerInterval = null;
+
+async function iniciarContadorCierreEliminatorias() {
+  try {
+    const settingsSnap = await getDoc(doc(db, "settings", "config"));
+    if (settingsSnap.exists()) {
+      const deadlineDate = settingsSnap.data().knockout_deadline?.toDate();
+      if (!deadlineDate) return;
+      const timerElement = document.getElementById("knockoutDeadlineTimer");
+      if (!timerElement) return;
+
+      const actualizar = () => {
+        const ahora = new Date();
+        const diff = deadlineDate - ahora;
+        if (diff <= 0) {
+          timerElement.innerText = "🔒 Cierre de apuestas de eliminatorias ha finalizado";
+          if (knockoutDeadlineTimerInterval) clearInterval(knockoutDeadlineTimerInterval);
+          // Opcional: deshabilitar botones globales y inputs si es necesario
+          document.getElementById("btnGuardarTodasElim")?.setAttribute("disabled", "disabled");
+          document.getElementById("btnModificarDesde")?.setAttribute("disabled", "disabled");
+          document.getElementById("btnBorrarTodoElim")?.setAttribute("disabled", "disabled");
+          return;
+        }
+        const segundosTotales = Math.floor(diff / 1000);
+        const dias = Math.floor(segundosTotales / 86400);
+        const horas = Math.floor((segundosTotales % 86400) / 3600);
+        const minutos = Math.floor((segundosTotales % 3600) / 60);
+        const segundos = segundosTotales % 60;
+        let texto = "⏳ Tiempo restante para cerrar apuestas de eliminatorias: ";
+        if (dias > 0) texto += `${dias}d `;
+        if (horas > 0 || dias > 0) texto += `${horas}h `;
+        texto += `${minutos}m ${segundos}s`;
+        timerElement.innerText = texto;
+      };
+      actualizar();
+      if (knockoutDeadlineTimerInterval) clearInterval(knockoutDeadlineTimerInterval);
+      knockoutDeadlineTimerInterval = setInterval(actualizar, 1000);
+    }
+  } catch (e) {
+    console.error("Error al cargar deadline de eliminatorias", e);
+  }
+}
