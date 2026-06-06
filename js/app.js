@@ -4382,3 +4382,203 @@ loadRankingKnockout();   // ← Ahora sí, cargar el ranking
     appScreen.classList.add("hidden");
   }
 });
+// ======================================================
+// BOTONES GLOBALES PARA ELIMINATORIAS (APUESTA ÚNICA)
+// ======================================================
+
+let isKnockoutClosed = false;
+
+// Obtener deadline y actualizar estado
+async function actualizarEstadoCierreEliminatorias() {
+  try {
+    const settingsSnap = await getDoc(doc(db, "settings", "config"));
+    if (settingsSnap.exists()) {
+      const deadline = settingsSnap.data().knockout_deadline?.toDate();
+      isKnockoutClosed = deadline ? new Date() >= deadline : false;
+    } else {
+      isKnockoutClosed = false;
+    }
+    const btnGuardar = document.getElementById("btnGuardarTodasElim");
+    const btnModificar = document.getElementById("btnModificarDesde");
+    const btnBorrar = document.getElementById("btnBorrarTodoElim");
+    if (isKnockoutClosed) {
+      if (btnGuardar) btnGuardar.disabled = true;
+      if (btnModificar) btnModificar.disabled = true;
+      if (btnBorrar) btnBorrar.disabled = true;
+    } else {
+      if (btnGuardar) btnGuardar.disabled = false;
+      if (btnModificar) btnModificar.disabled = false;
+      if (btnBorrar) btnBorrar.disabled = false;
+    }
+  } catch (e) {
+    console.warn("Error al obtener deadline eliminatorias", e);
+  }
+}
+
+// Guardar todas las predicciones en batch
+async function guardarTodasEliminatorias() {
+  if (!currentUser) return alert("Debes iniciar sesión");
+  if (isKnockoutClosed) return alert("La fase eliminatoria ya está cerrada. No se pueden guardar cambios.");
+
+  const batch = writeBatch(db);
+  const fases = [
+    { contenedorId: "bracketContainer", coleccion: "predictions_knockout", fase: "dieciseisavos" },
+    { contenedorId: "octavosContainer", coleccion: "predictions_octavos", fase: "octavos" },
+    { contenedorId: "cuartosContainer", coleccion: "predictions_cuartos", fase: "cuartos" },
+    { contenedorId: "semifinalContainer", coleccion: "predictions_semifinales", fase: "semifinales" },
+    { contenedorId: "finalContainer", coleccion: "predictions_final", fase: "final" },
+    { contenedorId: "thirdPlaceContainer", coleccion: "predictions_third", fase: "tercer_puesto" }
+  ];
+
+  let totalPartidos = 0;
+
+  for (const fase of fases) {
+    const container = document.getElementById(fase.contenedorId);
+    if (!container) continue;
+    const cards = container.querySelectorAll(".knockout-card");
+    for (const card of cards) {
+      let partidoNumero = null;
+      if (card.dataset.partido) partidoNumero = card.dataset.partido;
+      else if (card.dataset.partidoOctavos) partidoNumero = card.dataset.partidoOctavos;
+      else if (card.dataset.partidoCuartos) partidoNumero = card.dataset.partidoCuartos;
+      else if (card.dataset.partidoSemis) partidoNumero = card.dataset.partidoSemis;
+      else if (card.dataset.partidoFinal) partidoNumero = card.dataset.partidoFinal;
+      else if (card.dataset.partidoThird) partidoNumero = card.dataset.partidoThird;
+      if (!partidoNumero) continue;
+
+      const localInput = card.querySelector(`input[id$="local_${partidoNumero}"]`);
+      const visitInput = card.querySelector(`input[id$="visit_${partidoNumero}"]`);
+      if (!localInput || !visitInput) continue;
+
+      const local = parseInt(localInput.value);
+      const visit = parseInt(visitInput.value);
+      if (isNaN(local) || isNaN(visit)) {
+        return alert(`❌ Completa el marcador del partido ${partidoNumero}`);
+      }
+
+      const equipoLocal = card.dataset.local;
+      const equipoVisit = card.dataset.visitante;
+      let clasificado = null;
+      if (local > visit) clasificado = equipoLocal;
+      else if (visit > local) clasificado = equipoVisit;
+      else {
+        const radioName = `clasificado_${partidoNumero}`;
+        const radioSelected = card.querySelector(`input[name="${radioName}"]:checked`);
+        if (!radioSelected) {
+          return alert(`❌ En el partido ${partidoNumero} hay empate. Debes elegir quién clasifica.`);
+        }
+        clasificado = radioSelected.value;
+      }
+
+      const docId = `${currentUser.uid}_${partidoNumero}`;
+      const ref = doc(db, fase.coleccion, docId);
+      batch.set(ref, {
+        uid: currentUser.uid,
+        partido: Number(partidoNumero),
+        pred_local: local,
+        pred_visitante: visit,
+        clasificado: clasificado,
+        fase: fase.fase,
+        updated_at: serverTimestamp()
+      }, { merge: true });
+      totalPartidos++;
+    }
+  }
+
+  if (totalPartidos === 0) return alert("No hay partidos para guardar.");
+  await batch.commit();
+  alert(`✅ ${totalPartidos} predicciones guardadas correctamente.`);
+  location.reload();
+}
+
+// Borrar todas las predicciones localmente y en Firestore
+async function borrarTodasEliminatorias() {
+  if (!currentUser) return alert("Debes iniciar sesión");
+  if (!confirm("⚠️ ¿Estás seguro? Se borrarán TODAS tus predicciones de eliminatorias. Esta acción no se puede deshacer.")) return;
+
+  const colecciones = [
+    "predictions_knockout",
+    "predictions_octavos",
+    "predictions_cuartos",
+    "predictions_semifinales",
+    "predictions_final",
+    "predictions_third"
+  ];
+
+  const batch = writeBatch(db);
+  for (const col of colecciones) {
+    const q = query(collection(db, col), where("uid", "==", currentUser.uid));
+    const snap = await getDocs(q);
+    snap.forEach(docSnap => batch.delete(docSnap.ref));
+  }
+  await batch.commit();
+
+  // Limpiar inputs localmente
+  const contenedores = ["bracketContainer", "octavosContainer", "cuartosContainer", "semifinalContainer", "finalContainer", "thirdPlaceContainer"];
+  for (const id of contenedores) {
+    const container = document.getElementById(id);
+    if (container) {
+      const inputs = container.querySelectorAll('input.prediction-input');
+      inputs.forEach(inp => inp.value = "");
+      const radiosDivs = container.querySelectorAll('.knockout-radios');
+      radiosDivs.forEach(div => div.style.display = "none");
+    }
+  }
+  alert("✅ Todas tus predicciones de eliminatorias han sido eliminadas.");
+  location.reload();
+}
+
+// Mostrar/ocultar menú de fases
+let menuVisible = false;
+document.getElementById("btnModificarDesde")?.addEventListener("click", () => {
+  const menu = document.getElementById("menuFases");
+  if (menu) {
+    menuVisible = !menuVisible;
+    menu.style.display = menuVisible ? "block" : "none";
+  }
+});
+
+// Manejar clic en cada opción de fase
+document.querySelectorAll(".fase-opcion").forEach(btn => {
+  btn.addEventListener("click", async () => {
+    const fase = btn.dataset.fase;
+    if (!fase) return;
+    if (!confirm(`¿Borrar todas las predicciones desde ${fase} en adelante? Las fases anteriores no se modificarán.`)) return;
+
+    const orden = { dieciseisavos: 1, octavos: 2, cuartos: 3, semifinales: 4, final: 5 };
+    const faseSeleccionada = orden[fase];
+    if (!faseSeleccionada) return;
+
+    const fasesList = [
+      { id: "bracketContainer", orden: 1 },
+      { id: "octavosContainer", orden: 2 },
+      { id: "cuartosContainer", orden: 3 },
+      { id: "semifinalContainer", orden: 4 },
+      { id: "finalContainer", orden: 5 },
+      { id: "thirdPlaceContainer", orden: 6 }  // tercer puesto siempre se borra si se borra desde semifinal o antes
+    ];
+
+    for (const f of fasesList) {
+      if (f.orden >= faseSeleccionada) {
+        const container = document.getElementById(f.id);
+        if (container) {
+          const inputs = container.querySelectorAll('input.prediction-input');
+          inputs.forEach(inp => inp.value = "");
+          const radiosDivs = container.querySelectorAll('.knockout-radios');
+          radiosDivs.forEach(div => div.style.display = "none");
+        }
+      }
+    }
+    alert(`Se han borrado localmente las predicciones desde ${fase} en adelante. Completa los marcadores y guarda.`);
+    const menu = document.getElementById("menuFases");
+    if (menu) menu.style.display = "none";
+    menuVisible = false;
+  });
+});
+
+// Inicializar botones al cargar
+setTimeout(() => {
+  actualizarEstadoCierreEliminatorias();
+  document.getElementById("btnGuardarTodasElim")?.addEventListener("click", guardarTodasEliminatorias);
+  document.getElementById("btnBorrarTodoElim")?.addEventListener("click", borrarTodasEliminatorias);
+}, 1000);
