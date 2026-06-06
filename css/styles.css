@@ -2347,3 +2347,8 @@ RESPONSIVE ADMIN PARTICIPANTES
     max-height: 400px;
   }
 }
+.fase-opcion:hover {
+  background: #facc15 !important;
+  color: black !important;
+  transform: scale(1.02);
+}
