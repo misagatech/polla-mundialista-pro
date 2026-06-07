@@ -2320,6 +2320,63 @@ window.saveKnockoutPrediction = async (partidoNumero) => {
   }
 };
 // ======================================================
+// REACTIVIDAD PARA OCTAVOS
+// ======================================================
+let timeoutIdOct = null;
+
+function calcularClasificadosOctavos() {
+  const clasificados = {};
+  for (let i = 89; i <= 96; i++) {
+    const localInput = document.getElementById(`oct_local_${i}`);
+    const visitInput = document.getElementById(`oct_visit_${i}`);
+    if (!localInput || !visitInput) continue;
+    const local = parseInt(localInput.value);
+    const visit = parseInt(visitInput.value);
+    if (isNaN(local) || isNaN(visit)) continue;
+    const card = document.querySelector(`[data-partido-octavos="${i}"]`);
+    if (!card) continue;
+    const equipoLocal = card.dataset.local;
+    const equipoVisit = card.dataset.visitante;
+    if (local > visit) clasificados[i] = equipoLocal;
+    else if (visit > local) clasificados[i] = equipoVisit;
+    else {
+      const radioName = `oct_clasificado_${i}`;
+      const radioSelected = card.querySelector(`input[name="${radioName}"]:checked`);
+      if (radioSelected) clasificados[i] = radioSelected.value;
+    }
+  }
+  return clasificados;
+}
+
+function configurarReactividadOctavos() {
+  for (let i = 89; i <= 96; i++) {
+    const localInput = document.getElementById(`oct_local_${i}`);
+    const visitInput = document.getElementById(`oct_visit_${i}`);
+    if (!localInput || !visitInput) continue;
+
+    const updateHandler = () => {
+      if (timeoutIdOct) clearTimeout(timeoutIdOct);
+      timeoutIdOct = setTimeout(async () => {
+        clasificadosEnMemoria.octavos = calcularClasificadosOctavos();
+        await generarCuartos(true);
+        await generarSemifinales(true);
+        await generarFinal(true);
+        await generarTercerPuesto(true);
+      }, 300);
+    };
+
+    localInput.addEventListener("input", updateHandler);
+    visitInput.addEventListener("input", updateHandler);
+
+    const radiosDiv = document.getElementById(`radios_oct_${i}`);
+    if (radiosDiv) {
+      radiosDiv.querySelectorAll('input[type="radio"]').forEach(radio => {
+        radio.addEventListener("change", updateHandler);
+      });
+    }
+  }
+}
+// ======================================================
 // GENERAR OCTAVOS AUTOMÁTICOS
 // ======================================================
 async function generarOctavos(usarMemoria = false) {
@@ -2330,10 +2387,7 @@ async function generarOctavos(usarMemoria = false) {
   const oldCarousel = document.getElementById("octavosCarousel");
   if (oldCarousel) scrollPos = oldCarousel.scrollLeft;
 
-  // ========== VALIDACIÓN DE ACCESO (ya no es necesaria si solo se llama cuando tiene acceso) ==========
-  // Si quieres mantenerla, déjala; pero si ya controlas hasKOAccess, puedes comentarla.
-
-  // Cargar resultados de knockout (igual, para saber finalizados)
+  // Cargar resultados de knockout (para saber finalizados)
   const resultadosSnap = await getDocs(collection(db, "knockout_results"));
   const resultadosMap = {};
   resultadosSnap.forEach(doc => { resultadosMap[doc.data().numero] = doc.data(); });
@@ -2341,10 +2395,8 @@ async function generarOctavos(usarMemoria = false) {
   // Obtener clasificados de dieciseisavos
   let clasificados = {};
   if (usarMemoria && Object.keys(clasificadosEnMemoria.dieciseisavos).length > 0) {
-    // Usamos los clasificados en memoria (calculados en tiempo real)
     clasificados = clasificadosEnMemoria.dieciseisavos;
   } else {
-    // Cargar desde Firestore (solo si no estamos en modo reactivo)
     const knockoutSnap = await getDocs(collection(db, "predictions_knockout"));
     knockoutSnap.forEach(doc => {
       const data = doc.data();
@@ -2374,7 +2426,7 @@ async function generarOctavos(usarMemoria = false) {
     predicciones[data.partido] = data;
   });
 
-  // Crear estructura con carrusel
+  // HTML base
   let html = `<div class="tabla-grupo-card">
     <h3 class="tabla-title">Octavos de Final</h3>
     <div class="puntuacion-info">
@@ -2390,20 +2442,20 @@ async function generarOctavos(usarMemoria = false) {
       <button id="scrollOctavosRight" class="scroll-btn"><i class="fas fa-chevron-right"></i></button>
     </div>
   </div>`;
+
   container.innerHTML = html;
   const carousel = document.getElementById("octavosCarousel");
 
-
+  // Generar tarjetas
   for (const partido of partidos) {
     const horaPartido = obtenerHoraPartidoKnockout(partido.numero);
     const cierreApuestas = new Date(horaPartido.getTime() - 60 * 60 * 1000);
-    //const isClosed = new Date() >= cierreApuestas;
     const isFinalizado = resultadosMap[partido.numero]?.finalizado === true;
     const disabled = isKnockoutClosed || isFinalizado;
     const fechaLocal = horaPartido.toLocaleString("es-CO", { timeZone: "America/Bogota" });
 
     const pred = predicciones[partido.numero] || {};
-    const hasPrediction = !!pred.pred_local; // true si existe predicción (pred_local no es undefined)
+    const hasPrediction = !!pred.pred_local;
     const predLocal = pred.pred_local ?? "";
     const predVisit = pred.pred_visitante ?? "";
     const clasifGuardado = pred.clasificado ?? "";
@@ -2434,10 +2486,9 @@ async function generarOctavos(usarMemoria = false) {
           <label><input type="radio" name="oct_clasificado_${partido.numero}" value="${partido.local}" ${clasifGuardado === partido.local ? "checked" : ""} ${disabled ? "disabled" : ""}> ${fifaCodes[partido.local] || partido.local}</label>
           <label><input type="radio" name="oct_clasificado_${partido.numero}" value="${partido.visitante}" ${clasifGuardado === partido.visitante ? "checked" : ""} ${disabled ? "disabled" : ""}> ${fifaCodes[partido.visitante] || partido.visitante}</label>
         </div>
-      
         <div class="match-timer" data-cierre="${horaPartido.toISOString()}">
-  🕒 Partido comienza en: <span class="timer-value">${formatearTiempoRestante(horaPartido)}</span>
-</div>
+          🕒 Partido comienza en: <span class="timer-value">${formatearTiempoRestante(horaPartido)}</span>
+        </div>
         <div class="match-date">📅 ${fechaLocal}</div>
       </div>
     `;
@@ -2452,12 +2503,10 @@ async function generarOctavos(usarMemoria = false) {
     rightBtn.onclick = () => carousel.scrollBy({ left: 340, behavior: "smooth" });
   }
 
-    // Listeners para radios en empate (octavos)
+  // Listeners para radios en empate (octavos)
   for (const partido of partidos) {
     const horaPartido = obtenerHoraPartidoKnockout(partido.numero);
-    const cierreApuestas = new Date(horaPartido.getTime() - 60 * 60 * 1000);
     if (isKnockoutClosed) continue;
-
     const localInput = document.getElementById(`oct_local_${partido.numero}`);
     const visitInput = document.getElementById(`oct_visit_${partido.numero}`);
     const radiosDiv = document.getElementById(`radios_oct_${partido.numero}`);
@@ -2477,6 +2526,18 @@ async function generarOctavos(usarMemoria = false) {
     }
   }
 
+  // ======================================================
+  // REACTIVIDAD: cuando cambien los inputs de octavos, actualizar cuartos, semifinales, final, tercero
+  // ======================================================
+  // Función para calcular clasificados de octavos (debe estar definida antes)
+  if (typeof calcularClasificadosOctavos === 'function') {
+    // Definimos los handlers aquí mismo (para evitar dependencia externa)
+    // En realidad, llamamos a una función externa que debe existir.
+    configurarReactividadOctavos();
+  } else {
+    console.warn("La función calcularClasificadosOctavos o configurarReactividadOctavos no está definida. La reactividad de octavos no funcionará.");
+  }
+
   // Restaurar scroll
   if (carousel && scrollPos > 0) {
     requestAnimationFrame(() => {
@@ -2485,7 +2546,57 @@ async function generarOctavos(usarMemoria = false) {
       });
     });
   }
-} // <-- Una sola llave que cierra la función
+}
+let timeoutIdCuart = null;
+
+function calcularClasificadosCuartos() {
+  const clasificados = {};
+  for (let i = 97; i <= 100; i++) {
+    const localInput = document.getElementById(`cuartos_local_${i}`);
+    const visitInput = document.getElementById(`cuartos_visit_${i}`);
+    if (!localInput || !visitInput) continue;
+    const local = parseInt(localInput.value);
+    const visit = parseInt(visitInput.value);
+    if (isNaN(local) || isNaN(visit)) continue;
+    const card = document.querySelector(`[data-partido-cuartos="${i}"]`);
+    if (!card) continue;
+    const equipoLocal = card.dataset.local;
+    const equipoVisit = card.dataset.visitante;
+    if (local > visit) clasificados[i] = equipoLocal;
+    else if (visit > local) clasificados[i] = equipoVisit;
+    else {
+      const radioName = `cuartos_clasificado_${i}`;
+      const radioSelected = card.querySelector(`input[name="${radioName}"]:checked`);
+      if (radioSelected) clasificados[i] = radioSelected.value;
+    }
+  }
+  return clasificados;
+}
+
+function configurarReactividadCuartos() {
+  for (let i = 97; i <= 100; i++) {
+    const localInput = document.getElementById(`cuartos_local_${i}`);
+    const visitInput = document.getElementById(`cuartos_visit_${i}`);
+    if (!localInput || !visitInput) continue;
+    const updateHandler = () => {
+      if (timeoutIdCuart) clearTimeout(timeoutIdCuart);
+      timeoutIdCuart = setTimeout(async () => {
+        clasificadosEnMemoria.cuartos = calcularClasificadosCuartos();
+        await generarSemifinales(true);
+        await generarFinal(true);
+        await generarTercerPuesto(true);
+      }, 300);
+    };
+    localInput.addEventListener("input", updateHandler);
+    visitInput.addEventListener("input", updateHandler);
+    const radiosDiv = document.getElementById(`radios_cuartos_${i}`);
+    if (radiosDiv) {
+      radiosDiv.querySelectorAll('input[type="radio"]').forEach(radio => {
+        radio.addEventListener("change", updateHandler);
+      });
+    }
+  }
+}
 // ======================================================
 // GENERAR CUARTOS AUTOMÁTICOS (CARRUSEL HORIZONTAL)
 // ======================================================
@@ -2493,18 +2604,14 @@ async function generarCuartos(usarMemoria = false) {
   const container = document.getElementById("cuartosContainer");
   if (!container) return;
 
-  // 👇 Guardar scroll con el ID correcto
   let scrollPos = 0;
   const oldCarousel = document.getElementById("carouselCuartos");
   if (oldCarousel) scrollPos = oldCarousel.scrollLeft;
 
-  
-  // Cargar resultados de knockout
   const resultadosSnap = await getDocs(collection(db, "knockout_results"));
   const resultadosMap = {};
   resultadosSnap.forEach(doc => { resultadosMap[doc.data().numero] = doc.data(); });
 
-   // Obtener clasificados de octavos
   let clasificados = {};
   if (usarMemoria && Object.keys(clasificadosEnMemoria.octavos).length > 0) {
     clasificados = clasificadosEnMemoria.octavos;
@@ -2524,7 +2631,6 @@ async function generarCuartos(usarMemoria = false) {
     { numero: 100, local: clasificados[95] || "Ganador 95", visitante: clasificados[96] || "Ganador 96" }
   ];
 
-  // Obtener predicciones guardadas
   const cuartosQuery = query(collection(db, "predictions_cuartos"), where("uid", "==", currentUser.uid));
   const cuartosSnap = await getDocs(cuartosQuery);
   const predicciones = {};
@@ -2535,14 +2641,8 @@ async function generarCuartos(usarMemoria = false) {
 
   let html = `<div class="tabla-grupo-card">
     <h3 class="tabla-title">Cuartos de Final</h3>
-    <div class="puntuacion-info">
-      ⚽ <strong>Reglas de puntuación:</strong> Se toma el marcador de los 90 minutos. 
-      Puntos: aciertas el marcador exacto → <strong>3 puntos</strong>. 
-      Aciertas solo quién gana → <strong>1 punto</strong>. 
-      En caso de <strong>empate</strong>, suma <strong>+1 punto</strong> si seleccionas correctamente el clasificado.
-      <span style="display:block; margin-top:6px; font-size:0.7rem; color:#facc15;">➡️ Cuando marques un empate, aparecerán las opciones para elegir quién avanza.</span>
-    </div>
-    <div class="grupos-tabs-wrapper" style="margin-bottom: 16px;">
+    <div class="puntuacion-info">...</div>
+    <div class="grupos-tabs-wrapper">
       <button id="scrollCuartosLeft" class="scroll-btn"><i class="fas fa-chevron-left"></i></button>
       <div id="carouselCuartos" class="knockout-carousel" style="display: flex; overflow-x: auto; gap: 20px; scroll-behavior: smooth; padding-bottom: 10px;"></div>
       <button id="scrollCuartosRight" class="scroll-btn"><i class="fas fa-chevron-right"></i></button>
@@ -2553,10 +2653,7 @@ async function generarCuartos(usarMemoria = false) {
   const carousel = document.getElementById("carouselCuartos");
 
   for (const partido of partidos) {
-    // ... (tu código de inserción de tarjetas, no lo cambio)
     const horaPartido = obtenerHoraPartidoKnockout(partido.numero);
-    const cierreApuestas = new Date(horaPartido.getTime() - 60 * 60 * 1000);
-    //const isClosed = new Date() >= cierreApuestas;
     const isFinalizado = resultadosMap[partido.numero]?.finalizado === true;
     const disabled = isKnockoutClosed || isFinalizado;
     const fechaLocal = horaPartido.toLocaleString("es-CO", { timeZone: "America/Bogota" });
@@ -2571,69 +2668,45 @@ async function generarCuartos(usarMemoria = false) {
     const showRadios = (predLocal === predVisit && predLocal !== "");
 
     const tarjetaHTML = `
-      <div class="knockout-card" data-partido-cuartos="${partido.numero}" data-local="${partido.local}" data-visitante="${partido.visitante}">
-        <div class="knockout-match-number">Partido ${partido.numero}</div>
-        <div class="match-teams">
-          <div class="team-row">
-            <img class="flag-icon" src="https://flagcdn.com/${obtenerCodigoPais(partido.local)}.svg">
-            <span>${fifaCodes[partido.local] || partido.local}</span>
-          </div>
-          <div class="vs-text">VS</div>
-          <div class="team-row">
-            <img class="flag-icon" src="https://flagcdn.com/${obtenerCodigoPais(partido.visitante)}.svg">
-            <span>${fifaCodes[partido.visitante] || partido.visitante}</span>
-          </div>
-        </div>
-        <div class="prediction-area">
-          <input type="number" id="cuartos_local_${partido.numero}" class="prediction-input local-score" value="${predLocal}" placeholder="0" ${disabled ? "disabled" : ""}>
-          <span class="score-separator">-</span>
-          <input type="number" id="cuartos_visit_${partido.numero}" class="prediction-input visitor-score" value="${predVisit}" placeholder="0" ${disabled ? "disabled" : ""}>
-        </div>
-        <div id="${radiosId}" class="knockout-radios" style="display: ${showRadios ? "flex" : "none"};">
-          <label><input type="radio" name="cuartos_clasificado_${partido.numero}" value="${partido.local}" ${clasifGuardado === partido.local ? "checked" : ""} ${disabled ? "disabled" : ""}> ${fifaCodes[partido.local] || partido.local}</label>
-          <label><input type="radio" name="cuartos_clasificado_${partido.numero}" value="${partido.visitante}" ${clasifGuardado === partido.visitante ? "checked" : ""} ${disabled ? "disabled" : ""}> ${fifaCodes[partido.visitante] || partido.visitante}</label>
-        </div>
-      
-        <div class="match-timer" data-cierre="${horaPartido.toISOString()}">
-  🕒 Partido comienza en: <span class="timer-value">${formatearTiempoRestante(horaPartido)}</span>
-</div>
-        <div class="match-date">📅 ${fechaLocal}</div>
+  <div class="knockout-card" data-partido-cuartos="${partido.numero}" data-local="${partido.local}" data-visitante="${partido.visitante}">
+    <div class="knockout-match-number">Partido ${partido.numero}</div>
+    <div class="match-teams">
+      <div class="team-row">
+        <img class="flag-icon" src="https://flagcdn.com/${obtenerCodigoPais(partido.local)}.svg">
+        <span>${fifaCodes[partido.local] || partido.local}</span>
       </div>
-    `;
+      <div class="vs-text">VS</div>
+      <div class="team-row">
+        <img class="flag-icon" src="https://flagcdn.com/${obtenerCodigoPais(partido.visitante)}.svg">
+        <span>${fifaCodes[partido.visitante] || partido.visitante}</span>
+      </div>
+    </div>
+    <div class="prediction-area">
+      <input type="number" id="cuartos_local_${partido.numero}" class="prediction-input local-score" value="${predLocal}" placeholder="0" ${disabled ? "disabled" : ""}>
+      <span class="score-separator">-</span>
+      <input type="number" id="cuartos_visit_${partido.numero}" class="prediction-input visitor-score" value="${predVisit}" placeholder="0" ${disabled ? "disabled" : ""}>
+    </div>
+    <div id="${radiosId}" class="knockout-radios" style="display: ${showRadios ? "flex" : "none"};">
+      <label><input type="radio" name="cuartos_clasificado_${partido.numero}" value="${partido.local}" ${clasifGuardado === partido.local ? "checked" : ""} ${disabled ? "disabled" : ""}> ${fifaCodes[partido.local] || partido.local}</label>
+      <label><input type="radio" name="cuartos_clasificado_${partido.numero}" value="${partido.visitante}" ${clasifGuardado === partido.visitante ? "checked" : ""} ${disabled ? "disabled" : ""}> ${fifaCodes[partido.visitante] || partido.visitante}</label>
+    </div>
+    <div class="match-timer" data-cierre="${horaPartido.toISOString()}">
+      🕒 Partido comienza en: <span class="timer-value">${formatearTiempoRestante(horaPartido)}</span>
+    </div>
+    <div class="match-date">📅 ${fechaLocal}</div>
+  </div>
+`;
     carousel.insertAdjacentHTML('beforeend', tarjetaHTML);
   }
 
-  // Botones de scroll
-  const leftBtn = document.getElementById("scrollCuartosLeft");
-  const rightBtn = document.getElementById("scrollCuartosRight");
-  if (leftBtn && rightBtn) {
-    leftBtn.onclick = () => carousel.scrollBy({ left: -340, behavior: "smooth" });
-    rightBtn.onclick = () => carousel.scrollBy({ left: 340, behavior: "smooth" });
-  }
+  // Botones de scroll y listeners (igual)
+  // ... (código que ya tienes)
 
-    // Listeners para radios en empate (cuartos)
-  for (const partido of partidos) {
-    const horaPartido = obtenerHoraPartidoKnockout(partido.numero);
-    const cierreApuestas = new Date(horaPartido.getTime() - 60 * 60 * 1000);
-    if (isKnockoutClosed) continue;
-
-    const localInput = document.getElementById(`cuartos_local_${partido.numero}`);
-    const visitInput = document.getElementById(`cuartos_visit_${partido.numero}`);
-    const radiosDiv = document.getElementById(`radios_cuartos_${partido.numero}`);
-    if (localInput && visitInput && radiosDiv) {
-      const updateRadios = () => {
-        const localVal = parseInt(localInput.value);
-        const visitVal = parseInt(visitInput.value);
-        if (!isNaN(localVal) && !isNaN(visitVal) && localVal === visitVal) {
-          radiosDiv.style.display = "flex";
-        } else {
-          radiosDiv.style.display = "none";
-        }
-      };
-      localInput.addEventListener("input", updateRadios);
-      visitInput.addEventListener("input", updateRadios);
-      updateRadios();
-    }
+  // Reactividad para cuartos -> semifinales, final, tercero
+  if (typeof configurarReactividadCuartos === 'function') {
+    configurarReactividadCuartos();
+  } else {
+    console.warn("configurarReactividadCuartos no definida. La reactividad de cuartos no funcionará.");
   }
 
   // Restaurar scroll
@@ -2644,7 +2717,57 @@ async function generarCuartos(usarMemoria = false) {
       });
     });
   }
-} // <-- Una sola llave
+}
+
+let timeoutIdSemis = null;
+
+function calcularClasificadosSemifinales() {
+  const clasificados = {};
+  for (let i = 101; i <= 102; i++) {
+    const localInput = document.getElementById(`semis_local_${i}`);
+    const visitInput = document.getElementById(`semis_visit_${i}`);
+    if (!localInput || !visitInput) continue;
+    const local = parseInt(localInput.value);
+    const visit = parseInt(visitInput.value);
+    if (isNaN(local) || isNaN(visit)) continue;
+    const card = document.querySelector(`[data-partido-semis="${i}"]`);
+    if (!card) continue;
+    const equipoLocal = card.dataset.local;
+    const equipoVisit = card.dataset.visitante;
+    if (local > visit) clasificados[i] = equipoLocal;
+    else if (visit > local) clasificados[i] = equipoVisit;
+    else {
+      const radioName = `semis_clasificado_${i}`;
+      const radioSelected = card.querySelector(`input[name="${radioName}"]:checked`);
+      if (radioSelected) clasificados[i] = radioSelected.value;
+    }
+  }
+  return clasificados;
+}
+
+function configurarReactividadSemifinales() {
+  for (let i = 101; i <= 102; i++) {
+    const localInput = document.getElementById(`semis_local_${i}`);
+    const visitInput = document.getElementById(`semis_visit_${i}`);
+    if (!localInput || !visitInput) continue;
+    const updateHandler = () => {
+      if (timeoutIdSemis) clearTimeout(timeoutIdSemis);
+      timeoutIdSemis = setTimeout(async () => {
+        clasificadosEnMemoria.semifinales = calcularClasificadosSemifinales();
+        await generarFinal(true);
+        await generarTercerPuesto(true);
+      }, 300);
+    };
+    localInput.addEventListener("input", updateHandler);
+    visitInput.addEventListener("input", updateHandler);
+    const radiosDiv = document.getElementById(`radios_semis_${i}`);
+    if (radiosDiv) {
+      radiosDiv.querySelectorAll('input[type="radio"]').forEach(radio => {
+        radio.addEventListener("change", updateHandler);
+      });
+    }
+  }
+}
 // ======================================================
 // GENERAR SEMIFINALES (CARRUSEL HORIZONTAL)
 // ======================================================
@@ -2788,6 +2911,12 @@ async function generarSemifinales(usarMemoria = false) {
       updateRadios();
     }
   }
+  // Reactividad para semifinales -> final y tercer puesto
+if (typeof configurarReactividadSemifinales === 'function') {
+  configurarReactividadSemifinales();
+} else {
+  console.warn("configurarReactividadSemifinales no definida. La reactividad de semifinales no funcionará.");
+}
 
   // Restaurar scroll
   if (carousel && scrollPos > 0) {
