@@ -4311,12 +4311,10 @@ onAuthStateChanged(auth, async (user) => {
     // MOSTRAR / OCULTAR SECCIÓN ELIMINATORIAS SEGÚN ACCESO
     // ======================================================
     if (hasKOAccess) {
-      // Tiene acceso: mostrar botones, menú y carruseles
+      // Tiene acceso: mostrar botones y carruseles, pero NO el menú de fases (debe ser controlado por el botón)
       const botonesDiv = document.getElementById("botonesEliminatorias");
-      const menuDiv = document.getElementById("menuFases");
       const mensajeAcceso = document.getElementById("knockoutAccessMessage");
       if (botonesDiv) botonesDiv.style.removeProperty("display");
-      if (menuDiv) menuDiv.style.removeProperty("display");
       if (mensajeAcceso) mensajeAcceso.style.display = "none";
 
       const contenedores = ["bracketContainer", "octavosContainer", "cuartosContainer", "semifinalContainer", "finalContainer", "thirdPlaceContainer"];
@@ -4358,7 +4356,7 @@ onAuthStateChanged(auth, async (user) => {
       clearInterval(window.timerInterval);
       window.timerInterval = null;
     }
-    authScreen.classList.remove("hidden");
+    authScreen.classList.add("hidden"); // Ocultar pantalla de autenticación
     appScreen.classList.add("hidden");
   }
 });

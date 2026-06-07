@@ -2352,3 +2352,28 @@ RESPONSIVE ADMIN PARTICIPANTES
   color: black !important;
   transform: scale(1.02);
 }
+/* Responsive para botones globales de eliminatorias */
+@media (max-width: 640px) {
+  #botonesEliminatorias {
+    display: flex;
+    flex-direction: column;
+    gap: 10px;
+    align-items: stretch;
+  }
+  #botonesEliminatorias .admin-load-btn {
+    margin-right: 0 !important;
+    width: 100%;
+    white-space: normal;
+    font-size: 0.9rem;
+    padding: 10px;
+    text-align: center;
+  }
+  .global-timer {
+    font-size: 0.8rem;
+    text-align: center;
+  }
+  .fase-opcion {
+    font-size: 0.75rem;
+    padding: 6px 12px;
+  }
+}
