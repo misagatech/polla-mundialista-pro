@@ -2704,8 +2704,38 @@ async function generarCuartos(usarMemoria = false) {
     carousel.insertAdjacentHTML('beforeend', tarjetaHTML);
   }
 
-  // Botones de scroll y listeners (igual)
-  // ... (código que ya tienes)
+    // Botones de scroll
+  const leftBtn = document.getElementById("scrollCuartosLeft");
+  const rightBtn = document.getElementById("scrollCuartosRight");
+  if (leftBtn && rightBtn) {
+    leftBtn.onclick = () => carousel.scrollBy({ left: -340, behavior: "smooth" });
+    rightBtn.onclick = () => carousel.scrollBy({ left: 340, behavior: "smooth" });
+  }
+
+  // 👇 NUEVO: Listeners para mostrar radios en empate (CUARTOS)
+  for (const partido of partidos) {
+    const horaPartido = obtenerHoraPartidoKnockout(partido.numero);
+    if (isKnockoutClosed) continue;
+    
+    const localInput = document.getElementById(`cuartos_local_${partido.numero}`);
+    const visitInput = document.getElementById(`cuartos_visit_${partido.numero}`);
+    const radiosDiv = document.getElementById(`radios_cuartos_${partido.numero}`);
+    
+    if (localInput && visitInput && radiosDiv) {
+      const updateRadios = () => {
+        const localVal = parseInt(localInput.value);
+        const visitVal = parseInt(visitInput.value);
+        if (!isNaN(localVal) && !isNaN(visitVal) && localVal === visitVal) {
+          radiosDiv.style.display = "flex";
+        } else {
+          radiosDiv.style.display = "none";
+        }
+      };
+      localInput.addEventListener("input", updateRadios);
+      visitInput.addEventListener("input", updateRadios);
+      updateRadios(); // Ejecutar inmediatamente para mostrar si ya hay empate
+    }
+  }
 
   // Reactividad para cuartos -> semifinales, final, tercero
   if (typeof configurarReactividadCuartos === 'function') {
