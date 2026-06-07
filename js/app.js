@@ -4654,24 +4654,25 @@ async function guardarTodasEliminatorias() {
       const equipoLocal = card.dataset.local;
       const equipoVisit = card.dataset.visitante;
       let clasificado = null;
-      if (local > visit) clasificado = equipoLocal;
-      else if (visit > local) clasificado = equipoVisit;
-      else {
-    // Busca cualquier radio seleccionado dentro de la tarjeta
-    let radioSelected = null;
-    const radios = card.querySelectorAll('input[type="radio"]');
-    for (let radio of radios) {
-        if (radio.checked) {
+      if (local > visit) {
+        clasificado = equipoLocal;
+      } else if (visit > local) {
+        clasificado = equipoVisit;
+      } else {
+        // Busca cualquier radio seleccionado dentro de la tarjeta
+        let radioSelected = null;
+        const radios = card.querySelectorAll('input[type="radio"]');
+        for (let radio of radios) {
+          if (radio.checked) {
             radioSelected = radio;
             break;
+          }
         }
-    }
-    if (!radioSelected && (local === visit)) {
-        return alert(`❌ En el partido ${partidoNumero} hay empate. Debes elegir quién clasifica.`);
-    }
-    clasificado = radioSelected ? radioSelected.value : null;  // ← SIN "const"
-}
-      
+        if (!radioSelected) {
+          return alert(`❌ En el partido ${partidoNumero} hay empate. Debes elegir quién clasifica.`);
+        }
+        clasificado = radioSelected.value;
+      }
 
       const docId = `${currentUser.uid}_${partidoNumero}`;
       const ref = doc(db, fase.coleccion, docId);
@@ -4688,17 +4689,16 @@ async function guardarTodasEliminatorias() {
     }
   }
 
-    if (totalPartidos === 0) return alert("No hay partidos para guardar.");
+  if (totalPartidos === 0) return alert("No hay partidos para guardar.");
   await batch.commit();
   alert(`✅ ${totalPartidos} predicciones guardadas correctamente.`);
 
-  // Regenerar todas las fases para mostrar los nuevos datos guardados
- await generarDieciseisavos(false);
-await generarOctavos(false);
-await generarCuartos(false);
-await generarSemifinales(false);
-await generarFinal(false);
-await generarTercerPuesto(false);
+  await generarDieciseisavos(false);
+  await generarOctavos(false);
+  await generarCuartos(false);
+  await generarSemifinales(false);
+  await generarFinal(false);
+  await generarTercerPuesto(false);
 }
 
 // Borrar todas las predicciones localmente y en Firestore
@@ -4723,7 +4723,6 @@ async function borrarTodasEliminatorias() {
   }
   await batch.commit();
 
-  // Limpiar inputs localmente
   const contenedores = ["bracketContainer", "octavosContainer", "cuartosContainer", "semifinalContainer", "finalContainer", "thirdPlaceContainer"];
   for (const id of contenedores) {
     const container = document.getElementById(id);
@@ -4738,7 +4737,6 @@ async function borrarTodasEliminatorias() {
   location.reload();
 }
 
-// Mostrar/ocultar menú de fases
 let menuVisible = false;
 document.getElementById("btnModificarDesde")?.addEventListener("click", () => {
   const menu = document.getElementById("menuFases");
@@ -4748,7 +4746,6 @@ document.getElementById("btnModificarDesde")?.addEventListener("click", () => {
   }
 });
 
-// Manejar clic en cada opción de fase
 document.querySelectorAll(".fase-opcion").forEach(btn => {
   btn.addEventListener("click", async () => {
     const fase = btn.dataset.fase;
@@ -4765,7 +4762,7 @@ document.querySelectorAll(".fase-opcion").forEach(btn => {
       { id: "cuartosContainer", orden: 3 },
       { id: "semifinalContainer", orden: 4 },
       { id: "finalContainer", orden: 5 },
-      { id: "thirdPlaceContainer", orden: 6 }  // tercer puesto siempre se borra si se borra desde semifinal o antes
+      { id: "thirdPlaceContainer", orden: 6 }
     ];
 
     for (const f of fasesList) {
@@ -4786,13 +4783,13 @@ document.querySelectorAll(".fase-opcion").forEach(btn => {
   });
 });
 
-// Inicializar botones al cargar
 setTimeout(() => {
   actualizarEstadoCierreEliminatorias();
-  iniciarContadorCierreEliminatorias();  // 👈 AÑADE ESTA LÍNEA
+  iniciarContadorCierreEliminatorias();
   document.getElementById("btnGuardarTodasElim")?.addEventListener("click", guardarTodasEliminatorias);
   document.getElementById("btnBorrarTodoElim")?.addEventListener("click", borrarTodasEliminatorias);
 }, 1000);
+
 let knockoutDeadlineTimerInterval = null;
 
 async function iniciarContadorCierreEliminatorias() {
@@ -4810,7 +4807,6 @@ async function iniciarContadorCierreEliminatorias() {
         if (diff <= 0) {
           timerElement.innerText = "🔒 Cierre de apuestas de eliminatorias ha finalizado";
           if (knockoutDeadlineTimerInterval) clearInterval(knockoutDeadlineTimerInterval);
-          // Opcional: deshabilitar botones globales y inputs si es necesario
           document.getElementById("btnGuardarTodasElim")?.setAttribute("disabled", "disabled");
           document.getElementById("btnModificarDesde")?.setAttribute("disabled", "disabled");
           document.getElementById("btnBorrarTodoElim")?.setAttribute("disabled", "disabled");
