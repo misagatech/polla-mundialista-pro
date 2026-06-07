@@ -4228,30 +4228,19 @@ onAuthStateChanged(auth, async (user) => {
     const snap = await getDoc(userRef);
     if (snap.exists()) {
       const userData = snap.data();
-      // =========================================
-      // VALIDAR EXPULSADO GLOBAL
-      // =========================================
-
       if (userData.expulsado === true) {
-
         alert("Tu cuenta fue bloqueada");
-
         await signOut(auth);
-
         return;
-
       }
       currentUserRol = userData.rol || "user";
       console.log("ROL ACTUAL:", currentUserRol);
     } else {
-
       alert("Usuario no encontrado");
-
       await signOut(auth);
-
       return;
-
     }
+
     userEmailSpan.innerText = user.email;
     authScreen.classList.add("hidden");
     appScreen.classList.remove("hidden");
@@ -4262,51 +4251,20 @@ onAuthStateChanged(auth, async (user) => {
       loadAdminParticipants();
       console.log("CARGANDO PARTICIPANTES ADMIN");
       setupUploadButton();
-      // agregarBotonResetKnockout();   // ← esta línea debe estar presente
-      agregarBotonesReset();          // ← COMENTA O ELIMINA
-      loadAdminKnockoutMatches();     // ← COMENTA O ELIMINA
+      agregarBotonesReset();
+      loadAdminKnockoutMatches();
       cargarAdminTerceros();
-      await crearRankingKOparaTodos();   // 👈 NUEVA LÍNEA
-      await crearRankingGlobalParaTodos();   // 👈 NUEVA LÍNEA
+      await crearRankingKOparaTodos();
+      await crearRankingGlobalParaTodos();
       inicializarAuditoriaAdmin();
     } else {
       adminPanel.classList.add("hidden");
       cargarPuntosUsuarioSidebar();
     }
-       loadMatchesAndPredictions();
 
-    // Verificar si el usuario tiene KO habilitado
-    const participantSnapKO = await getDoc(doc(db, "participants", currentUser.uid));
-    const hasKOAccess = participantSnapKO.exists() && participantSnapKO.data().enabled_knockout === true;
+    loadMatchesAndPredictions();
 
-    if (hasKOAccess) {
-      // Tiene acceso: mostrar elementos y generar fases
-      document.getElementById("botonesEliminatorias")?.style.removeProperty("display");
-      document.getElementById("menuFases")?.style.removeProperty("display");
-      document.getElementById("knockoutAccessMessage")?.style.setProperty("display", "none");
-      const contenedores = ["bracketContainer", "octavosContainer", "cuartosContainer", "semifinalContainer", "finalContainer", "thirdPlaceContainer"];
-      contenedores.forEach(id => {
-        const el = document.getElementById(id);
-        if (el) el.style.removeProperty("display");
-      });
-      
-      await generarOctavos();
-      await generarCuartos();
-      await generarSemifinales();
-      await generarFinal();
-      await generarTercerPuesto();
-    } else {
-      // No tiene acceso: ocultar botones, menú y carruseles, mostrar mensaje único
-      document.getElementById("botonesEliminatorias")?.style.setProperty("display", "none");
-      document.getElementById("menuFases")?.style.setProperty("display", "none");
-      const contenedores = ["bracketContainer", "octavosContainer", "cuartosContainer", "semifinalContainer", "finalContainer", "thirdPlaceContainer"];
-      contenedores.forEach(id => {
-        const el = document.getElementById(id);
-        if (el) el.style.display = "none";
-      });
-      document.getElementById("knockoutAccessMessage")?.style.removeProperty("display");
-    }
-      // ======================================================
+    // ======================================================
     // INICIAR TEMPORIZADORES GLOBALES (UNA SOLA VEZ)
     // ======================================================
     if (!window.timerInterval) {
@@ -4314,11 +4272,12 @@ onAuthStateChanged(auth, async (user) => {
     }
     loadRanking();
 
-    // Crear automáticamente el documento en ranking_knockout si el usuario tiene KO habilitado
+    // Obtener datos del participante (UNA SOLA VEZ)
     const participantSnapKO = await getDoc(doc(db, "participants", currentUser.uid));
     const hasKOAccess = participantSnapKO.exists() && participantSnapKO.data().enabled_knockout === true;
 
-    if (participantSnapKO.exists() && participantSnapKO.data().enabled_knockout === true) {
+    // Crear documento en ranking_knockout si tiene KO habilitado
+    if (hasKOAccess) {
       const rankingKORef = doc(db, "ranking_knockout", currentUser.uid);
       const rankingKOSnap = await getDoc(rankingKORef);
       if (!rankingKOSnap.exists()) {
@@ -4331,7 +4290,7 @@ onAuthStateChanged(auth, async (user) => {
       }
     }
 
-    // 👇 Limpiar posibles duplicados en ranking_knockout para este usuario
+    // Limpiar posibles duplicados en ranking_knockout
     const rankingKODupQuery = query(collection(db, "ranking_knockout"), where("user_id", "==", currentUser.uid));
     const dupSnapshot = await getDocs(rankingKODupQuery);
     if (dupSnapshot.size > 1) {
@@ -4366,7 +4325,6 @@ onAuthStateChanged(auth, async (user) => {
         if (el) el.style.removeProperty("display");
       });
 
-      // Generar todas las fases (ya no tienen validación interna de acceso)
       await generarOctavos();
       await generarCuartos();
       await generarSemifinales();
@@ -4387,8 +4345,9 @@ onAuthStateChanged(auth, async (user) => {
         if (el) el.style.display = "none";
       });
     }
+
   } else {
-    // Limpiar listeners (código que ya tienes)
+    // Limpiar listeners
     if (matchesUnsubscribe) matchesUnsubscribe();
     if (rankingUnsubscribe) rankingUnsubscribe();
     if (participantsUnsubscribe) participantsUnsubscribe();
