@@ -2135,7 +2135,7 @@ async function generarDieciseisavos() {
     rightBtn.onclick = () => carousel.scrollBy({ left: 340, behavior: "smooth" });
   }
 
-  // Listeners para mostrar radios en empate
+    // Listeners para mostrar radios en empate
   for (const partido of partidos) {
     const horaPartido = obtenerHoraPartidoKnockout(partido.numero);
     const cierreApuestas = new Date(horaPartido.getTime() - 60 * 60 * 1000);
@@ -2161,15 +2161,15 @@ async function generarDieciseisavos() {
     }
   }
 
- if (carousel && scrollPos > 0) {
-  // Esperar a que el navegador termine de renderizar
-  requestAnimationFrame(() => {
+  // Restaurar scroll
+  if (carousel && scrollPos > 0) {
     requestAnimationFrame(() => {
-      carousel.scrollLeft = scrollPos;
+      requestAnimationFrame(() => {
+        carousel.scrollLeft = scrollPos;
+      });
     });
-  });
-}
-} // <-- Esta llave cierra la función
+  }
+} // <-- Esta es la única llave que cierra la función (no debe haber otra después)
 // ======================================================
 // GUARDAR PREDICCIÓN ELIMINATORIAS
 // ======================================================
@@ -2412,11 +2412,10 @@ async function generarOctavos() {
     rightBtn.onclick = () => carousel.scrollBy({ left: 340, behavior: "smooth" });
   }
 
-  // Listeners para radios en empate
+    // Listeners para radios en empate (octavos)
   for (const partido of partidos) {
     const horaPartido = obtenerHoraPartidoKnockout(partido.numero);
     const cierreApuestas = new Date(horaPartido.getTime() - 60 * 60 * 1000);
-    const disabled = new Date() >= cierreApuestas;
     if (isKnockoutClosed) continue;
 
     const localInput = document.getElementById(`oct_local_${partido.numero}`);
@@ -2438,18 +2437,15 @@ async function generarOctavos() {
     }
   }
 
-  // 👇 RESTAURAR SCROLL AL FINAL (después de todo el DOM)
- if (carousel && scrollPos > 0) {
-  // Esperar a que el navegador termine de renderizar
-  requestAnimationFrame(() => {
+  // Restaurar scroll
+  if (carousel && scrollPos > 0) {
     requestAnimationFrame(() => {
-      carousel.scrollLeft = scrollPos;
+      requestAnimationFrame(() => {
+        carousel.scrollLeft = scrollPos;
+      });
     });
-  });
-}
-}
-
-
+  }
+} // <-- Una sola llave que cierra la función
 // ======================================================
 // GENERAR CUARTOS AUTOMÁTICOS (CARRUSEL HORIZONTAL)
 // ======================================================
@@ -2580,12 +2576,11 @@ async function generarCuartos() {
     rightBtn.onclick = () => carousel.scrollBy({ left: 340, behavior: "smooth" });
   }
 
-  // Listeners para radios
+    // Listeners para radios en empate (cuartos)
   for (const partido of partidos) {
     const horaPartido = obtenerHoraPartidoKnockout(partido.numero);
     const cierreApuestas = new Date(horaPartido.getTime() - 60 * 60 * 1000);
     if (isKnockoutClosed) continue;
-    //if (disabled) continue;
 
     const localInput = document.getElementById(`cuartos_local_${partido.numero}`);
     const visitInput = document.getElementById(`cuartos_visit_${partido.numero}`);
@@ -2606,16 +2601,15 @@ async function generarCuartos() {
     }
   }
 
-  // 👇 RESTAURAR SCROLL AL FINAL (dentro de la función)
-if (carousel && scrollPos > 0) {
-  // Esperar a que el navegador termine de renderizar
-  requestAnimationFrame(() => {
+  // Restaurar scroll
+  if (carousel && scrollPos > 0) {
     requestAnimationFrame(() => {
-      carousel.scrollLeft = scrollPos;
+      requestAnimationFrame(() => {
+        carousel.scrollLeft = scrollPos;
+      });
     });
-  });
-}
-} 
+  }
+} // <-- Una sola llave
 // ======================================================
 // GENERAR SEMIFINALES (CARRUSEL HORIZONTAL)
 // ======================================================
@@ -2740,10 +2734,10 @@ async function generarSemifinales() {
     rightBtn.onclick = () => carousel.scrollBy({ left: 340, behavior: "smooth" });
   }
 
+   // Listeners para radios en empate (semifinales)
   for (const partido of partidos) {
     const horaPartido = obtenerHoraPartidoKnockout(partido.numero);
     const cierreApuestas = new Date(horaPartido.getTime() - 60 * 60 * 1000);
-    const disabled = new Date() >= cierreApuestas;
     if (isKnockoutClosed) continue;
 
     const localInput = document.getElementById(`semis_local_${partido.numero}`);
@@ -2765,16 +2759,15 @@ async function generarSemifinales() {
     }
   }
 
-  // 👇 RESTAURAR SCROLL AL FINAL (después de todo el DOM)
-if (carousel && scrollPos > 0) {
-  // Esperar a que el navegador termine de renderizar
-  requestAnimationFrame(() => {
+  // Restaurar scroll
+  if (carousel && scrollPos > 0) {
     requestAnimationFrame(() => {
-      carousel.scrollLeft = scrollPos;
+      requestAnimationFrame(() => {
+        carousel.scrollLeft = scrollPos;
+      });
     });
-  });
-}
-}
+  }
+} // <-- Una sola llave
 // ======================================================
 // LOGIN, REGISTRO, LOGOUT
 // ======================================================
