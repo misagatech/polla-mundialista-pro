@@ -4657,20 +4657,22 @@ async function guardarTodasEliminatorias() {
       if (local > visit) clasificado = equipoLocal;
       else if (visit > local) clasificado = equipoVisit;
       else {
-        // Busca cualquier radio seleccionado dentro de la tarjeta
-let radioSelected = null;
-const radios = card.querySelectorAll('input[type="radio"]');
-for (let radio of radios) {
-    if (radio.checked) {
-        radioSelected = radio;
-        break;
+        else {
+    // Busca cualquier radio seleccionado dentro de la tarjeta
+    let radioSelected = null;
+    const radios = card.querySelectorAll('input[type="radio"]');
+    for (let radio of radios) {
+        if (radio.checked) {
+            radioSelected = radio;
+            break;
+        }
     }
+    if (!radioSelected && (local === visit)) {
+        return alert(`❌ En el partido ${partidoNumero} hay empate. Debes elegir quién clasifica.`);
+    }
+    clasificado = radioSelected ? radioSelected.value : null;  // ← SIN "const"
 }
-if (!radioSelected && (local === visit)) {
-    return alert(`❌ En el partido ${partidoNumero} hay empate. Debes elegir quién clasifica.`);
-}
-const clasificado = radioSelected ? radioSelected.value : null;
-      }
+      
 
       const docId = `${currentUser.uid}_${partidoNumero}`;
       const ref = doc(db, fase.coleccion, docId);
