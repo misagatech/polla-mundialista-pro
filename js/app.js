@@ -4704,8 +4704,21 @@ async function guardarTodasEliminatorias() {
         clasificado = radioSelected.value;
       }
 
-      const docId = `${currentUser.uid}_${partidoNumero}`;
-      const ref = doc(db, fase.coleccion, docId);
+      let docId;
+if (partidoNumero === 104) {
+    docId = `${currentUser.uid}_FINAL_104`;
+} else if (partidoNumero === 103) {
+    docId = `${currentUser.uid}_THIRD_103`;
+} else if (fase.fase === "semifinales") {
+    docId = `${currentUser.uid}_SEMIS_${partidoNumero}`;
+} else if (fase.fase === "cuartos") {
+    docId = `${currentUser.uid}_CUARTOS_${partidoNumero}`;
+} else if (fase.fase === "octavos") {
+    docId = `${currentUser.uid}_OCT_${partidoNumero}`;
+} else {
+    docId = `${currentUser.uid}_${partidoNumero}`;
+}
+const ref = doc(db, fase.coleccion, docId);
       batch.set(ref, {
         uid: currentUser.uid,
         partido: Number(partidoNumero),
