@@ -979,6 +979,7 @@ window.saveFinalPrediction = async (partidoNumero) => {
 // GENERAR FINAL (CARRUSEL HORIZONTAL) - VERSIÓN REACTIVA
 // ======================================================
 async function generarFinal(usarMemoria = false) {
+  await actualizarEstadoCierreEliminatorias();
   const container = document.getElementById("finalContainer");
   if (!container) return;
 
@@ -1140,6 +1141,7 @@ async function generarFinal(usarMemoria = false) {
 // GENERAR TERCER PUESTO - VERSIÓN REACTIVA
 // ======================================================
 async function generarTercerPuesto(usarMemoria = false) {
+  await actualizarEstadoCierreEliminatorias();
   const container = document.getElementById("thirdPlaceContainer");
   if (!container) return;
 
@@ -2032,6 +2034,7 @@ async function generarTablaGrupos() {
 // GENERAR DIECISEISAVOS
 // ======================================================
 async function generarDieciseisavos() {
+  await actualizarEstadoCierreEliminatorias();
   const container = document.getElementById("bracketContainer");
   if (!container) return;
 
@@ -2380,6 +2383,7 @@ function configurarReactividadOctavos() {
 // GENERAR OCTAVOS AUTOMÁTICOS
 // ======================================================
 async function generarOctavos(usarMemoria = false) {
+  await actualizarEstadoCierreEliminatorias();
   const container = document.getElementById("octavosContainer");
   if (!container) return;
 
@@ -2601,6 +2605,7 @@ function configurarReactividadCuartos() {
 // GENERAR CUARTOS AUTOMÁTICOS (CARRUSEL HORIZONTAL)
 // ======================================================
 async function generarCuartos(usarMemoria = false) {
+  await actualizarEstadoCierreEliminatorias();
   const container = document.getElementById("cuartosContainer");
   if (!container) return;
 
@@ -2772,6 +2777,7 @@ function configurarReactividadSemifinales() {
 // GENERAR SEMIFINALES (CARRUSEL HORIZONTAL)
 // ======================================================
 async function generarSemifinales(usarMemoria = false) {
+  await actualizarEstadoCierreEliminatorias();
   const container = document.getElementById("semifinalContainer");
   if (!container) return;
   // 👇 Guardar scroll
@@ -4651,12 +4657,19 @@ async function guardarTodasEliminatorias() {
       if (local > visit) clasificado = equipoLocal;
       else if (visit > local) clasificado = equipoVisit;
       else {
-        const radioName = `clasificado_${partidoNumero}`;
-        const radioSelected = card.querySelector(`input[name="${radioName}"]:checked`);
-        if (!radioSelected) {
-          return alert(`❌ En el partido ${partidoNumero} hay empate. Debes elegir quién clasifica.`);
-        }
-        clasificado = radioSelected.value;
+        // Busca cualquier radio seleccionado dentro de la tarjeta
+let radioSelected = null;
+const radios = card.querySelectorAll('input[type="radio"]');
+for (let radio of radios) {
+    if (radio.checked) {
+        radioSelected = radio;
+        break;
+    }
+}
+if (!radioSelected && (local === visit)) {
+    return alert(`❌ En el partido ${partidoNumero} hay empate. Debes elegir quién clasifica.`);
+}
+const clasificado = radioSelected ? radioSelected.value : null;
       }
 
       const docId = `${currentUser.uid}_${partidoNumero}`;
@@ -4679,12 +4692,12 @@ async function guardarTodasEliminatorias() {
   alert(`✅ ${totalPartidos} predicciones guardadas correctamente.`);
 
   // Regenerar todas las fases para mostrar los nuevos datos guardados
-  await generarDieciseisavos();
-  await generarOctavos();
-  await generarCuartos();
-  await generarSemifinales();
-  await generarFinal();
-  await generarTercerPuesto();
+ await generarDieciseisavos(false);
+await generarOctavos(false);
+await generarCuartos(false);
+await generarSemifinales(false);
+await generarFinal(false);
+await generarTercerPuesto(false);
 }
 
 // Borrar todas las predicciones localmente y en Firestore
