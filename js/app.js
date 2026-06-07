@@ -1043,7 +1043,7 @@ async function generarFinal(usarMemoria = false) {
     let predLocal = "", predVisit = "", clasifGuardado = "";
     let hasPrediction = false;
     try {
-      const finalRef = doc(db, "predictions_final", `${currentUser.uid}_FINAL_104`);
+      const finalRef = doc(db, "predictions_final", `${currentUser.uid}_104`);
       const finalSnap = await getDoc(finalRef);
       if (finalSnap.exists()) {
         hasPrediction = true;
@@ -1246,7 +1246,7 @@ async function generarTercerPuesto(usarMemoria = false) {
     let predLocal = "", predVisit = "", clasifGuardado = "";
     let hasPrediction = false;
     try {
-      const thirdRef = doc(db, "predictions_third", `${currentUser.uid}_THIRD_103`);
+      const thirdRef = doc(db, "predictions_third", `${currentUser.uid}_103`);
       const thirdSnap = await getDoc(thirdRef);
       if (thirdSnap.exists()) {
         hasPrediction = true;
