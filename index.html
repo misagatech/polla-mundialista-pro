@@ -287,12 +287,14 @@
         <!-- FASE ELIMINATORIA -->
         <!-- ===================================================== -->
         <h2 class="section-title" style="margin-bottom: 20px; text-align: center;">🏆 Fase Eliminatoria</h2>
+
+        <!-- CONTADOR GLOBAL (NUEVO) -->
         <div class="global-timer"
           style="text-align: center; background: rgba(250,204,21,0.2); padding: 8px; border-radius: 30px; margin-bottom: 15px;">
           <span id="knockoutDeadlineTimer">⏳ Cargando...</span>
         </div>
 
-        <!-- Botones globales para eliminatorias -->
+        <!-- Botones globales -->
         <div id="botonesEliminatorias" class="tabla-grupo-card"
           style="margin-bottom: 20px; text-align: center; background: rgba(0,0,0,0.5); padding: 15px; border-radius: 30px;">
           <button id="btnGuardarTodasElim" class="admin-load-btn"
@@ -301,6 +303,13 @@
           <button id="btnModificarDesde" class="admin-load-btn"
             style="background: #facc15; color: black; margin-right: 10px;">✏️ Modificar desde...</button>
           <button id="btnBorrarTodoElim" class="admin-load-btn" style="background: #dc2626;">🗑️ Borrar todo</button>
+        </div>
+
+        <div id="knockoutAccessMessage"
+          style="display: none; text-align: center; padding: 30px; background: rgba(0,0,0,0.6); border-radius: 30px;">
+          <h3>🔒 Acceso restringido</h3>
+          <p>No tienes habilitada la participación en la fase eliminatoria.<br>Contacta al administrador para obtener
+            acceso.</p>
         </div>
         <!-- Menú para elegir fase (inicialmente oculto) -->
         <div id="menuFases" style="display: none; margin-bottom: 20px;" class="tabla-grupo-card">

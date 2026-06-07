@@ -924,15 +924,7 @@ async function generarFinal() {
   }
 
   try {
-    // ========== VALIDACIÓN DE ACCESO ==========
-    const participantSnap = await getDoc(doc(db, "participants", currentUser.uid));
-    if (!participantSnap.exists() || participantSnap.data().enabled_knockout !== true) {
-      container.innerHTML = `<div class="tabla-grupo-card" style="text-align:center; padding:30px;">
-        <h3>🔒 Acceso restringido</h3>
-        <p>No tienes habilitada la participación en la fase eliminatoria.<br>Contacta al administrador para obtener acceso.</p>
-      </div>`;
-      return;
-    }
+
 
     // ========== CARGAR RESULTADOS REALES (para saber si está finalizado) ==========
     let resultadosMap = {};
@@ -1093,16 +1085,7 @@ async function generarTercerPuesto() {
   }
 
   try {
-    // Validar acceso KO
-    const participantSnap = await getDoc(doc(db, "participants", currentUser.uid));
-    if (!participantSnap.exists() || participantSnap.data().enabled_knockout !== true) {
-      container.innerHTML = `<div class="tabla-grupo-card" style="text-align:center; padding:30px;">
-        <h3>🔒 Acceso restringido</h3>
-        <p>No tienes habilitada la participación en la fase eliminatoria.</p>
-      </div>`;
-      return;
-    }
-
+    
     // 1. Obtener clasificados de cuartos (para saber quiénes jugaron las semifinales)
     let clasificadosCuartos = {};
     try {
@@ -1993,15 +1976,6 @@ async function generarDieciseisavos() {
     scrollPos = oldCarousel.scrollLeft;
   }
 
-  // ========== VALIDACIÓN DE ACCESO ==========
-  const participantSnap = await getDoc(doc(db, "participants", currentUser.uid));
-  if (!participantSnap.exists() || participantSnap.data().enabled_knockout !== true) {
-    container.innerHTML = `<div class="tabla-grupo-card" style="text-align:center; padding:30px;">
-      <h3>🔒 Acceso restringido</h3>
-      <p>No tienes habilitada la participación en la fase eliminatoria.<br>Contacta al administrador para obtener acceso.</p>
-    </div>`;
-    return;
-  }
   // ==========================================
 
   // Cargar resultados de knockout (para saber si un partido está finalizado)
@@ -2288,15 +2262,7 @@ async function generarOctavos() {
   if (oldCarousel) scrollPos = oldCarousel.scrollLeft;
 
 
-  // ========== VALIDACIÓN DE ACCESO ==========
-  const participantSnap = await getDoc(doc(db, "participants", currentUser.uid));
-  if (!participantSnap.exists() || participantSnap.data().enabled_knockout !== true) {
-    container.innerHTML = `<div class="tabla-grupo-card" style="text-align:center; padding:30px;">
-      <h3>🔒 Acceso restringido</h3>
-      <p>No tienes habilitada la participación en la fase eliminatoria.<br>Contacta al administrador para obtener acceso.</p>
-    </div>`;
-    return;
-  }
+
   // ==========================================
 
   // Cargar resultados de knockout (para saber si un partido está finalizado)
@@ -2458,16 +2424,7 @@ async function generarCuartos() {
   const oldCarousel = document.getElementById("carouselCuartos");
   if (oldCarousel) scrollPos = oldCarousel.scrollLeft;
 
-  // ========== VALIDACIÓN DE ACCESO ==========
-  const participantSnap = await getDoc(doc(db, "participants", currentUser.uid));
-  if (!participantSnap.exists() || participantSnap.data().enabled_knockout !== true) {
-    container.innerHTML = `<div class="tabla-grupo-card" style="text-align:center; padding:30px;">
-      <h3>🔒 Acceso restringido</h3>
-      <p>No tienes habilitada la participación en la fase eliminatoria.<br>Contacta al administrador para obtener acceso.</p>
-    </div>`;
-    return;
-  }
-
+  
   // Cargar resultados de knockout
   const resultadosSnap = await getDocs(collection(db, "knockout_results"));
   const resultadosMap = {};
@@ -2621,15 +2578,6 @@ async function generarSemifinales() {
   const oldCarousel = document.getElementById("carouselSemis");
   if (oldCarousel) scrollPos = oldCarousel.scrollLeft;
 
-  // ========== VALIDACIÓN DE ACCESO ==========
-  const participantSnap = await getDoc(doc(db, "participants", currentUser.uid));
-  if (!participantSnap.exists() || participantSnap.data().enabled_knockout !== true) {
-    container.innerHTML = `<div class="tabla-grupo-card" style="text-align:center; padding:30px;">
-      <h3>🔒 Acceso restringido</h3>
-      <p>No tienes habilitada la participación en la fase eliminatoria.<br>Contacta al administrador para obtener acceso.</p>
-    </div>`;
-    return;
-  }
   // ==========================================
 
   // Cargar resultados de knockout
@@ -4325,16 +4273,51 @@ onAuthStateChanged(auth, async (user) => {
       adminPanel.classList.add("hidden");
       cargarPuntosUsuarioSidebar();
     }
-    loadMatchesAndPredictions();
-    // ======================================================
+       loadMatchesAndPredictions();
+
+    // Verificar si el usuario tiene KO habilitado
+    const participantSnapKO = await getDoc(doc(db, "participants", currentUser.uid));
+    const hasKOAccess = participantSnapKO.exists() && participantSnapKO.data().enabled_knockout === true;
+
+    if (hasKOAccess) {
+      // Tiene acceso: mostrar elementos y generar fases
+      document.getElementById("botonesEliminatorias")?.style.removeProperty("display");
+      document.getElementById("menuFases")?.style.removeProperty("display");
+      document.getElementById("knockoutAccessMessage")?.style.setProperty("display", "none");
+      const contenedores = ["bracketContainer", "octavosContainer", "cuartosContainer", "semifinalContainer", "finalContainer", "thirdPlaceContainer"];
+      contenedores.forEach(id => {
+        const el = document.getElementById(id);
+        if (el) el.style.removeProperty("display");
+      });
+      
+      await generarOctavos();
+      await generarCuartos();
+      await generarSemifinales();
+      await generarFinal();
+      await generarTercerPuesto();
+    } else {
+      // No tiene acceso: ocultar botones, menú y carruseles, mostrar mensaje único
+      document.getElementById("botonesEliminatorias")?.style.setProperty("display", "none");
+      document.getElementById("menuFases")?.style.setProperty("display", "none");
+      const contenedores = ["bracketContainer", "octavosContainer", "cuartosContainer", "semifinalContainer", "finalContainer", "thirdPlaceContainer"];
+      contenedores.forEach(id => {
+        const el = document.getElementById(id);
+        if (el) el.style.display = "none";
+      });
+      document.getElementById("knockoutAccessMessage")?.style.removeProperty("display");
+    }
+      // ======================================================
     // INICIAR TEMPORIZADORES GLOBALES (UNA SOLA VEZ)
     // ======================================================
     if (!window.timerInterval) {
       window.timerInterval = setInterval(actualizarTodosLosTimers, 1000);
     }
     loadRanking();
+
     // Crear automáticamente el documento en ranking_knockout si el usuario tiene KO habilitado
     const participantSnapKO = await getDoc(doc(db, "participants", currentUser.uid));
+    const hasKOAccess = participantSnapKO.exists() && participantSnapKO.data().enabled_knockout === true;
+
     if (participantSnapKO.exists() && participantSnapKO.data().enabled_knockout === true) {
       const rankingKORef = doc(db, "ranking_knockout", currentUser.uid);
       const rankingKOSnap = await getDoc(rankingKORef);
@@ -4348,7 +4331,7 @@ onAuthStateChanged(auth, async (user) => {
       }
     }
 
-    // 👇 NUEVO: Limpiar posibles duplicados en ranking_knockout para este usuario
+    // 👇 Limpiar posibles duplicados en ranking_knockout para este usuario
     const rankingKODupQuery = query(collection(db, "ranking_knockout"), where("user_id", "==", currentUser.uid));
     const dupSnapshot = await getDocs(rankingKODupQuery);
     if (dupSnapshot.size > 1) {
@@ -4362,20 +4345,54 @@ onAuthStateChanged(auth, async (user) => {
       console.log("✅ Duplicados de ranking KO limpiados para", currentUser.uid);
     }
 
-    loadRankingKnockout();   // ← Ahora sí, cargar el ranking
+    loadRankingKnockout();
     loadPrizePoolRealtime();
-    await generarOctavos();
-    await generarCuartos();
-    await generarSemifinales();
-    await generarFinal();
-    await generarTercerPuesto();
+
+    // ======================================================
+    // MOSTRAR / OCULTAR SECCIÓN ELIMINATORIAS SEGÚN ACCESO
+    // ======================================================
+    if (hasKOAccess) {
+      // Tiene acceso: mostrar botones, menú y carruseles
+      const botonesDiv = document.getElementById("botonesEliminatorias");
+      const menuDiv = document.getElementById("menuFases");
+      const mensajeAcceso = document.getElementById("knockoutAccessMessage");
+      if (botonesDiv) botonesDiv.style.removeProperty("display");
+      if (menuDiv) menuDiv.style.removeProperty("display");
+      if (mensajeAcceso) mensajeAcceso.style.display = "none";
+
+      const contenedores = ["bracketContainer", "octavosContainer", "cuartosContainer", "semifinalContainer", "finalContainer", "thirdPlaceContainer"];
+      contenedores.forEach(id => {
+        const el = document.getElementById(id);
+        if (el) el.style.removeProperty("display");
+      });
+
+      // Generar todas las fases (ya no tienen validación interna de acceso)
+      await generarOctavos();
+      await generarCuartos();
+      await generarSemifinales();
+      await generarFinal();
+      await generarTercerPuesto();
+    } else {
+      // No tiene acceso: ocultar botones, menú y carruseles, mostrar mensaje único
+      const botonesDiv = document.getElementById("botonesEliminatorias");
+      const menuDiv = document.getElementById("menuFases");
+      const mensajeAcceso = document.getElementById("knockoutAccessMessage");
+      if (botonesDiv) botonesDiv.style.display = "none";
+      if (menuDiv) menuDiv.style.display = "none";
+      if (mensajeAcceso) mensajeAcceso.style.removeProperty("display");
+
+      const contenedores = ["bracketContainer", "octavosContainer", "cuartosContainer", "semifinalContainer", "finalContainer", "thirdPlaceContainer"];
+      contenedores.forEach(id => {
+        const el = document.getElementById(id);
+        if (el) el.style.display = "none";
+      });
+    }
   } else {
-    // Limpiar listeners
+    // Limpiar listeners (código que ya tienes)
     if (matchesUnsubscribe) matchesUnsubscribe();
     if (rankingUnsubscribe) rankingUnsubscribe();
     if (participantsUnsubscribe) participantsUnsubscribe();
     if (adminParticipantsUnsubscribe) adminParticipantsUnsubscribe();
-    // 👇 NUEVO: Limpiar intervalos
     if (rankingInterval) clearInterval(rankingInterval);
     if (rankingIntervalKO) clearInterval(rankingIntervalKO);
     if (window.timerInterval) {
