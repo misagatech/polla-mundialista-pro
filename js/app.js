@@ -4657,7 +4657,6 @@ async function guardarTodasEliminatorias() {
       if (local > visit) clasificado = equipoLocal;
       else if (visit > local) clasificado = equipoVisit;
       else {
-        else {
     // Busca cualquier radio seleccionado dentro de la tarjeta
     let radioSelected = null;
     const radios = card.querySelectorAll('input[type="radio"]');
