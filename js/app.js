@@ -101,7 +101,76 @@ let bracket = {
 };
 let grupoActivo = "A";
 let adminGrupoActivo = "A";
+let clasificadosEnMemoria = {
+  dieciseisavos: {},   // partido -> equipo ganador
+  octavos: {},
+  cuartos: {},
+  semifinales: {},
+  final: null,
+  tercer_puesto: null
+};
+// ... después de let clasificadosEnMemoria ...
+// ======================================================
+// FUNCIONES AUXILIARES PARA REACTIVIDAD
+// ======================================================
+function calcularClasificadosDieciseisavos() {
+  const clasificados = {};
+  for (let i = 73; i <= 88; i++) {
+    const localInput = document.getElementById(`ko_local_${i}`);
+    const visitInput = document.getElementById(`ko_visit_${i}`);
+    if (!localInput || !visitInput) continue;
+    const local = parseInt(localInput.value);
+    const visit = parseInt(visitInput.value);
+    if (isNaN(local) || isNaN(visit)) continue;
+    const card = document.querySelector(`[data-partido="${i}"]`);
+    if (!card) continue;
+    const equipoLocal = card.dataset.local;
+    const equipoVisit = card.dataset.visitante;
+    if (local > visit) clasificados[i] = equipoLocal;
+    else if (visit > local) clasificados[i] = equipoVisit;
+    else {
+      const radioName = `clasificado_${i}`;
+      const radioSelected = card.querySelector(`input[name="${radioName}"]:checked`);
+      if (radioSelected) clasificados[i] = radioSelected.value;
+    }
+  }
+  return clasificados;
+}
+let timeoutId = null;
 
+function configurarReactividadDieciseisavos() {
+  for (let i = 73; i <= 88; i++) {
+    const localInput = document.getElementById(`ko_local_${i}`);
+    const visitInput = document.getElementById(`ko_visit_${i}`);
+    if (!localInput || !visitInput) continue;
+
+    const updateHandler = () => {
+      if (timeoutId) clearTimeout(timeoutId);
+      timeoutId = setTimeout(async () => {
+        // 1. Calcular clasificados actuales de dieciseisavos
+        clasificadosEnMemoria.dieciseisavos = calcularClasificadosDieciseisavos();
+        // 2. Regenerar octavos (y luego cuartos, semifinales, final, tercero)
+        await generarOctavos(true);    // true = usar memoria
+        await generarCuartos(true);
+        await generarSemifinales(true);
+        await generarFinal(true);
+        await generarTercerPuesto(true);
+        // 3. Opcional: también podrías regenerar dieciseisavos para refrescar los radios? No es necesario.
+      }, 300); // debounce para no regenerar en cada tecla
+    };
+
+    localInput.addEventListener("input", updateHandler);
+    visitInput.addEventListener("input", updateHandler);
+
+    // También para los radios (cuando se selecciona en empate)
+    const radiosDiv = document.getElementById(`radios_ko_${i}`);
+    if (radiosDiv) {
+      radiosDiv.querySelectorAll('input[type="radio"]').forEach(radio => {
+        radio.addEventListener("change", updateHandler);
+      });
+    }
+  }
+}
 // ======================================================
 // BANDERAS (códigos de país para flagcdn)
 // ======================================================
@@ -907,12 +976,13 @@ window.saveFinalPrediction = async (partidoNumero) => {
   }
 };
 // ======================================================
-// GENERAR FINAL (CARRUSEL HORIZONTAL) - VERSIÓN CORREGIDA
+// GENERAR FINAL (CARRUSEL HORIZONTAL) - VERSIÓN REACTIVA
 // ======================================================
-async function generarFinal() {
+async function generarFinal(usarMemoria = false) {
   const container = document.getElementById("finalContainer");
   if (!container) return;
-  // 👇 Guardar scroll
+
+  // Guardar scroll
   let scrollPos = 0;
   const oldCarousel = document.getElementById("carouselFinal");
   if (oldCarousel) scrollPos = oldCarousel.scrollLeft;
@@ -924,30 +994,32 @@ async function generarFinal() {
   }
 
   try {
-
-
-    // ========== CARGAR RESULTADOS REALES (para saber si está finalizado) ==========
+    // Cargar resultados reales (para saber si está finalizado)
     let resultadosMap = {};
     try {
       const resultadosSnap = await getDocs(collection(db, "knockout_results"));
       resultadosSnap.forEach(doc => { resultadosMap[doc.data().numero] = doc.data(); });
     } catch (e) {
       console.warn("No se pudieron cargar knockout_results:", e);
-      // Si falla, asumimos que ningún partido está finalizado
     }
 
     // ========== OBTENER CLASIFICADOS DE SEMIFINALES ==========
     let clasificados = {};
-    try {
-      const semisQuery = query(collection(db, "predictions_semifinales"), where("uid", "==", currentUser.uid));
-      const semisSnap = await getDocs(semisQuery);
-      semisSnap.forEach(doc => {
-        const data = doc.data();
-        clasificados[data.partido] = data.clasificado;
-      });
-    } catch (e) {
-      console.error("Error al cargar predicciones de semifinales:", e);
-      // Si falla, clasificados queda vacío
+    if (usarMemoria && Object.keys(clasificadosEnMemoria.semifinales).length > 0) {
+      // Usar memoria (calculado en tiempo real)
+      clasificados = clasificadosEnMemoria.semifinales;
+    } else {
+      // Cargar desde Firestore
+      try {
+        const semisQuery = query(collection(db, "predictions_semifinales"), where("uid", "==", currentUser.uid));
+        const semisSnap = await getDocs(semisQuery);
+        semisSnap.forEach(doc => {
+          const data = doc.data();
+          clasificados[data.partido] = data.clasificado;
+        });
+      } catch (e) {
+        console.error("Error al cargar predicciones de semifinales:", e);
+      }
     }
 
     // Determinar los equipos finalistas
@@ -959,15 +1031,14 @@ async function generarFinal() {
       visitante: finalista2
     };
 
-    // ========== DATOS DEL PARTIDO ==========
+    // DATOS DEL PARTIDO
     const horaPartido = obtenerHoraPartidoKnockout(104);
     const cierreApuestas = new Date(horaPartido.getTime() - 60 * 60 * 1000);
-    //const isClosed = new Date() >= cierreApuestas;
     const isFinalizado = resultadosMap[partido.numero]?.finalizado === true;
     const disabled = isKnockoutClosed || isFinalizado;
     const fechaLocal = horaPartido.toLocaleString("es-CO", { timeZone: "America/Bogota" });
 
-    // ========== PREDICCIÓN GUARDADA DEL USUARIO ==========
+    // PREDICCIÓN GUARDADA DEL USUARIO
     let predLocal = "", predVisit = "", clasifGuardado = "";
     let hasPrediction = false;
     try {
@@ -987,7 +1058,7 @@ async function generarFinal() {
     const radiosId = `radios_final_${partido.numero}`;
     const showRadios = (predLocal === predVisit && predLocal !== "");
 
-    // ========== CONSTRUIR HTML ==========
+    // CONSTRUIR HTML
     let html = `<div class="tabla-grupo-card">
       <h3 class="tabla-title">🏆 GRAN FINAL</h3>
       <div class="puntuacion-info">
@@ -1032,16 +1103,15 @@ async function generarFinal() {
           <label><input type="radio" name="final_clasificado_${partido.numero}" value="${partido.local}" ${clasifGuardado === partido.local ? "checked" : ""} ${disabled ? "disabled" : ""}> ${fifaCodes[partido.local] || partido.local}</label>
           <label><input type="radio" name="final_clasificado_${partido.numero}" value="${partido.visitante}" ${clasifGuardado === partido.visitante ? "checked" : ""} ${disabled ? "disabled" : ""}> ${fifaCodes[partido.visitante] || partido.visitante}</label>
         </div>
-      
         <div class="match-timer" data-cierre="${horaPartido.toISOString()}">
-  🕒 Partido comienza en: <span class="timer-value">${formatearTiempoRestante(horaPartido)}</span>
-</div>
+          🕒 Partido comienza en: <span class="timer-value">${formatearTiempoRestante(horaPartido)}</span>
+        </div>
         <div class="match-date">📅 ${fechaLocal}</div>
       </div>
     `;
     carousel.insertAdjacentHTML('beforeend', tarjetaHTML);
 
-    // Listeners para mostrar radios en caso de empate
+    // Listeners para radios en caso de empate
     if (!disabled) {
       const localInput = document.getElementById(`final_local_${partido.numero}`);
       const visitInput = document.getElementById(`final_visit_${partido.numero}`);
@@ -1066,15 +1136,14 @@ async function generarFinal() {
     container.innerHTML = `<div class="tabla-grupo-card" style="color:red; padding:20px;">❌ Error al cargar la Final: ${error.message}. Intenta recargar la página.</div>`;
   }
 }
-
 // ======================================================
-// GENERAR TERCER PUESTO - VERSIÓN "POR DEFINIR"
+// GENERAR TERCER PUESTO - VERSIÓN REACTIVA
 // ======================================================
-async function generarTercerPuesto() {
+async function generarTercerPuesto(usarMemoria = false) {
   const container = document.getElementById("thirdPlaceContainer");
   if (!container) return;
 
-  // 👇 Guardar posición del scroll (aunque haya una tarjeta)
+  // Guardar posición del scroll
   let scrollPos = 0;
   const oldCarousel = document.getElementById("carouselThird");
   if (oldCarousel) scrollPos = oldCarousel.scrollLeft;
@@ -1085,21 +1154,24 @@ async function generarTercerPuesto() {
   }
 
   try {
-    
-    // 1. Obtener clasificados de cuartos (para saber quiénes jugaron las semifinales)
+    // Obtener clasificados de cuartos (para saber quiénes jugaron semifinales) desde memoria o Firestore
     let clasificadosCuartos = {};
-    try {
-      const cuartosQuery = query(collection(db, "predictions_cuartos"), where("uid", "==", currentUser.uid));
-      const cuartosSnap = await getDocs(cuartosQuery);
-      cuartosSnap.forEach(doc => {
-        const data = doc.data();
-        clasificadosCuartos[data.partido] = data.clasificado;
-      });
-    } catch (e) {
-      console.error("Error cargando cuartos:", e);
+    if (usarMemoria && Object.keys(clasificadosEnMemoria.cuartos).length > 0) {
+      clasificadosCuartos = clasificadosEnMemoria.cuartos;
+    } else {
+      try {
+        const cuartosQuery = query(collection(db, "predictions_cuartos"), where("uid", "==", currentUser.uid));
+        const cuartosSnap = await getDocs(cuartosQuery);
+        cuartosSnap.forEach(doc => {
+          const data = doc.data();
+          clasificadosCuartos[data.partido] = data.clasificado;
+        });
+      } catch (e) {
+        console.error("Error cargando cuartos:", e);
+      }
     }
 
-    // Función para limpiar nombres: si empieza con "Ganador" o es undefined/null, retorna "Por definir"
+    // Función para limpiar nombres
     const limpiarNombre = (nombre) => {
       if (!nombre) return "Por definir";
       if (nombre.startsWith("Ganador")) return "Por definir";
@@ -1107,7 +1179,7 @@ async function generarTercerPuesto() {
       return nombre;
     };
 
-    // Definir los partidos de semifinales con nombres limpios
+    // Definir partidos de semifinales con nombres limpios
     const semi101 = {
       numero: 101,
       local: limpiarNombre(clasificadosCuartos[97]),
@@ -1119,30 +1191,31 @@ async function generarTercerPuesto() {
       visitante: limpiarNombre(clasificadosCuartos[100])
     };
 
-    // 2. Obtener ganadores elegidos por el usuario en semifinales
+    // Obtener ganadores elegidos por el usuario en semifinales (desde memoria o Firestore)
     let ganadoresSemis = {};
-    try {
-      const semisQuery = query(collection(db, "predictions_semifinales"), where("uid", "==", currentUser.uid));
-      const semisSnap = await getDocs(semisQuery);
-      semisSnap.forEach(doc => {
-        const data = doc.data();
-        ganadoresSemis[data.partido] = data.clasificado;
-      });
-    } catch (e) {
-      console.error("Error cargando semifinales:", e);
+    if (usarMemoria && Object.keys(clasificadosEnMemoria.semifinales).length > 0) {
+      ganadoresSemis = clasificadosEnMemoria.semifinales;
+    } else {
+      try {
+        const semisQuery = query(collection(db, "predictions_semifinales"), where("uid", "==", currentUser.uid));
+        const semisSnap = await getDocs(semisQuery);
+        semisSnap.forEach(doc => {
+          const data = doc.data();
+          ganadoresSemis[data.partido] = data.clasificado;
+        });
+      } catch (e) {
+        console.error("Error cargando semifinales:", e);
+      }
     }
 
-    // 3. Determinar perdedor de cada semifinal (el equipo que no fue elegido como ganador)
+    // Determinar perdedores
     let perdedor1 = "Por definir";
     let perdedor2 = "Por definir";
 
-    // Semifinal 101
     if (semi101.local !== "Por definir" && semi101.visitante !== "Por definir" && ganadoresSemis[101]) {
       const ganador = ganadoresSemis[101];
       perdedor1 = (ganador === semi101.local) ? semi101.visitante : semi101.local;
     }
-
-    // Semifinal 102
     if (semi102.local !== "Por definir" && semi102.visitante !== "Por definir" && ganadoresSemis[102]) {
       const ganador = ganadoresSemis[102];
       perdedor2 = (ganador === semi102.local) ? semi102.visitante : semi102.local;
@@ -1154,7 +1227,7 @@ async function generarTercerPuesto() {
       visitante: perdedor2
     };
 
-    // 4. Resultados reales y datos del partido
+    // Resultados reales y datos del partido
     let resultadosMap = {};
     try {
       const resultadosSnap = await getDocs(collection(db, "knockout_results"));
@@ -1163,12 +1236,11 @@ async function generarTercerPuesto() {
 
     const horaPartido = obtenerHoraPartidoKnockout(103);
     const cierreApuestas = new Date(horaPartido.getTime() - 60 * 60 * 1000);
-    //const isClosed = new Date() >= cierreApuestas;
     const isFinalizado = resultadosMap[partido.numero]?.finalizado === true;
     const disabled = isKnockoutClosed || isFinalizado;
     const fechaLocal = horaPartido.toLocaleString("es-CO", { timeZone: "America/Bogota" });
 
-    // 5. Predicción guardada del usuario
+    // Predicción guardada del usuario
     let predLocal = "", predVisit = "", clasifGuardado = "";
     let hasPrediction = false;
     try {
@@ -1186,17 +1258,11 @@ async function generarTercerPuesto() {
     const radiosId = `radios_third_${partido.numero}`;
     const showRadios = (predLocal === predVisit && predLocal !== "");
 
-    // 6. HTML
+    // HTML
     let html = `<div class="tabla-grupo-card">
       <h3 class="tabla-title">🥉 Tercer Puesto</h3>
-      <div class="puntuacion-info">
-        ⚽ <strong>Reglas de puntuación:</strong> Se toma el marcador de los 90 minutos. 
-        Puntos: aciertas el marcador exacto → <strong>3 puntos</strong>. 
-        Aciertas solo quién gana → <strong>1 punto</strong>. 
-        En caso de <strong>empate</strong>, suma <strong>+1 punto</strong> si seleccionas correctamente el clasificado.
-        <span style="display:block; margin-top:6px; font-size:0.7rem; color:#facc15;">➡️ Cuando marques un empate, aparecerán las opciones para elegir quién avanza.</span>
-      </div>
-      <div class="grupos-tabs-wrapper" style="margin-bottom: 16px;">
+      <div class="puntuacion-info">...</div>
+      <div class="grupos-tabs-wrapper">
         <button id="scrollThirdLeft" class="scroll-btn"><i class="fas fa-chevron-left"></i></button>
         <div id="carouselThird" class="knockout-carousel" style="display: flex; overflow-x: auto; gap: 20px; scroll-behavior: smooth; padding-bottom: 10px; justify-content: center;"></div>
         <button id="scrollThirdRight" class="scroll-btn"><i class="fas fa-chevron-right"></i></button>
@@ -1232,8 +1298,8 @@ async function generarTercerPuesto() {
           <label><input type="radio" name="third_clasificado_${partido.numero}" value="${partido.visitante}" ${clasifGuardado === partido.visitante ? "checked" : ""} ${disabled ? "disabled" : ""}> ${partido.visitante}</label>
         </div>
         <div class="match-timer" data-cierre="${horaPartido.toISOString()}">
-  🕒 Partido comienza en: <span class="timer-value">${formatearTiempoRestante(horaPartido)}</span>
-</div>
+          🕒 Partido comienza en: <span class="timer-value">${formatearTiempoRestante(horaPartido)}</span>
+        </div>
         <div class="match-date">📅 ${fechaLocal}</div>
       </div>
     `;
@@ -2135,6 +2201,9 @@ async function generarDieciseisavos() {
     }
   }
 
+    // 👇 AQUÍ DEBES AGREGAR LA LLAMADA
+  configurarReactividadDieciseisavos();
+
   // Restaurar scroll
   if (carousel && scrollPos > 0) {
     requestAnimationFrame(() => {
@@ -2253,7 +2322,7 @@ window.saveKnockoutPrediction = async (partidoNumero) => {
 // ======================================================
 // GENERAR OCTAVOS AUTOMÁTICOS
 // ======================================================
-async function generarOctavos() {
+async function generarOctavos(usarMemoria = false) {
   const container = document.getElementById("octavosContainer");
   if (!container) return;
 
@@ -2261,24 +2330,29 @@ async function generarOctavos() {
   const oldCarousel = document.getElementById("octavosCarousel");
   if (oldCarousel) scrollPos = oldCarousel.scrollLeft;
 
+  // ========== VALIDACIÓN DE ACCESO (ya no es necesaria si solo se llama cuando tiene acceso) ==========
+  // Si quieres mantenerla, déjala; pero si ya controlas hasKOAccess, puedes comentarla.
 
-
-  // ==========================================
-
-  // Cargar resultados de knockout (para saber si un partido está finalizado)
+  // Cargar resultados de knockout (igual, para saber finalizados)
   const resultadosSnap = await getDocs(collection(db, "knockout_results"));
   const resultadosMap = {};
   resultadosSnap.forEach(doc => { resultadosMap[doc.data().numero] = doc.data(); });
 
-  // Obtener clasificados de dieciseisavos (desde predictions_knockout)
-  const knockoutSnap = await getDocs(collection(db, "predictions_knockout"));
-  const clasificados = {};
-  knockoutSnap.forEach(doc => {
-    const data = doc.data();
-    if (data.uid === currentUser.uid) {
-      clasificados[data.partido] = data.clasificado;
-    }
-  });
+  // Obtener clasificados de dieciseisavos
+  let clasificados = {};
+  if (usarMemoria && Object.keys(clasificadosEnMemoria.dieciseisavos).length > 0) {
+    // Usamos los clasificados en memoria (calculados en tiempo real)
+    clasificados = clasificadosEnMemoria.dieciseisavos;
+  } else {
+    // Cargar desde Firestore (solo si no estamos en modo reactivo)
+    const knockoutSnap = await getDocs(collection(db, "predictions_knockout"));
+    knockoutSnap.forEach(doc => {
+      const data = doc.data();
+      if (data.uid === currentUser.uid) {
+        clasificados[data.partido] = data.clasificado;
+      }
+    });
+  }
 
   const partidos = [
     { numero: 89, local: clasificados[74] || "Ganador 74", visitante: clasificados[77] || "Ganador 77" },
@@ -2415,7 +2489,7 @@ async function generarOctavos() {
 // ======================================================
 // GENERAR CUARTOS AUTOMÁTICOS (CARRUSEL HORIZONTAL)
 // ======================================================
-async function generarCuartos() {
+async function generarCuartos(usarMemoria = false) {
   const container = document.getElementById("cuartosContainer");
   if (!container) return;
 
@@ -2430,14 +2504,18 @@ async function generarCuartos() {
   const resultadosMap = {};
   resultadosSnap.forEach(doc => { resultadosMap[doc.data().numero] = doc.data(); });
 
-  // Obtener clasificados de octavos
-  const octavosQuery = query(collection(db, "predictions_octavos"), where("uid", "==", currentUser.uid));
-  const octavosSnap = await getDocs(octavosQuery);
-  const clasificados = {};
-  octavosSnap.forEach(doc => {
-    const data = doc.data();
-    clasificados[data.partido] = data.clasificado;
-  });
+   // Obtener clasificados de octavos
+  let clasificados = {};
+  if (usarMemoria && Object.keys(clasificadosEnMemoria.octavos).length > 0) {
+    clasificados = clasificadosEnMemoria.octavos;
+  } else {
+    const octavosQuery = query(collection(db, "predictions_octavos"), where("uid", "==", currentUser.uid));
+    const octavosSnap = await getDocs(octavosQuery);
+    octavosSnap.forEach(doc => {
+      const data = doc.data();
+      clasificados[data.partido] = data.clasificado;
+    });
+  }
 
   const partidos = [
     { numero: 97, local: clasificados[89] || "Ganador 89", visitante: clasificados[90] || "Ganador 90" },
@@ -2570,7 +2648,7 @@ async function generarCuartos() {
 // ======================================================
 // GENERAR SEMIFINALES (CARRUSEL HORIZONTAL)
 // ======================================================
-async function generarSemifinales() {
+async function generarSemifinales(usarMemoria = false) {
   const container = document.getElementById("semifinalContainer");
   if (!container) return;
   // 👇 Guardar scroll
@@ -2585,13 +2663,17 @@ async function generarSemifinales() {
   const resultadosMap = {};
   resultadosSnap.forEach(doc => { resultadosMap[doc.data().numero] = doc.data(); });
 
-  const cuartosQuery = query(collection(db, "predictions_cuartos"), where("uid", "==", currentUser.uid));
-  const cuartosSnap = await getDocs(cuartosQuery);
-  const clasificados = {};
-  cuartosSnap.forEach(doc => {
-    const data = doc.data();
-    clasificados[data.partido] = data.clasificado;
-  });
+  // Obtener clasificados de cuartos
+  let clasificados = {};
+  if (usarMemoria && Object.keys(clasificadosEnMemoria.cuartos).length > 0) {
+    clasificados = clasificadosEnMemoria.cuartos;
+  } else {
+    const cuartosQuery = query(collection(db, "predictions_cuartos"), where("uid", "==", currentUser.uid));
+    const cuartosSnap = await getDocs(cuartosQuery);
+    cuartosSnap.forEach(doc => {
+      clasificados[doc.data().partido] = doc.data().clasificado;
+    });
+  }
 
   const partidos = [
     { numero: 101, local: clasificados[97] || "Ganador 97", visitante: clasificados[98] || "Ganador 98" },
