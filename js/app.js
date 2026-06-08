@@ -1341,42 +1341,81 @@ async function generarTercerPuesto(usarMemoria = false) {
   }
 }
 // ======================================================
-// RANKING EN TIEMPO REAL
+// RANKING EN TIEMPO REAL (SIN DUPLICADOS)
 // ======================================================
 
 function loadRanking() {
-  if (rankingInterval) clearInterval(rankingInterval); // Evita intervalos acumulados
+  if (rankingInterval) clearInterval(rankingInterval);
 
   async function actualizarRanking() {
-    const q = query(collection(db, "ranking"), orderBy("puntos", "desc"), limit(50));
+    // Usar un Map para evitar duplicados por user_id
+    const rankingMap = new Map();
+    
+    // Primero, obtener todos los documentos de ranking
+    const q = query(collection(db, "ranking"), orderBy("puntos", "desc"), limit(100));
     const snapshot = await getDocs(q);
-    rankingGlobalData = [];
+    
     for (const docSnap of snapshot.docs) {
       const data = docSnap.data();
-      if (!data.user_id) continue;
-      const userSnap = await getDoc(doc(db, "users", data.user_id));
+      const userId = data.user_id;
+      
+      // Saltar si no tiene user_id
+      if (!userId) continue;
+      
+      // Si ya tenemos este user_id en el Map, saltar (es duplicado)
+      if (rankingMap.has(userId)) continue;
+      
+      // Obtener datos del usuario
+      const userSnap = await getDoc(doc(db, "users", userId));
       if (!userSnap.exists()) continue;
+      
       const userData = userSnap.data();
-      if (userData.rol === "admin") continue; // Excluir al administrador
-      rankingGlobalData.push({
-        uid: data.user_id,
+      
+      // Excluir administradores
+      if (userData.rol === "admin") continue;
+      
+      // Verificar que el usuario sea un participante válido
+      const participantSnap = await getDoc(doc(db, "participants", userId));
+      if (!participantSnap.exists()) continue;
+      
+      const participantData = participantSnap.data();
+      
+      // Solo incluir usuarios que pagaron o están habilitados en grupos
+      if (!participantData.paid_groups && !participantData.enabled_groups) continue;
+      
+      // Agregar al Map (esto automáticamente evita duplicados por userId)
+      rankingMap.set(userId, {
+        uid: userId,
         nombre: userData.nombre || "Usuario",
-        puntos: data.puntos
+        puntos: data.puntos || 0
       });
     }
-    document.getElementById("totalRankingGlobal").innerText = rankingGlobalData.length;
+    
+    // Convertir el Map a array y ordenar por puntos descendente
+    rankingGlobalData = Array.from(rankingMap.values());
+    rankingGlobalData.sort((a, b) => b.puntos - a.puntos);
+    
+    // Limitar a 50 para mostrar
+    if (rankingGlobalData.length > 50) {
+      rankingGlobalData = rankingGlobalData.slice(0, 50);
+    }
+    
+    const totalElement = document.getElementById("totalRankingGlobal");
+    if (totalElement) totalElement.innerText = rankingGlobalData.length;
+    
     renderRankingGlobal();
   }
 
-  actualizarRanking();                              // Carga inicial
-  rankingInterval = setInterval(actualizarRanking, 60000); // Actualiza cada 60 segundos
+  actualizarRanking();
+  rankingInterval = setInterval(actualizarRanking, 60000);
 }
+
 function renderRankingGlobal() {
   const container = document.getElementById("rankingList");
   if (!container) return;
 
   let filtrados = rankingGlobalData;
-  if (rankingGlobalFiltro.trim() !== "") {
+  if (rankingGlobalFiltro && rankingGlobalFiltro.trim() !== "") {
     const term = rankingGlobalFiltro.toLowerCase();
     filtrados = rankingGlobalData.filter(item => item.nombre.toLowerCase().includes(term));
   }
@@ -1401,28 +1440,28 @@ function renderRankingGlobal() {
       <div style="display:flex; justify-content:space-between; align-items:center; padding:8px 0; border-bottom:1px solid rgba(255,255,255,0.08); gap:10px;">
         <div style="display:flex; align-items:center; gap:10px; min-width:0;">
           <span>${medalla}</span>
-          <span style="white-space:nowrap; overflow:hidden; text-overflow:ellipsis;">${item.nombre}</span>
+          <span style="white-space:nowrap; overflow:hidden; text-overflow:ellipsis;">${escapeHtml(item.nombre)}</span>
         </div>
         <strong>${item.puntos} pts</strong>
       </div>
     `;
+    
     if (item.uid === currentUser?.uid) {
-      miPosicionSpan.innerText = pos + "°";
-      misPuntosSpan.innerText = item.puntos;
+      if (miPosicionSpan) miPosicionSpan.innerText = pos + "°";
+      if (misPuntosSpan) misPuntosSpan.innerText = item.puntos;
       encontrado = true;
     }
     pos++;
   }
 
   if (!encontrado && currentUser) {
-    // Buscar posición real del usuario en el ranking completo (no filtrado)
     const idx = rankingGlobalData.findIndex(u => u.uid === currentUser.uid);
     if (idx !== -1) {
-      miPosicionSpan.innerText = (idx + 1) + "°";
-      misPuntosSpan.innerText = rankingGlobalData[idx].puntos;
+      if (miPosicionSpan) miPosicionSpan.innerText = (idx + 1) + "°";
+      if (misPuntosSpan) misPuntosSpan.innerText = rankingGlobalData[idx].puntos;
     } else {
-      miPosicionSpan.innerText = "-";
-      misPuntosSpan.innerText = "0";
+      if (miPosicionSpan) miPosicionSpan.innerText = "-";
+      if (misPuntosSpan) misPuntosSpan.innerText = "0";
     }
   }
 
@@ -1430,10 +1469,57 @@ function renderRankingGlobal() {
 }
 
 // Evento para el buscador del ranking global
-document.getElementById("buscarRankingGlobal")?.addEventListener("input", (e) => {
-  rankingGlobalFiltro = e.target.value;
-  renderRankingGlobal();
-});
+const buscarRankingGlobal = document.getElementById("buscarRankingGlobal");
+if (buscarRankingGlobal) {
+  buscarRankingGlobal.addEventListener("input", (e) => {
+    rankingGlobalFiltro = e.target.value;
+    renderRankingGlobal();
+  });
+}
+
+// ======================================================
+// FUNCIÓN PARA LIMPIAR DUPLICADOS EN FIRESTORE
+// Ejecutar UNA SOLA VEZ desde la consola
+// ======================================================
+
+async function limpiarDuplicadosRanking() {
+  console.log("🔍 Buscando duplicados en ranking...");
+  const rankingSnap = await getDocs(collection(db, "ranking"));
+  const usuariosVistos = new Set();
+  const batch = writeBatch(db);
+  let eliminados = 0;
+  
+  for (const docSnap of rankingSnap.docs) {
+    const data = docSnap.data();
+    const userId = data.user_id;
+    
+    if (!userId) {
+      batch.delete(docSnap.ref);
+      eliminados++;
+      continue;
+    }
+    
+    if (usuariosVistos.has(userId)) {
+      batch.delete(docSnap.ref);
+      eliminados++;
+      console.log(`🗑️ Eliminando duplicado para usuario: ${userId}`);
+    } else {
+      usuariosVistos.add(userId);
+    }
+  }
+  
+  if (eliminados > 0) {
+    await batch.commit();
+    console.log(`✅ Eliminados ${eliminados} documentos duplicados en ranking`);
+  } else {
+    console.log("✅ No hay duplicados en ranking");
+  }
+  
+  // Recargar el ranking
+  await actualizarRanking();
+  return eliminados;
+}
+
 // ======================================================
 // LOAD RANKING
 // ======================================================
